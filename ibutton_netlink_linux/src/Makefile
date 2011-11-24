@@ -30,12 +30,16 @@ CFLAGS := -O0 -g3 -Wall -fmessage-length=0
 # CFLAGS += -mwindows
 # CFLAGS += -Iinclude
 # CFLAGS += -lpthread
-CFLAGS += -pthread
+ifeq ($(BUILD_TYPE), x86) 
+	CXXFLAGS += -pthread
+endif
 
 #CXXFLAGS := -O2 -g -Wall -fmessage-length=0
 CXXFLAGS := -O0 -g3 -Wall -fmessage-length=0
 # CXXFLAGS += -lpthread
-CXXFLAGS += -pthread
+ifeq ($(BUILD_TYPE), x86) 
+	CXXFLAGS += -pthread
+endif
 
 #################################################
 
@@ -77,9 +81,16 @@ $(OBJDIR)/sh_queue.d \
 $(OBJDIR)/sh_thread.d \
 $(OBJDIR)/w1_netlink_connector_userapp.d 
 
-LIBS += \
-../lib/x86/libpthread.so
-#/usr/lib/libpthread.a 
+ifeq ($(BUILD_TYPE), x86) 
+    LIBS += \
+    	../lib/x86/libpthread.so
+endif
+
+ifeq ($(BUILD_TYPE), arm) 
+    LIBS += \
+    	../lib/arm/libc.a
+endif
+
 
 #################################################
 
