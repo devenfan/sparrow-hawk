@@ -1,11 +1,8 @@
 /*
- * w1_netlink_userspace.h
  *
  * Original filename: kernel_src_2.6.29/drivers/w1/w1_netlink.h
- * Shipped by Deven Fan: deven.fan@gmail.com
  *
- *
- * Copyright (c) 2003 Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+ * Copyright (c) 2011 Deven Fan <deven@sparrow-hawk.net>
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,9 +23,6 @@
 #ifndef __W1_NETLINK_USERSPACE_H
 #define __W1_NETLINK_USERSPACE_H
 
-#ifdef __KERNEL__
-	#include <asm/types.h>
-#endif
 
 #include <linux/netlink.h>		//it will include <linux/socket.h>
 //#include <linux/connector.h>	//it will include <linux/types.h>
@@ -96,19 +90,6 @@ struct w1_netlink_cmd
 	__u16				len;
 	__u8				data[0];
 };
-
-
-#ifdef __KERNEL__
-
-	#include "w1.h"
-
-	void w1_netlink_send(struct w1_master *, struct w1_netlink_msg *);
-
-	int w1_init_netlink(void);
-
-	void w1_fini_netlink(void);
-
-#endif
 
 
 #endif /* __W1_NETLINK_USERSPACE_H */

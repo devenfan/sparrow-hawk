@@ -69,16 +69,19 @@ src \
 C_SRCS += \
 $(SRCDIR)/sh_queue.c \
 $(SRCDIR)/sh_thread.c \
+$(SRCDIR)/w1_netlink_userservice.c \
 $(SRCDIR)/w1_netlink_connector_userapp.c 
 
 OBJS += \
 $(OBJDIR)/sh_queue.o \
 $(OBJDIR)/sh_thread.o \
+$(SRCDIR)/w1_netlink_userservice.o \
 $(OBJDIR)/w1_netlink_connector_userapp.o 
 
 C_DEPS += \
 $(OBJDIR)/sh_queue.d \
 $(OBJDIR)/sh_thread.d \
+$(SRCDIR)/w1_netlink_userservice.d \
 $(OBJDIR)/w1_netlink_connector_userapp.d 
 
 ifeq ($(BUILD_TYPE), x86) 

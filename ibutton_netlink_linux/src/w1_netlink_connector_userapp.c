@@ -17,6 +17,10 @@
 #include "sh_error.h"
 #include "sh_thread.h"
 
+
+#include "w1_netlink_userservice.h"
+
+/*
 #define MAX_MSG_SIZE 1024
 #define MAX_CNMSG_SIZE 512
 
@@ -36,65 +40,72 @@ static pthread_t receivingThread;
 static int receivingThreadStopFlag = 0;
 static sh_signal_ctrl recevingThreadStopSignal;
 
+*/
 
-struct cn_msg * malloc_w1_netlinkmsg(void)
+void init_w1_forkmsg(struct cn_msg * cnmsg)
 {
-	void * buffer = NULL;
-	struct cn_msg * cnmsg = NULL;
 	struct w1_netlink_msg * w1msg = NULL;
 	struct w1_netlink_cmd * w1cmd = NULL;
 	u_int64_t * slave_rn_fork = NULL;
+	u_int64_t temp_rn;
+	int slave_count = 10;
+	int index = 0;
 
-	buffer = malloc(MAX_CNMSG_SIZE);
-
-	if(NULL == buffer) return NULL;
-
-	cnmsg = (struct cn_msg *) buffer;
 	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
 	w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
 	slave_rn_fork = (u_int64_t *) (w1cmd + 1);
 
-	*slave_rn_fork = 0x12345678L;
+	for(index = 0; index < slave_count; index++)
+	{
+		//you must cast to the same type, then calc...
+		temp_rn = 0x12345678L + (u_int64_t)index;
+		*(slave_rn_fork + index) = temp_rn;
+		printf("(index,temp_rn): (%d, %lx)\n", index, temp_rn);
+	}
 
-	w1cmd->len = sizeof(u_int64_t);
+	w1cmd->len = sizeof(u_int64_t) * slave_count;
 	w1cmd->cmd = W1_CMD_SEARCH;
 
-	int len1 = sizeof(w1cmd) + w1cmd->len;
-	int len2 = sizeof(struct w1_netlink_cmd) + w1cmd->len;
-	if(len1 != len2)
-		printf("Not the same length!\n");
-
 	w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
+	w1msg->type = W1_MASTER_CMD;
 
 	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
-
-	return cnmsg;
 }
 
 
-void free_w1_netlinkmsg(struct cn_msg * cnmsg)
+
+
+int send_w1_forkmsg(void)
 {
-	struct w1_netlink_msg * w1msg = (struct w1_netlink_msg *)(cnmsg->data);
-	struct w1_netlink_cmd * w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
+	int ret = 0;
+	struct cn_msg * cnmsg = NULL;
 
-	free(w1cmd->data);
-	free(w1cmd);
-	free(w1msg);
-	free(cnmsg);
+	cnmsg = malloc_w1_netlinkmsg();
+
+	if(NULL == cnmsg)
+	{
+		printf("cannot malloc_w1_netlinkmsg\n");
+		return E_OUT_OF_MEM;
+	}
+
+	init_w1_forkmsg(cnmsg);
+
+	ret = send_w1_netlinkmsg(cnmsg);
+
+	free_w1_netlinkmsg(cnmsg);
+
+	if(-1 == ret)
+	{
+		perror("send_w1_netlinkmsg");
+		return E_SOCKET_CANNOT_SEND;
+	}
+	else
+	{
+		return E_OK;
+	}
 }
 
-
-void init_w1_netlinkmsg(struct cn_msg * cnmsg)
-{
-	//struct cb_id w1_id = {.idx = CN_W1_IDX, .val = CN_W1_VAL};
-
-    cnmsg->id.idx = CN_W1_IDX;
-    cnmsg->id.val = CN_W1_VAL;
-    cnmsg->seq = 0;
-    cnmsg->ack = 0;
-}
-
-
+/*
 int send_w1_netlinkmsg(struct cn_msg * cnmsg)
 {
 	struct w1_netlink_msg * w1msg = (struct w1_netlink_msg *)(cnmsg + 1);
@@ -132,34 +143,6 @@ int send_w1_netlinkmsg(struct cn_msg * cnmsg)
 	return sendmsg(w1Socket, &socketMsgSend, 0);
 }
 
-
-int send_w1_forkmsg(void)
-{
-	int ret = 0;
-	struct cn_msg * cnmsg = NULL;
-
-	cnmsg = malloc_w1_netlinkmsg();
-
-	if(NULL == cnmsg)
-	{
-		printf("cannot malloc_w1_netlinkmsg\n");
-		return E_OUT_OF_MEM;
-	}
-
-	init_w1_netlinkmsg(cnmsg);
-
-	ret = send_w1_netlinkmsg(cnmsg);
-	if(-1 == ret)
-	{
-		perror("send_w1_netlinkmsg");
-		return E_SOCKET_CANNOT_SEND;
-	}
-	else
-	{
-		printf("send_w1_netlinkmsg ok with %d bytes\n", ret);
-		return E_OK;
-	}
-}
 
 
 void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
@@ -300,9 +283,11 @@ void stop_receiving_thread(void)
 	//free(recevingThreadStopSignal);
 }
 
+*/
 
 int main(void)
 {
+	/*
 	const int group = W1_GROUP;
 
 	//open socket
@@ -333,10 +318,6 @@ int main(void)
 		exit(-1);
 	}
 
-	//Remove membership when you don't want to use netlink
-	//setsockopt(w1Socket, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP, &group, sizeof(group));
-
-
 	//init socket messages
 	nlMsgSend = (struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_MSG_SIZE));
 	nlMsgRecv = (struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_MSG_SIZE));
@@ -352,10 +333,22 @@ int main(void)
 
 	start_receiving_thread();
 
-	sleep(3);
+	*/
 
-	printf("main thread sleep well...\n");
+	int sleepSecond = 3;
 
+	w1_netlink_userservice_start();
+
+	send_w1_forkmsg();
+
+	sleep(sleepSecond);
+
+	printf("Main Thread Wake up after %d seconds...\n", sleepSecond);
+
+	w1_netlink_userservice_stop();
+
+
+	/*
 	stop_receiving_thread();
 
 	//Remove membership when you don't want to use netlink
@@ -366,8 +359,9 @@ int main(void)
 
 	free(nlMsgSend);
 	free(nlMsgRecv);
+	*/
 
-	printf("Game Over...\n");
+	printf("Main Thread Game Over...\n");
 	return 0;
 }
 
