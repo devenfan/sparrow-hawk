@@ -230,7 +230,7 @@ $(GENERAL_S3C6410_OBJDIR)/s3c6410ses.o :
 all:  $(TARGET)
 
 clean:
-	rm -f  $(OBJS) $(TARGET)
+	rm -rf  $(OBJS) $(TARGET)
 
 test:
 	@echo TARGET:    	$(TARGET)

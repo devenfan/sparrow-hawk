@@ -5,3 +5,7 @@
 /android_librxtxSerial/bin
 /android_ibutton_lib/bin
 /android_ibutton_app/bin
+/ibutton_netlink_linux/Debug
+/ibutton_netlink_linux/Release
+
+

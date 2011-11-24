@@ -31,7 +31,11 @@
 #endif
 
 #include <linux/netlink.h>		//it will include <linux/socket.h>
-#include <linux/connector.h>	//it will include <linux/types.h>
+//#include <linux/connector.h>	//it will include <linux/types.h>
+
+//<linux/connector.h> is not contained inside NDK android-5
+//Attention: NDK android-5 support android-6 & android 7
+#include "kernel_connector.h"
 
 #ifndef	W1_GROUP
 #define W1_GROUP  	CN_W1_IDX

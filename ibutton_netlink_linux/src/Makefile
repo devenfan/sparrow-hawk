@@ -30,12 +30,12 @@ CFLAGS := -O0 -g3 -Wall -fmessage-length=0
 # CFLAGS += -mwindows
 # CFLAGS += -Iinclude
 # CFLAGS += -lpthread
-CFLAGS += -pthreads
+CFLAGS += -pthread
 
 #CXXFLAGS := -O2 -g -Wall -fmessage-length=0
 CXXFLAGS := -O0 -g3 -Wall -fmessage-length=0
 # CXXFLAGS += -lpthread
-CXXFLAGS += -pthreads
+CXXFLAGS += -pthread
 
 #################################################
 
@@ -78,7 +78,7 @@ $(OBJDIR)/sh_thread.d \
 $(OBJDIR)/w1_netlink_connector_userapp.d 
 
 LIBS += \
-/usr/lib/libpthread.so
+../lib/x86/libpthread.so
 #/usr/lib/libpthread.a 
 
 #################################################
