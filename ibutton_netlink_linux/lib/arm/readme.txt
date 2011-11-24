@@ -1,0 +1,1 @@
+They are from android ndk, platfrom android-5
