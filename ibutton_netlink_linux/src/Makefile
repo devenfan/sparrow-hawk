@@ -1,11 +1,11 @@
 #################################################
-#x86 or ARM
+# x86 or arm
 BUILD_TYPE = x86
 
-BUILD_NAME = ibutton_netlink_linux.exe
+BUILD_NAME = ibutton_netlink_linux
 
 #################################################
-ifeq ($(BUILD_TYPE), ARM) 
+ifeq ($(BUILD_TYPE), arm) 
 	CROSS_COMPILE	:= /usr/local/arm/arm-none-linux-gnueabi/bin/arm-none-linux-gnueabi-
 endif
 #################################################
@@ -52,8 +52,8 @@ LIBS :=
 USER_OBJS :=
 
 SRCDIR = ../src
-OBJDIR = ../build
-DISTDIR = ../dist
+OBJDIR = ../build/$(BUILD_TYPE)
+DISTDIR = ../dist/$(BUILD_TYPE)
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
