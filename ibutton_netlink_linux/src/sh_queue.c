@@ -19,7 +19,7 @@
  */
 
 
-#include <stdio.h>
+#include <stddef.h>
 
 #include "sh_queue.h"
 
