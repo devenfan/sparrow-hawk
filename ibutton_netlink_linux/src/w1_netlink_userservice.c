@@ -86,7 +86,8 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 	int slave_count;
 	int index;
 
-	printf("received w1msg type is %d, w1cmd type is %d\n", w1msg->type, w1cmd->cmd);
+	printf("received w1msg type is %s\n", describe_w1_msg_type(w1msg->type));
+	printf("received w1cmd type is %s\n", describe_w1_cmd_type(w1cmd->cmd));
 
 	switch(w1cmd->cmd)
 	{

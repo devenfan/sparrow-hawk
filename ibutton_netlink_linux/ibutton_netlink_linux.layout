@@ -13,16 +13,19 @@
 	<File name="src\sh_thread.h" open="0" top="0" tabpos="0">
 		<Cursor position="980" topLine="19" />
 	</File>
-	<File name="src\w1_netlink_connector_userapp.c" open="0" top="0" tabpos="2">
-		<Cursor position="926" topLine="31" />
+	<File name="src\w1_netlink_connector_userapp.c" open="1" top="0" tabpos="1">
+		<Cursor position="2512" topLine="110" />
 	</File>
-	<File name="src\w1_netlink_userservice.c" open="0" top="0" tabpos="1">
-		<Cursor position="6912" topLine="212" />
+	<File name="src\w1_netlink_userservice.c" open="1" top="1" tabpos="2">
+		<Cursor position="3337" topLine="78" />
 	</File>
 	<File name="src\w1_netlink_userservice.h" open="0" top="0" tabpos="3">
 		<Cursor position="1025" topLine="22" />
 	</File>
-	<File name="src\w1_netlink_userspace.h" open="0" top="0" tabpos="0">
-		<Cursor position="1273" topLine="22" />
+	<File name="src\w1_netlink_userspace.c" open="0" top="0" tabpos="0">
+		<Cursor position="846" topLine="8" />
+	</File>
+	<File name="src\w1_netlink_userspace.h" open="1" top="0" tabpos="3">
+		<Cursor position="2154" topLine="77" />
 	</File>
 </CodeBlocks_layout_file>

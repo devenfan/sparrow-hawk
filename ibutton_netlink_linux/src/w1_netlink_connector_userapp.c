@@ -83,28 +83,60 @@ static int send_w1_forkmsg(void)
 	}
 }
 
+static void printUsage(void)
+{
+    printf("Please input your ");
+}
 
 int main(void)
 {
-	int sleepSecond = 3;
+	//int sleepSecond = 3;
 
-	if(0 == w1_netlink_userservice_start())
-    {
-        /*send_w1_forkmsg();*/
+	char choice;
+    int msgType;
+    int cmdType;
+    char useless[10];
 
-        sleep(sleepSecond);
+	if(0 != w1_netlink_userservice_start())
+	{
+	    printf("Cannot start w1 netlink userspace service...\n");
+	    goto GameOver;
+	}
 
-        printf("Main thread sleep well after %d seconds...\n", sleepSecond);
+	printf("Continue(C) or Quit(Q): \n");
+    scanf("%c", &choice);
 
-        w1_netlink_userservice_stop();
-    }
-    else
-    {
-        printf("Cannot start w1 netlink userspace service...\n");
-    }
+    if('Q' == choice) goto GameOver;
+
+    printf("Please input w1 msg type: \n");
+    scanf("%d", &msgType);
+    printf("Your input w1 msg type: %s", describe_w1_msg_type(msgType));
+
+    printf("Please input w1 cmd type: \n");
+    printf("Your input w1 cmd type: %s", describe_w1_cmd_type(cmdType));
+    scanf("%d", &cmdType);
+
+	/*
+	send_w1_forkmsg();
+
+    sleep(sleepSecond);
+
+    printf("Main thread wake up after %d seconds...\n", sleepSecond);
+    */
+
+
+    printf("Type something to quit: \n");
+    scanf("%s", useless);
+
+    w1_netlink_userservice_stop();
+
+
+GameOver:
 
 	printf("Main thread Game Over...\n");
 	return 0;
 }
+
+
 
 

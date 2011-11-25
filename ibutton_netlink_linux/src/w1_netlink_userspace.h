@@ -91,5 +91,8 @@ struct w1_netlink_cmd
 	__u8				data[0];
 };
 
+char * describe_w1_msg_type(int msgType);
+
+char * describe_w1_cmd_type(int cmdType);
 
 #endif /* __W1_NETLINK_USERSPACE_H */

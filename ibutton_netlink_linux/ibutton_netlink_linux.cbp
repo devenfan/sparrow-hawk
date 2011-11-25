@@ -80,6 +80,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\w1_netlink_userservice.h" />
+		<Unit filename="src\w1_netlink_userspace.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src\w1_netlink_userspace.h" />
 		<Extensions>
 			<code_completion />
