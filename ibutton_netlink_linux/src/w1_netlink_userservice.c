@@ -86,7 +86,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 	int slave_count;
 	int index;
 
-	printf("w1msg type is %d, w1cmd type is %d\n", w1msg->type, w1cmd->cmd);
+	printf("received w1msg type is %d, w1cmd type is %d\n", w1msg->type, w1cmd->cmd);
 
 	switch(w1cmd->cmd)
 	{
@@ -220,12 +220,19 @@ static void stop_receiving_thread(void)
 
 int w1_netlink_userservice_start(void)
 {
+    int ret = E_ERROR;
+
 	pthread_mutex_init(&globalSeqMutex, NULL);
 
 	//sh_signal_init(&recevingThreadStopSignal);
 
 	//open socket
 	w1Socket = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
+	if(-1 == w1Socket)
+	{
+        perror("socket open");
+        return -1;
+	}
 
 	bindAddr.nl_family = AF_NETLINK;
 	bindAddr.nl_groups = group;
@@ -277,7 +284,7 @@ int w1_netlink_userservice_start(void)
 
 	printf("w1 netlink userspace service started!\n");
 
-	return 0;
+	return E_OK;
 }
 
 

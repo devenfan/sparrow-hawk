@@ -23,7 +23,7 @@ LOCAL_CFLAGS += \
 	 -fPIC
 
 LOCAL_PRELINK_MODULE := false
-LOCAL_SHARED_LIBRARIES := libdl  liblog
+LOCAL_SHARED_LIBRARIES := libdl  liblog  libc
 
 #### Add below line to resolve: undefined reference to `__android_log_print'
 LOCAL_LDLIBS := -lm -llog
