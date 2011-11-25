@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Release" />
+	<File name="src\ibutton_netlink_linux.c" open="0" top="0" tabpos="0">
+		<Cursor position="488" topLine="0" />
+	</File>
+	<File name="src\kernel_connector.h" open="0" top="0" tabpos="4">
+		<Cursor position="2438" topLine="77" />
+	</File>
+	<File name="src\sh_error.h" open="0" top="0" tabpos="0">
+		<Cursor position="851" topLine="17" />
+	</File>
+	<File name="src\sh_thread.h" open="0" top="0" tabpos="0">
+		<Cursor position="980" topLine="19" />
+	</File>
+	<File name="src\w1_netlink_connector_userapp.c" open="0" top="0" tabpos="2">
+		<Cursor position="926" topLine="31" />
+	</File>
+	<File name="src\w1_netlink_userservice.c" open="0" top="0" tabpos="1">
+		<Cursor position="6912" topLine="212" />
+	</File>
+	<File name="src\w1_netlink_userservice.h" open="0" top="0" tabpos="3">
+		<Cursor position="1025" topLine="22" />
+	</File>
+	<File name="src\w1_netlink_userspace.h" open="0" top="0" tabpos="0">
+		<Cursor position="1273" topLine="22" />
+	</File>
+</CodeBlocks_layout_file>

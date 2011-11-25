@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="ibutton_netlink_linux" />
+		<Option pch_mode="2" />
+		<Option compiler="armelfgcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin\Debug\ibutton_netlink_linux" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="armelfgcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-include AndroidConfig.h" />
+					<Add option="-fpic" />
+					<Add option="-ffunction-sections" />
+					<Add option="-funwind-tables" />
+					<Add option="-fstack-protector" />
+					<Add option="-fno-short-enums" />
+				</Compiler>
+				<Linker>
+					<Add option="-nostdlib -Bdynamic" />
+					<Add option="-Wl,-T,armelf.x" />
+					<Add option="-Wl,-dynamic-linker,/system/bin/linker" />
+					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
+					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
+					<Add library="c" />
+					<Add library="dl" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\ibutton_netlink_linux" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Release\" />
+				<Option type="1" />
+				<Option compiler="armelfgcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-include AndroidConfig.h" />
+					<Add option="-fpic" />
+					<Add option="-ffunction-sections" />
+					<Add option="-funwind-tables" />
+					<Add option="-fstack-protector" />
+					<Add option="-fno-short-enums" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-nostdlib -Bdynamic" />
+					<Add option="-Wl,-T,armelf.x" />
+					<Add option="-Wl,-dynamic-linker,/system/bin/linker" />
+					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
+					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
+					<Add library="c" />
+					<Add library="dl" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="src\Makefile" />
+		<Unit filename="src\ibutton_netlink_linux.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\kernel_connector.h" />
+		<Unit filename="src\sh_error.h" />
+		<Unit filename="src\sh_queue.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\sh_queue.h" />
+		<Unit filename="src\sh_thread.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\sh_thread.h" />
+		<Unit filename="src\w1_netlink_connector_userapp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\w1_netlink_userservice.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\w1_netlink_userservice.h" />
+		<Unit filename="src\w1_netlink_userspace.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
