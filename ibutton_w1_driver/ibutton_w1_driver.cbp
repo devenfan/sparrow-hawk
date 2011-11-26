@@ -2,12 +2,12 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="ibutton_netlink_linux" />
+		<Option title="ibutton_w1_driver" />
 		<Option pch_mode="2" />
 		<Option compiler="armelfgcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin\Debug\ibutton_netlink_linux" prefix_auto="1" extension_auto="1" />
+				<Option output="bin\Debug\ibutton_w1_driver" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj\Debug\" />
 				<Option type="1" />
 				<Option compiler="armelfgcc" />
@@ -31,7 +31,7 @@
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="bin\Release\ibutton_netlink_linux" prefix_auto="1" extension_auto="1" />
+				<Option output="bin\Release\ibutton_w1_driver" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj\Release\" />
 				<Option type="1" />
 				<Option compiler="armelfgcc" />
@@ -59,36 +59,75 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="src\Makefile" />
-		<Unit filename="src\ibutton_netlink_linux.c">
+		<Unit filename="Kconfig" />
+		<Unit filename="Makefile" />
+		<Unit filename="masters\Kconfig" />
+		<Unit filename="masters\Makefile" />
+		<Unit filename="masters\ds1wm.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\kernel_connector.h" />
-		<Unit filename="src\sh_error.h" />
-		<Unit filename="src\sh_queue.c">
+		<Unit filename="masters\ds2482.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\sh_queue.h" />
-		<Unit filename="src\sh_thread.c">
+		<Unit filename="masters\ds2490.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\sh_thread.h" />
-		<Unit filename="src\sh_types.h" />
-		<Unit filename="src\sh_util.c">
+		<Unit filename="masters\matrox_w1.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\sh_util.h" />
-		<Unit filename="src\w1_netlink_connector_userapp.c">
+		<Unit filename="masters\mxc_w1.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\w1_netlink_userservice.c">
+		<Unit filename="masters\omap_hdq.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\w1_netlink_userservice.h" />
-		<Unit filename="src\w1_netlink_userspace.c">
+		<Unit filename="masters\w1-gpio.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\w1_netlink_userspace.h" />
+		<Unit filename="slaves\Kconfig" />
+		<Unit filename="slaves\Makefile" />
+		<Unit filename="slaves\w1_bq27000.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="slaves\w1_ds2431.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="slaves\w1_ds2433.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="slaves\w1_ds2760.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="slaves\w1_ds2760.h" />
+		<Unit filename="slaves\w1_smem.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="slaves\w1_therm.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="w1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="w1.h" />
+		<Unit filename="w1_family.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="w1_family.h" />
+		<Unit filename="w1_int.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="w1_int.h" />
+		<Unit filename="w1_io.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="w1_kernapp.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="w1_log.h" />
+		<Unit filename="w1_netlink.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="w1_netlink.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />

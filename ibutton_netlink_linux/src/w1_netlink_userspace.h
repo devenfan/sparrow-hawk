@@ -2,7 +2,7 @@
  *
  * Original filename: kernel_src_2.6.29/drivers/w1/w1_netlink.h
  *
- * Copyright (c) 2011 Deven Fan <deven@sparrow-hawk.net>
+ * Copyright (c) 2011 Deven Fan <deven.fan@gmail.com>
  *
  *
  * This program is free software; you can redistribute it and/or modify

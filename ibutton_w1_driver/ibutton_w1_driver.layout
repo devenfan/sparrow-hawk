@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Release" />
+	<File name="w1.c" open="1" top="0" tabpos="3">
+		<Cursor position="19167" topLine="724" />
+	</File>
+	<File name="w1_int.c" open="1" top="0" tabpos="2">
+		<Cursor position="4961" topLine="164" />
+	</File>
+	<File name="w1_netlink.c" open="1" top="1" tabpos="1">
+		<Cursor position="7817" topLine="138" />
+	</File>
+	<File name="w1_netlink.h" open="0" top="0" tabpos="0">
+		<Cursor position="1160" topLine="31" />
+	</File>
+</CodeBlocks_layout_file>

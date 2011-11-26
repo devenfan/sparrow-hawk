@@ -2,20 +2,20 @@
 1322207660 source:f:\projects\c_cpp\codeblocksarmdemo1\main.c
 	<stdio.h>
 
-1322208727 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_queue.c
+1322273225 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_queue.c
 	<stddef.h>
 	"sh_queue.h"
 
-1322130861 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_queue.h
+1322273225 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_queue.h
 
-1322130861 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_thread.c
+1322273225 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_thread.c
 	<pthread.h>
 	"sh_thread.h"
 	"sh_error.h"
 
-1322130861 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_thread.h
+1322273225 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_thread.h
 
-1322130861 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_error.h
+1322273225 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_error.h
 
 1322227706 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\w1_netlink_userservice.c
 	<stdio.h>
@@ -30,17 +30,43 @@
 	"sh_thread.h"
 	"sh_error.h"
 
-1322146471 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\w1_netlink_userservice.h
+1322273225 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\w1_netlink_userservice.h
 	"w1_netlink_userspace.h"
 
-1322233969 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\w1_netlink_userspace.h
+1322273225 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\w1_netlink_userspace.h
 	<linux/netlink.h>
 	"kernel_connector.h"
 
 1322130861 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\kernel_connector.h
 	<asm/types.h>
 
-1322130861 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\ibutton_netlink_linux.c
+1322273225 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\ibutton_netlink_linux.c
 	<stdio.h>
 	<stdlib.h>
+
+1322277281 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_util.c
+	"sh_util.h"
+
+1322274842 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_util.h
+	"sh_types.h"
+
+1322274786 f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\sh_types.h
+	<asm/types.h>
+
+1322234408 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\w1_netlink_connector_userapp.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/cdefs.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<string.h>
+	<unistd.h>
+	<pthread.h>
+	"w1_netlink_userspace.h"
+	"sh_error.h"
+	"sh_thread.h"
+	"w1_netlink_userservice.h"
+
+1322273225 source:f:\projects\sparrow-hawk-git\ibutton_netlink_linux\src\w1_netlink_userspace.c
+	"w1_netlink_userspace.h"
 

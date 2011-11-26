@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011 Deven Fan <deven@sparrow-hawk.net>
+ * Copyright (c) 2011 Deven Fan <deven.fan@gmail.com>
  *
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,14 +35,15 @@
 
 #include "w1_netlink_userservice.h"
 #include "sh_thread.h"
+#include "sh_util.h"
 #include "sh_error.h"
 
 /* ====================================================================== */
 /* ============================ Constants =============================== */
 /* ====================================================================== */
 
-#define MAX_MSG_SIZE 1024
-#define MAX_CNMSG_SIZE 768
+#define MAX_MSG_SIZE    768
+#define MAX_CNMSG_SIZE  512
 
 
 /* ====================================================================== */
@@ -72,6 +73,7 @@ static pthread_t receivingThread;
 static int receivingThreadStopFlag = 0;
 static sh_signal_ctrl recevingThreadStopSignal;
 
+static char tempStr[MAX_MSG_SIZE * 2];
 
 /* ====================================================================== */
 /* ===================== w1 msg message handler ========================= */
@@ -86,8 +88,64 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 	int slave_count;
 	int index;
 
-	printf("received w1msg type is %s\n", describe_w1_msg_type(w1msg->type));
-	printf("received w1cmd type is %s\n", describe_w1_cmd_type(w1cmd->cmd));
+	int msgid_size = 16;
+	char msgid[50];
+
+    //printf("Debug 0 ");
+
+#if 0
+    slave_rn = (u_int64_t *) w1msg->id.id;
+#else
+    memset(msgid, 0, 50);
+    convert_bytes_to_hexstr(w1msg->id.id, 0, 8, msgid, &msgid_size);
+#endif
+
+    //printf("Debug 1 ");
+    //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
+	printf("received cnmsg seq[%d], ack[%d], dataLen[%d]\n",
+        cnmsg->seq, cnmsg->ack, cnmsg->len);
+
+    //printf("Debug 2 ");
+#if 0
+	printf("received w1msg type[%s], dataLen[%d], id[%lx], status[%d]\n",
+        describe_w1_msg_type(w1msg->type), w1msg->len, *slave_rn, w1msg->status);
+#else
+	printf("received w1msg type[%s], dataLen[%d], id[%s], status[%d]\n",
+        describe_w1_msg_type(w1msg->type), w1msg->len, msgid, w1msg->status);
+#endif
+
+    //printf("Debug 3 ");
+	printf("received w1cmd type[%s], dataLen[%d]\n",
+        describe_w1_cmd_type(w1cmd->cmd),  w1cmd->len);
+
+    //printf("Debug 4 ");
+    if(w1msg->status)
+    {
+        perror("w1msg status");
+    }
+
+    switch(w1msg->type)
+    {
+        case W1_SLAVE_ADD:
+            break;
+        case W1_SLAVE_REMOVE:
+            break;
+
+        case W1_MASTER_ADD:
+            break;
+        case W1_MASTER_REMOVE:
+            break;
+        case W1_LIST_MASTERS:
+            break;
+
+        case W1_MASTER_CMD:
+            break;
+        case W1_SLAVE_CMD:
+            break;
+
+        default:
+            break;
+    }
 
 	switch(w1cmd->cmd)
 	{
@@ -105,7 +163,24 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 				slave_rn++;
 			}
 			break;
+
+        case W1_CMD_READ:
+            break;
+        case W1_CMD_WRITE:
+            break;
+
+        case W1_CMD_TOUCH:
+            break;
+        case W1_CMD_RESET:
+            break;
+        case W1_CMD_MAX:
+            break;
+        default:
+            break;
 	}
+
+
+    printf("w1 netlinkmsg process done!\n");
 
 }
 

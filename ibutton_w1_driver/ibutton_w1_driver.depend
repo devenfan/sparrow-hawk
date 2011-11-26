@@ -1,0 +1,46 @@
+# depslib dependency file v1.0
+1322207660 source:f:\projects\c_cpp\codeblocksarmdemo1\main.c
+	<stdio.h>
+
+1322208727 source:f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\sh_queue.c
+	<stddef.h>
+	"sh_queue.h"
+
+1322130861 f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\sh_queue.h
+
+1322130861 source:f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\sh_thread.c
+	<pthread.h>
+	"sh_thread.h"
+	"sh_error.h"
+
+1322130861 f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\sh_thread.h
+
+1322130861 f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\sh_error.h
+
+1322227706 source:f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\w1_netlink_userservice.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/cdefs.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<string.h>
+	<unistd.h>
+	<pthread.h>
+	"w1_netlink_userservice.h"
+	"sh_thread.h"
+	"sh_error.h"
+
+1322146471 f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\w1_netlink_userservice.h
+	"w1_netlink_userspace.h"
+
+1322233969 f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\w1_netlink_userspace.h
+	<linux/netlink.h>
+	"kernel_connector.h"
+
+1322130861 f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\kernel_connector.h
+	<asm/types.h>
+
+1322130861 source:f:\projects\sparrow-hawk-git\ibutton_w1_driver\src\ibutton_w1_driver.c
+	<stdio.h>
+	<stdlib.h>
+

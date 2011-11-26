@@ -18,35 +18,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef __W1_NETLINK_USERSERVICE_H
-#define __W1_NETLINK_USERSERVICE_H
 
+#ifndef __SH_TYPES_H
+#define __SH_TYPES_H
 
-#include "w1_netlink_userspace.h"
+#include <asm/types.h>
 
+typedef __u8  BYTE;
 
+typedef __s8  BOOL;
 
-/* The first thing is start service, or other function cannot be used. */
-int w1_netlink_userservice_start(void);
+#ifndef TRUE
+#define TRUE   1
+#endif
 
+#ifndef FALSE
+#define FALSE  0
+#endif
 
-int w1_netlink_userservice_stop(void);
-
-
-/* The size is defined inside w1_netlink_userservice.c */
-struct cn_msg * malloc_w1_netlinkmsg(void);
-
-/* You must free the memory once you finish of using it */
-void free_w1_netlinkmsg(struct cn_msg * cnmsg);
-
-/* You can re-use the message if you want to save the memory */
-void refresh_w1_netlinkmsg(struct cn_msg * cnmsg);
-
-/* Return -1 when error, Return sent size if OK.
- * You can also recycle(free or reuse) it after you send it */
-int send_w1_netlinkmsg(struct cn_msg * cnmsg);
-
-
-
-
-#endif /* __W1_NETLINK_USERSERVICE_H */
+#endif // __SH_TYPES_H
