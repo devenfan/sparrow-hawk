@@ -45,7 +45,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
 MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
 
-static int w1_timeout = 10;
+static int w1_timeout = 1;      //search every 1 second
 int w1_max_slave_count = 10;
 int w1_max_slave_ttl = 10;
 
