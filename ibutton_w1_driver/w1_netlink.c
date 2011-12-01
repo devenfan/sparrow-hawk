@@ -44,7 +44,7 @@ void w1_netlink_send(struct w1_master *dev, struct w1_netlink_msg *msg)
 
 	memcpy(w, msg, sizeof(struct w1_netlink_msg));
 
-	w1debug("Real w1_netlink_send: seq[%d], ack[%d], len[%d]", m->seq, m->ack, m->len);
+	printk(KERN_DEBUG "Real w1_netlink_send: seq[%d], ack[%d], len[%d]\n", m->seq, m->ack, m->len);
 
 	cn_netlink_send(m, 0, GFP_KERNEL);
 }

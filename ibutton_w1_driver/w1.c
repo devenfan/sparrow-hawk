@@ -696,6 +696,10 @@ static int w1_attach_slave_device(struct w1_master *dev, struct w1_reg_num *rn)
 		dev_info(&dev->dev, "Family %x for %02x.%012llx.%02x is not registered.\n",
 			  rn->family, rn->family,
 			  (unsigned long long)rn->id, rn->crc);
+	} else {
+		dev_info(&dev->dev, "Family %x for %02x.%012llx.%02x is already registered.\n",
+			 rn->family, rn->family,
+			 (unsigned long long)rn->id, rn->crc);
 	}
 	__w1_family_get(f);
 	spin_unlock(&w1_flock);
