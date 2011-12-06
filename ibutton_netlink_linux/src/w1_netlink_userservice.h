@@ -26,26 +26,77 @@
 
 
 
-/* The first thing is start service, or other function cannot be used. */
-int w1_netlink_userservice_start(void);
+typedef void w1_master_added(int master_id);
+
+typedef void w1_master_removed(int master_id);
+
+typedef void w1_master_listed(int * master_ids, int master_count);
+
+typedef void w1_slave_added(w1_slave_rn salve_rn);
+
+typedef void w1_slave_removed(w1_slave_rn salve_rn);
+
+typedef void w1_slave_found(w1_slave_rn * slave_ids, int slave_count);
 
 
-int w1_netlink_userservice_stop(void);
+
+typedef struct w1_user_interface{
+
+    w1_master_added * master_added_callback;
+
+    w1_master_removed * master_removed_callback;
+
+    w1_master_listed * master_listed_callback;
+
+    w1_slave_added * slave_added_callback;
+
+    w1_slave_removed * slave_removed_callback;
+
+    w1_slave_found * slave_found_callback;
+
+}w1_user_callbacks;
 
 
-/* The size is defined inside w1_netlink_userservice.c */
-struct cn_msg * malloc_w1_netlinkmsg(void);
 
-/* You must free the memory once you finish of using it */
-void free_w1_netlinkmsg(struct cn_msg * cnmsg);
 
-/* You can re-use the message if you want to save the memory */
-void refresh_w1_netlinkmsg(struct cn_msg * cnmsg);
+/**
+ * The first thing is start service, or other function cannot be used.
+ */
+BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks);
 
-/* Return -1 when error, Return sent size if OK.
- * You can also recycle(free or reuse) it after you send it */
-int send_w1_netlinkmsg(struct cn_msg * cnmsg);
+/**
+ * Please stop userspace service once you finish of using it.
+ */
+BOOL w1_netlink_userservice_stop(void);
 
+
+
+
+/**
+ * Synchronized method, only support SEARCH, ALARM_SEARCH, RESET.
+ * Attention: the "cmd" is used as input & output parameter
+ */
+BOOL process_w1_master_cmd(int masterId, struct w1_netlink_cmd * cmd);
+
+/**
+ * Synchronized method, only support READ, WRITE, TOUCH.
+ * Attention: the "cmd" is used as input & output parameter
+ */
+BOOL process_w1_slave_cmd(w1_slave_rn * slaveId, struct w1_netlink_cmd * cmd);
+
+
+
+/**
+ * Asynchronized method, the result will come back later
+ *
+ */
+BOOL request_to_list_w1_masters(void);
+
+/*
+ * Asynchronized method, the result will come back later
+ *
+BOOL request_to_search_w1_slaves(BOOL alarmSearch);
+ */
 
 
 

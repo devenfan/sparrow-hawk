@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_workspace_file>
 	<Workspace title="Workspace">
-		<Project filename="ibutton_netlink_linux/ibutton_netlink_linux.cbp" />
+		<Project filename="ibutton_netlink_linux/ibutton_netlink_linux.cbp" active="1" />
 		<Project filename="ibutton_w1_driver/ibutton_w1_driver.cbp" />
-		<Project filename="android_ibutton_hal/android_ibutton_hal.cbp" active="1" />
+		<Project filename="android_ibutton_hal/android_ibutton_hal.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>

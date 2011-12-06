@@ -18,70 +18,116 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-
 #include "w1_netlink_userspace.h"
 
 
-
-
-char * describe_w1_msg_type(int msgType)
+BOOL is_w1_slave_rn_empty(w1_slave_rn rn)
 {
+    w1_slave_rn empty_rn = W1_EMPTY_REG_NUM;
+    return (memcmp(&rn, &empty_rn) == 0) ? TRUE : FALSE;
+}
+
+
+BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2)
+{
+    return (memcmp(&rn1, &rn2) == 0) ? TRUE : FALSE;
+}
+
+BOOL describe_w1_msg_type(int msgType, char * outputStr)
+{
+    BOOL ret = TRUE;
+
+    if(outputStr == NULL) return FALSE;
+
     switch(msgType)
     {
         case W1_SLAVE_ADD:
-            return "W1_SLAVE_ADD";
+            sprintf(outputStr, "W1_SLAVE_ADD");
+            break;
 
         case W1_SLAVE_REMOVE:
-            return "W1_SLAVE_REMOVE";
+            sprintf(outputStr, "W1_SLAVE_REMOVE");
+            break;
 
         case W1_MASTER_ADD:
-            return "W1_MASTER_ADD";
+            sprintf(outputStr, "W1_MASTER_ADD");
+            break;
 
         case W1_MASTER_REMOVE:
-            return "W1_MASTER_REMOVE";
+            sprintf(outputStr, "W1_MASTER_REMOVE");
+            break;
 
         case W1_MASTER_CMD:
-            return "W1_MASTER_CMD";
+            sprintf(outputStr, "W1_MASTER_CMD");
+            break;
 
         case W1_SLAVE_CMD:
-            return "W1_SLAVE_CMD";
+            sprintf(outputStr, "W1_SLAVE_CMD");
+            break;
 
         case W1_LIST_MASTERS:
-            return "W1_LIST_MASTERS";
+            sprintf(outputStr, "W1_LIST_MASTERS");
+            break;
 
         default:
-            return "UNKNOWN_W1_MSG_TYPE";
+            ret = FALSE;
+            break;
     }
+
+    return ret;
 }
 
-char * describe_w1_cmd_type(int cmdType)
+BOOL describe_w1_cmd_type(int cmdType, char * outputStr)
 {
+    BOOL ret = TRUE;
+
+    if(outputStr == NULL) return FALSE;
+
     switch(cmdType)
     {
         case W1_CMD_READ:
-            return "W1_CMD_READ";
+            sprintf(outputStr, "W1_CMD_READ");
+            break;
 
         case W1_CMD_WRITE:
-            return "W1_CMD_WRITE";
+            sprintf(outputStr, "W1_CMD_WRITE");
+            break;
 
         case W1_CMD_SEARCH:
-            return "W1_CMD_SEARCH";
+            sprintf(outputStr, "W1_CMD_SEARCH");
+            break;
 
         case W1_CMD_ALARM_SEARCH:
-            return "W1_CMD_ALARM_SEARCH";
+            sprintf(outputStr, "W1_CMD_ALARM_SEARCH");
+            break;
 
         case W1_CMD_TOUCH:
-            return "W1_CMD_TOUCH";
+            sprintf(outputStr, "W1_CMD_TOUCH");
+            break;
 
         case W1_CMD_RESET:
-            return "W1_CMD_RESET";
+            sprintf(outputStr, "W1_CMD_RESET");
+            break;
 
         case W1_CMD_MAX:
-            return "W1_CMD_MAX";
+            sprintf(outputStr, "W1_CMD_MAX");
+            break;
 
         default:
-            return "UNKNOWN_W1_CMD_TYPE";
+            ret = FALSE;
+            break;
     }
+
+    return ret;
 }
 
+
+BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr)
+{
+    if(w1RegNum == NULL || outputStr == NULL) return FALSE;
+
+    sprintf(outputStr, "%02X.%012llX.%02X", w1RegNum->family, w1RegNum->id, w1RegNum->crc);
+
+    return TRUE;
+}
 

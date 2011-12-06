@@ -78,7 +78,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\sh_util.h" />
-		<Unit filename="src\w1_netlink_connector_userapp.c">
+		<Unit filename="src\w1_netlink_userapp.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\w1_netlink_userservice.c">

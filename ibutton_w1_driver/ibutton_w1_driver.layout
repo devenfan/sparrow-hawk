@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="w1.c" open="1" top="1" tabpos="3">
-		<Cursor position="24880" topLine="933" />
+	<File name="masters\w1-gpio.c" open="0" top="0" tabpos="0">
+		<Cursor position="1697" topLine="43" />
 	</File>
-	<File name="w1.h" open="1" top="0" tabpos="4">
-		<Cursor position="4947" topLine="184" />
+	<File name="w1.c" open="0" top="0" tabpos="3">
+		<Cursor position="3028" topLine="95" />
+	</File>
+	<File name="w1.h" open="0" top="0" tabpos="4">
+		<Cursor position="1514" topLine="49" />
+	</File>
+	<File name="w1_family.c" open="0" top="0" tabpos="5">
+		<Cursor position="3209" topLine="123" />
 	</File>
 	<File name="w1_int.c" open="0" top="0" tabpos="2">
-		<Cursor position="4961" topLine="164" />
+		<Cursor position="4968" topLine="163" />
 	</File>
-	<File name="w1_io.c" open="1" top="0" tabpos="2">
-		<Cursor position="7619" topLine="258" />
+	<File name="w1_io.c" open="0" top="0" tabpos="2">
+		<Cursor position="9340" topLine="312" />
 	</File>
-	<File name="w1_netlink.c" open="1" top="0" tabpos="1">
-		<Cursor position="4014" topLine="137" />
+	<File name="w1_netlink.c" open="0" top="0" tabpos="0">
+		<Cursor position="2998" topLine="96" />
 	</File>
 	<File name="w1_netlink.h" open="0" top="0" tabpos="0">
-		<Cursor position="1160" topLine="31" />
+		<Cursor position="1074" topLine="21" />
 	</File>
 </CodeBlocks_layout_file>

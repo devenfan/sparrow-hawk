@@ -23,9 +23,9 @@
 #ifndef __W1_NETLINK_USERSPACE_H
 #define __W1_NETLINK_USERSPACE_H
 
+#include "sh_types.h"
 
 #include <linux/netlink.h>		//it will include <linux/socket.h>
-//#include <linux/connector.h>	//it will include <linux/types.h>
 
 //<linux/connector.h> is not contained inside NDK android-5
 //Attention: NDK android-5 support android-6 & android 7
@@ -91,8 +91,61 @@ struct w1_netlink_cmd
 	__u8				data[0];
 };
 
-char * describe_w1_msg_type(int msgType);
 
-char * describe_w1_cmd_type(int cmdType);
+#include <asm/byteorder.h>
+
+/*
+* It's originally inside w1.h
+*/
+typedef struct w1_reg_num
+{
+#if defined(__LITTLE_ENDIAN_BITFIELD)
+	__u64	family:8,
+		id:48,
+		crc:8;
+#elif defined(__BIG_ENDIAN_BITFIELD)
+	__u64	crc:8,
+		id:48,
+		family:8;
+#else
+#error "Please fix <asm/byteorder.h>"
+#endif
+} w1_slave_rn;
+
+
+#define W1_EMPTY_REG_NUM     {.family = 0, .id = 0, .crc = 0}
+
+/*
+#define is_w1_slave_rn_empty(rn)        ( (0 == (__u64)rn) ? TRUE : FALSE )
+
+#define are_w1_slave_rn_equal(rn1, rn2) ( ((__u64)rn1 == (__u64)rn2) ? TRUE : FALSE )
+*/
+
+BOOL is_w1_slave_rn_empty(w1_slave_rn rn);
+
+BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2);
+
+
+/**
+* OK return TRUE, Error return FALSE.
+* The input-output parameter "outputStr" must be at least 20.
+*/
+BOOL describe_w1_msg_type(int msgType, char * outputStr);
+
+
+/**
+* OK return TRUE, Error return FALSE.
+* The input-output parameter "outputStr" must be at least 20.
+*/
+BOOL describe_w1_cmd_type(int cmdType, char * outputStr);
+
+
+/**
+* OK return TRUE, Error return FALSE.
+* The input-output parameter "outputStr" must be at least 20.
+* It's formart Like: %02x.%012llx.%02x
+*/
+BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr);
+
 
 #endif /* __W1_NETLINK_USERSPACE_H */

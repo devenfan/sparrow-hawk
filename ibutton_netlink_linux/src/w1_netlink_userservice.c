@@ -51,14 +51,14 @@
 /* ====================================================================== */
 
 
-static const int group = W1_GROUP;
+static const int g_group = W1_GROUP;
 
-static int globalSeq = 1;
-static pthread_mutex_t globalSeqMutex;
+static int g_globalSeq = 1;
+static pthread_mutex_t g_globalLocker;
 
 static int w1Socket;					//SOCKET
-static struct sockaddr_nl bindAddr;		//socket bind address
-static struct sockaddr_nl dataAddr;		//socket data address
+static struct sockaddr_nl g_bindAddr;		//socket bind address
+static struct sockaddr_nl g_dataAddr;		//socket data address
 
 static struct msghdr socketMsgSend;			//socket message header, for sending
 static struct msghdr socketMsgRecv;			//socket message header, for receiving
@@ -69,11 +69,47 @@ static struct nlmsghdr * nlMsgRecv = NULL;	//netlink message header, for receivi
 
 //static struct cn_msg * cnmsgBuf = NULL;		//it's a buffer, only for sending purpose
 
+static w1_user_callbacks * g_userCallbacks = NULL;
+
 static pthread_t receivingThread;
 static int receivingThreadStopFlag = 0;
 static sh_signal_ctrl recevingThreadStopSignal;
 
-static char tempStr[MAX_MSG_SIZE * 2];
+
+static BOOL g_isWaitingAckMsg;  //indicate if it's waiting ack from w1 kernel now!
+static sh_signal_ctrl g_waitAckMsgSignal;
+struct cn_msg * g_ackMsg;       //the ack message
+
+/* ====================================================================== */
+/* ========================== private methods =========================== */
+/* ====================================================================== */
+
+#define DebugLine(input)   printf(">>>>>>>>>>>>>>>>>>>> %s <<<<<<<<<<<<<<<<<<<<<<<<< \n", (input))
+
+
+int generate_w1_global_sequence(void);
+
+/**
+ * Allocate the fix-size momory to cn_msg.
+ * The size is defined inside w1_netlink_userservice.c
+ */
+struct cn_msg * malloc_w1_netlinkmsg(void);
+
+/**
+ * You must free the memory once you finish of using it
+ */
+void free_w1_netlinkmsg(struct cn_msg * cnmsg);
+
+/**
+ * You can re-use the message if you want to save the memory
+ */
+void refresh_w1_netlinkmsg(struct cn_msg * cnmsg);
+
+/**
+ * You can also recycle(free or reuse) it after you send it
+ */
+BOOL send_w1_netlinkmsg(struct cn_msg * cnmsg);
+
 
 /* ====================================================================== */
 /* ===================== w1 msg message handler ========================= */
@@ -82,107 +118,140 @@ static char tempStr[MAX_MSG_SIZE * 2];
 static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 {
 	struct w1_netlink_msg * w1msg = (struct w1_netlink_msg *)(cnmsg->data);
-	struct w1_netlink_cmd * w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
+	struct w1_netlink_cmd * w1cmd = NULL;
 
-	u_int64_t * slave_rn;
-	int slave_count;
-	int index;
+    int master_id;
+    int master_count;
+    int master_index;
+    w1_slave_rn * slave_rn;
+    int slave_count;
+    int slave_index;
 
-	int msgid_size = 16;
-	char msgid[50];
+	int idSize = 20;
+	char idDescribe[20];
+	char msgTypeStr[20];
+	char cmdTypeStr[20];
 
-    //printf("Debug 0 ");
+    memset(idDescribe, 0, 20);
+    memset(msgTypeStr, 0, 20);
+    memset(cmdTypeStr, 0, 20);
 
-#if 0
-    slave_rn = (u_int64_t *) w1msg->id.id;
-#else
-    memset(msgid, 0, 50);
-    convert_bytes_to_hexstr(w1msg->id.id, 0, 8, msgid, &msgid_size);
-#endif
+    describe_w1_msg_type(w1msg->type, msgTypeStr);
 
-    //printf("Debug 1 ");
     //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
-	printf("received cnmsg seq[%d], ack[%d], dataLen[%d]\n",
+	printf("RECV: cnmsg seq[%d], ack[%d], dataLen[%d]\n",
         cnmsg->seq, cnmsg->ack, cnmsg->len);
 
-    //printf("Debug 2 ");
-#if 0
-	printf("received w1msg type[%s], dataLen[%d], id[%lx], status[%d]\n",
-        describe_w1_msg_type(w1msg->type), w1msg->len, *slave_rn, w1msg->status);
-#else
-	printf("received w1msg type[%s], dataLen[%d], id[%s], status[%d]\n",
-        describe_w1_msg_type(w1msg->type), w1msg->len, msgid, w1msg->status);
-#endif
+	printf("RECV: w1msg type[%s], dataLen[%d], status[%d]\n",
+        msgTypeStr, w1msg->len, w1msg->status);
 
-    //printf("Debug 3 ");
-	printf("received w1cmd type[%s], dataLen[%d]\n",
-        describe_w1_cmd_type(w1cmd->cmd),  w1cmd->len);
-
-    //printf("Debug 4 ");
-    if(w1msg->status)
+    if(W1_SLAVE_ADD == w1msg->type || W1_SLAVE_REMOVE == w1msg->type)
     {
-        perror("w1msg status");
-    }
+        //Only when Slave Device Found or removed, the slave id(w1msg->id.id) contains 64 bits
+        //memcpy(slave_rn, w1msg->id.id, sizeof(w1_slave_rn)); //8 bytes
+        slave_rn = w1msg->id.id;
 
-    switch(w1msg->type)
+        describe_w1_reg_num(slave_rn, idDescribe);
+
+        if(W1_SLAVE_ADD == w1msg->type)
+        {
+            printf("w1(1-wire) slave[%s] added\n", idDescribe);
+            if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
+                g_userCallbacks->slave_added_callback(*slave_rn);
+        }
+        else
+        {
+            printf("w1(1-wire) slave[%s] removed\n", idDescribe);
+            if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
+                g_userCallbacks->slave_removed_callback(*slave_rn);
+        }
+        return;
+    }
+    else if(W1_MASTER_ADD == w1msg->type || W1_MASTER_REMOVE == w1msg->type)
     {
-        case W1_SLAVE_ADD:
-            break;
-        case W1_SLAVE_REMOVE:
-            break;
+        //Only when Master Device Found or Removed, the master id[w1msg->id.mst.id] contains 32 bits
+        master_id = w1msg->id.mst.id;
+        convert_bytes_to_hexstr(&(w1msg->id.mst.id), 0, sizeof(w1msg->id.mst.id), idDescribe, &idSize);
 
-        case W1_MASTER_ADD:
-            break;
-        case W1_MASTER_REMOVE:
-            break;
-        case W1_LIST_MASTERS:
-            break;
-
-        case W1_MASTER_CMD:
-            break;
-        case W1_SLAVE_CMD:
-            break;
-
-        default:
-            break;
+        if(W1_MASTER_ADD == w1msg->type)
+        {
+            printf("w1(1-wire) master[%d] added\n", master_id);
+            if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
+                g_userCallbacks->master_added_callback(master_id);
+        }
+        else
+        {
+            printf("w1(1-wire) master[%d] removed\n", master_id);
+            if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
+                g_userCallbacks->master_removed_callback(master_id);
+        }
+        return;
     }
+    else if(W1_LIST_MASTERS == w1msg->type)
+    {
+        //It's the ack of the sending command, it will return the w1msg with master IDs (w1msg->data)
+        //It will be processed inside [w1_process_command_root] of w1_netlink.c
+        //If w1msg sent back one by one, then the ack will begin with 1, plus 1 by 1, and end with 0
+        //Here we consider it will send all IDs back inside one w1msg.
+        master_count = w1msg->len / sizeof(master_id);
+        for(master_index = 0; master_count < master_count; master_count++)
+        {
+            master_id = *((int *)(w1msg->data));
+            convert_bytes_to_hexstr(&master_id, 0, sizeof(master_id), idDescribe, &idSize);
 
-	switch(w1cmd->cmd)
-	{
-		case W1_CMD_ALARM_SEARCH:
-		case W1_CMD_SEARCH:
+            printf("w1(1-wire) master[%s] listed\n", idDescribe);
+        }
+        if(g_userCallbacks != NULL && g_userCallbacks->master_listed_callback != NULL)
+                g_userCallbacks->master_listed_callback(w1msg->data, master_count);
+        return;
+    }
+    else if(W1_MASTER_CMD == w1msg->type)
+    {
+        //It's the ack of the command: SEARCH, ALARM_SEARCH, RESET
+        //It will be processed inside w1_netlink.c:
+        //    1. w1_search_master_id
+        //    2. w1_process_command_master OR w1_process_command_slave
+        w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
+        describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
+        printf("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
 
-			slave_rn = (u_int64_t *) w1cmd->data;
+        if(W1_CMD_SEARCH == w1cmd->cmd || W1_CMD_ALARM_SEARCH == w1cmd->cmd)
+        {
+            slave_count = w1cmd->len / sizeof(w1_slave_rn);
 
-			slave_count = w1cmd->len / sizeof(u_int64_t);
-			index = 0;
+			slave_rn = (w1_slave_rn *) w1cmd->data;
 
-			for(index = 0; index < slave_count; index++)
+			for(slave_index = 0; slave_index < slave_count; slave_index++)
 			{
-				printf("w1 salve device[%d] found: %lx \n", index, *slave_rn);
-				slave_rn++;
+			    describe_w1_reg_num(slave_rn + slave_index, idDescribe);
+				printf("w1(1-wire) salve[%d] searched: %s \n", slave_index, idDescribe);
 			}
-			break;
+        }
 
-        case W1_CMD_READ:
-            break;
-        case W1_CMD_WRITE:
-            break;
+        g_ackMsg = cnmsg;
 
-        case W1_CMD_TOUCH:
-            break;
-        case W1_CMD_RESET:
-            break;
-        case W1_CMD_MAX:
-            break;
-        default:
-            break;
-	}
+        sh_signal_notify(&g_waitAckMsgSignal);
+    }
+    else if(W1_SLAVE_CMD == w1msg->type)
+    {
+        //It's the ack of the command: READ, WRITE, TOUCH
+        //It will be processed inside w1_netlink.c:
+        //    1. w1_search_slave
+        //    2. w1_process_command_master OR w1_process_command_slave
+        w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
+        describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
+        printf("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
 
+        g_ackMsg = cnmsg;
+
+        sh_signal_notify(&g_waitAckMsgSignal);
+    }
 
     printf("w1 netlinkmsg process done!\n");
 
 }
+
+
 
 
 /* ====================================================================== */
@@ -199,8 +268,8 @@ static int retrieve_socket_msg(void)
 	iovRecv.iov_base = (void *)nlMsgRecv;
 	iovRecv.iov_len = NLMSG_SPACE(MAX_MSG_SIZE);
 
-	socketMsgRecv.msg_name = (void *)&dataAddr;
-	socketMsgRecv.msg_namelen = sizeof(dataAddr);
+	socketMsgRecv.msg_name = (void *)&g_dataAddr;
+	socketMsgRecv.msg_namelen = sizeof(g_dataAddr);
 	socketMsgRecv.msg_iov = &iovRecv;
 	socketMsgRecv.msg_iovlen = 1;
 
@@ -243,7 +312,7 @@ static void * socketmsg_receiving_loop(void * param)
 		}
 		else
 		{
-			printf("w1 socketmsg received, which size is %d\n", ret);
+			printf("RECV: socketmsg received, which size is %d ........................\n", ret);
 			//base on the ret size...
 			on_w1_netlinkmsg_received((struct cn_msg *)NLMSG_DATA(nlMsgRecv));
 		}
@@ -263,10 +332,13 @@ static void start_receiving_thread(void)
 
 	sh_signal_init(&recevingThreadStopSignal);
 
-	//Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
-	pthread_create(&receivingThread, NULL, socketmsg_receiving_loop, NULL);
+    {
+        //Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
+        pthread_create(&receivingThread, NULL, socketmsg_receiving_loop, NULL);
+    }
 
-	//printf("Receiving thread created...\n");
+    g_isWaitingAckMsg = FALSE;
+	sh_signal_init(&g_waitAckMsgSignal);
 }
 
 
@@ -277,15 +349,12 @@ static void stop_receiving_thread(void)
 	receivingThreadStopFlag = 1;
 
 	{
-		//printf("come into sh_signal_wait...\n");
-
 		ret = sh_signal_wait(&recevingThreadStopSignal);
-
-		//printf("back from sh_signal_wait: %d\n", ret);
 	}
 
 	sh_signal_destroy(&recevingThreadStopSignal);
 
+	sh_signal_destroy(&g_waitAckMsgSignal);
 }
 
 
@@ -294,45 +363,41 @@ static void stop_receiving_thread(void)
 /* ====================================================================== */
 
 
-int w1_netlink_userservice_start(void)
+BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 {
-    int ret = E_ERROR;
-
-	pthread_mutex_init(&globalSeqMutex, NULL);
-
-	//sh_signal_init(&recevingThreadStopSignal);
+	pthread_mutex_init(&g_globalLocker, NULL);
 
 	//open socket
 	w1Socket = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
 	if(-1 == w1Socket)
 	{
         perror("socket open");
-        return -1;
+        return FALSE;
 	}
 
-	bindAddr.nl_family = AF_NETLINK;
-	bindAddr.nl_groups = group;
-	bindAddr.nl_pid = getpid();
+	g_bindAddr.nl_family = AF_NETLINK;
+	g_bindAddr.nl_groups = g_group;
+	g_bindAddr.nl_pid = getpid();
 
-	dataAddr.nl_family = AF_NETLINK;
-	dataAddr.nl_groups = group;
-	dataAddr.nl_pid = 0;
+	g_dataAddr.nl_family = AF_NETLINK;
+	g_dataAddr.nl_groups = g_group;
+	g_dataAddr.nl_pid = 0;
 
 	//bind socket
-	if (bind(w1Socket, (struct sockaddr *)&bindAddr, sizeof(struct sockaddr_nl)) == -1)
+	if (bind(w1Socket, (struct sockaddr *)&g_bindAddr, sizeof(struct sockaddr_nl)) == -1)
 	{
 		perror("socket bind");
 
 		//close socket
 		close(w1Socket);
-		return -1;
+        return FALSE;
 	}
 
 	//Add membership to W1 Group. Or, you cannot send any message.
-	if (setsockopt(w1Socket, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP, &group, sizeof(group)) < 0)
+	if (setsockopt(w1Socket, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP, &g_group, sizeof(g_group)) < 0)
 	{
 		perror("socket setsockopt");
-		return -1;
+        return FALSE;
 	}
 
 	//init socket messages
@@ -341,7 +406,7 @@ int w1_netlink_userservice_start(void)
 	if (nlMsgSend == NULL || nlMsgRecv == NULL)
 	{
 		printf("Cannot allocate memory for netlink message header\n");
-		return -1;
+        return FALSE;
 	}
 	memset(nlMsgSend, 0, NLMSG_SPACE(MAX_MSG_SIZE));
 	memset(nlMsgRecv, 0, NLMSG_SPACE(MAX_MSG_SIZE));
@@ -356,21 +421,27 @@ int w1_netlink_userservice_start(void)
 	memset(cnmsgBuf, 0, MAX_CNMSG_SIZE);
 	*/
 
+	g_userCallbacks = w1UserCallbacks;
+
 	start_receiving_thread();
 
 	printf("w1 netlink userspace service started!\n");
 
-	return E_OK;
+	return TRUE;
 }
 
 
-int w1_netlink_userservice_stop(void)
+BOOL w1_netlink_userservice_stop(void)
 {
+    //Attesntion:
+    //if the thread is blocked inside [recvmsg], then this method will be blocked here forever!!!
+    //TODO: We should send something initiatively, so that we can get ack later...
+    request_to_list_w1_masters();
 
 	stop_receiving_thread();
 
 	//Remove membership when you don't want to use netlink
-	setsockopt(w1Socket, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP, &group, sizeof(group));
+	setsockopt(w1Socket, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP, &g_group, sizeof(g_group));
 
 	//close socket
 	close(w1Socket);
@@ -379,15 +450,27 @@ int w1_netlink_userservice_stop(void)
 	free(nlMsgRecv);
 	//free(cnmsgBuf);
 
-	//sh_signal_destroy(&recevingThreadStopSignal);
-
-	pthread_mutex_destroy(&globalSeqMutex);
+	pthread_mutex_destroy(&g_globalLocker);
 
 	printf("w1 netlink userspace service stopped!\n");
 
-	return 0;
+	return TRUE;
 }
 
+
+
+/* ====================================================================== */
+/* ========================== private methods =========================== */
+/* ====================================================================== */
+
+int generate_w1_global_sequence(void)
+{
+    int ret = 0;
+    pthread_mutex_lock(&g_globalLocker);
+    ret = g_globalSeq++;
+    pthread_mutex_unlock(&g_globalLocker);
+    return ret;
+}
 
 
 struct cn_msg * malloc_w1_netlinkmsg(void)
@@ -429,23 +512,15 @@ void refresh_w1_netlinkmsg(struct cn_msg * cnmsg)
 {
 	//struct cb_id w1_id = {.idx = CN_W1_IDX, .val = CN_W1_VAL};
 
-	struct w1_netlink_msg * w1msg;
-
 	memset(cnmsg, 0, MAX_CNMSG_SIZE);
 
     cnmsg->id.idx = CN_W1_IDX;
     cnmsg->id.val = CN_W1_VAL;
-
-    pthread_mutex_lock(&globalSeqMutex);
-    cnmsg->seq = globalSeq++;
-    pthread_mutex_unlock(&globalSeqMutex);
-
-	w1msg = (struct w1_netlink_msg *)(cnmsg->data);
-	//w1msg->type = w1msgType;
+    cnmsg->seq = generate_w1_global_sequence();
 }
 
 
-int send_w1_netlinkmsg(struct cn_msg * cnmsg)
+BOOL send_w1_netlinkmsg(struct cn_msg * cnmsg)
 {
 	int ret = -1;
 
@@ -470,8 +545,8 @@ int send_w1_netlinkmsg(struct cn_msg * cnmsg)
 	iovSend.iov_base = (void *)nlMsgSend;
 	iovSend.iov_len = nlMsgSend->nlmsg_len;
 
-	socketMsgSend.msg_name = (void *)&dataAddr;
-	socketMsgSend.msg_namelen = sizeof(dataAddr);
+	socketMsgSend.msg_name = (void *)&g_dataAddr;
+	socketMsgSend.msg_namelen = sizeof(g_dataAddr);
 	socketMsgSend.msg_iov = &iovSend;
 	socketMsgSend.msg_iovlen = 1;
 
@@ -481,9 +556,213 @@ int send_w1_netlinkmsg(struct cn_msg * cnmsg)
 
 	if(ret != -1)
 	{
-		printf("w1 socketmsg sent, which size is " + ret);
+		printf("SEND: w1 socketmsg sent, which size is " + ret);
+        return TRUE;
 	}
+
+    return FALSE;
+}
+
+/* ====================================================================== */
+/* =========================== public methods =========================== */
+/* ====================================================================== */
+
+
+BOOL process_w1_master_cmd(int masterId, struct w1_netlink_cmd * cmd)
+{
+    if(0 == masterId) return FALSE;   //no master id
+
+    if(NULL == cmd) return FALSE;     //no cmd
+
+    BOOL isBusy = FALSE;
+
+    pthread_mutex_lock(&g_globalLocker);
+    if(g_isWaitingAckMsg)
+        isBusy = TRUE;              //busy now
+    else
+        g_isWaitingAckMsg = TRUE;   //mark busy
+    pthread_mutex_unlock(&g_globalLocker);
+
+    if(isBusy) return FALSE;        //busy
+
+    if(W1_CMD_SEARCH == cmd->cmd || W1_CMD_ALARM_SEARCH == cmd->cmd || W1_CMD_RESET == cmd->cmd)
+    {
+        BOOL ret = FALSE;
+        struct cn_msg * cnmsg = NULL;
+        struct w1_netlink_msg * w1msg = NULL;
+        struct w1_netlink_cmd * w1cmd = NULL;
+        struct w1_netlink_msg * ackW1Msg = NULL;
+        struct w1_netlink_cmd * ackW1Cmd = NULL;
+
+        if(g_isWaitingAckMsg) return FALSE;    //busy
+
+        cnmsg = malloc_w1_netlinkmsg();
+        w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+        w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
+
+        memset(w1cmd, cmd, sizeof(struct w1_netlink_cmd) + cmd->len);
+
+        memset(w1msg->id.id, &masterId, sizeof(masterId));
+        w1msg->type = W1_MASTER_CMD;
+        w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
+
+        cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+        ret = send_w1_netlinkmsg(cnmsg);
+
+        sh_signal_wait(&g_waitAckMsgSignal);
+
+        if(g_ackMsg != NULL)
+        {
+            ackW1Msg = (struct w1_netlink_msg *) (g_ackMsg + 1);
+            ackW1Cmd = (struct w1_netlink_cmd *) (ackW1Msg + 1);
+
+            memset(cmd, ackW1Cmd, sizeof(struct w1_netlink_cmd) + ackW1Cmd->len);
+
+            ret = (0 == ackW1Msg->status) ? TRUE : FALSE;
+
+            g_ackMsg = NULL;
+        }
+
+        free_w1_netlinkmsg(cnmsg);
+
+        return ret;
+    }
+
+    pthread_mutex_lock(&g_globalLocker);
+    g_isWaitingAckMsg = FALSE;   //mark idle
+    pthread_mutex_unlock(&g_globalLocker);
+
+    return FALSE;
+}
+
+
+BOOL process_w1_slave_cmd(w1_slave_rn * slaveId, struct w1_netlink_cmd * cmd)
+{
+    if(NULL == slaveId) return FALSE;   //no slave id
+
+    if(NULL == cmd) return FALSE;     //no cmd
+
+    BOOL isBusy = FALSE;
+
+    pthread_mutex_lock(&g_globalLocker);
+    if(g_isWaitingAckMsg)
+        isBusy = TRUE;              //busy now
+    else
+        g_isWaitingAckMsg = TRUE;   //mark busy
+    pthread_mutex_unlock(&g_globalLocker);
+
+    if(isBusy) return FALSE;        //busy
+
+    if(W1_CMD_READ == cmd->cmd || W1_CMD_WRITE == cmd->cmd || W1_CMD_TOUCH == cmd->cmd)
+    {
+        BOOL ret = FALSE;
+        struct cn_msg * cnmsg = NULL;
+        struct w1_netlink_msg * w1msg = NULL;
+        struct w1_netlink_cmd * w1cmd = NULL;
+        struct w1_netlink_msg * ackW1Msg = NULL;
+        struct w1_netlink_cmd * ackW1Cmd = NULL;
+
+        if(g_isWaitingAckMsg) return FALSE;    //busy
+
+        cnmsg = malloc_w1_netlinkmsg();
+        w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+        w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
+
+        memset(w1cmd, cmd, sizeof(struct w1_netlink_cmd) + cmd->len);
+
+        memset(w1msg->id.id, slaveId, sizeof(w1_slave_rn));
+        w1msg->type = W1_SLAVE_CMD;
+        w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
+
+        cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+        ret = send_w1_netlinkmsg(cnmsg);
+
+        sh_signal_wait(&g_waitAckMsgSignal);
+
+        if(g_ackMsg != NULL)
+        {
+            ackW1Msg = (struct w1_netlink_msg *) (g_ackMsg + 1);
+            ackW1Cmd = (struct w1_netlink_cmd *) (ackW1Msg + 1);
+
+            memset(cmd, ackW1Cmd, sizeof(struct w1_netlink_cmd) + ackW1Cmd->len);
+
+            ret = (0 == ackW1Msg->status) ? TRUE : FALSE;
+
+            g_ackMsg = NULL;
+        }
+
+        free_w1_netlinkmsg(cnmsg);
+
+        return ret;
+    }
+
+    pthread_mutex_lock(&g_globalLocker);
+    g_isWaitingAckMsg = FALSE;   //mark idle
+    pthread_mutex_unlock(&g_globalLocker);
+
+    return FALSE;
+}
+
+
+BOOL request_to_list_w1_masters(void)
+{
+    BOOL ret = FALSE;
+    struct cn_msg * cnmsg = NULL;
+    struct w1_netlink_msg * w1msg = NULL;
+	//struct w1_netlink_cmd * w1cmd = NULL;
+
+    if(g_isWaitingAckMsg) return FALSE;    //busy
+
+	cnmsg = malloc_w1_netlinkmsg();
+	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+	//w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
+
+	//w1cmd->len = sizeof(u_int64_t) * slave_count;
+	//w1cmd->cmd = W1_CMD_SEARCH;
+
+	//w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
+	w1msg->len = 0;
+	w1msg->type = W1_LIST_MASTERS;
+
+	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+	ret = send_w1_netlinkmsg(cnmsg);
+
+	free_w1_netlinkmsg(cnmsg);
 
 	return ret;
 }
 
+/*
+BOOL request_to_search_w1_slaves(BOOL alarmSearch)
+{
+    BOOL ret = FALSE;
+    struct cn_msg * cnmsg = NULL;
+    struct w1_netlink_msg * w1msg = NULL;
+	struct w1_netlink_cmd * w1cmd = NULL;
+
+    if(g_isWaitingAckMsg) return FALSE;    //busy
+
+	cnmsg = malloc_w1_netlinkmsg();
+	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+	w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
+
+	w1cmd->len = 0;
+	w1cmd->cmd = alarmSearch ? W1_CMD_ALARM_SEARCH : W1_CMD_SEARCH;
+
+	w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
+	w1msg->len = 0;
+	w1msg->type = W1_MASTER_CMD;
+	//TODO: w1-msg->id = master_id...
+
+	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+	ret = send_w1_netlinkmsg(cnmsg);
+
+	free_w1_netlinkmsg(cnmsg);
+
+	return ret;
+}
+*/
