@@ -115,6 +115,7 @@ typedef struct w1_reg_num
 
 #define W1_EMPTY_REG_NUM     {.family = 0, .id = 0, .crc = 0}
 
+
 /*
 #define is_w1_slave_rn_empty(rn)        ( (0 == (__u64)rn) ? TRUE : FALSE )
 
@@ -123,7 +124,11 @@ typedef struct w1_reg_num
 
 BOOL is_w1_slave_rn_empty(w1_slave_rn rn);
 
+
 BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2);
+
+
+typedef __u32 w1_master_id;
 
 
 /**

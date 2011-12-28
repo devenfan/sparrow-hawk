@@ -26,11 +26,12 @@
 
 
 
-typedef void w1_master_added(int master_id);
+typedef void w1_master_added(w1_master_id master_id);
 
-typedef void w1_master_removed(int master_id);
+typedef void w1_master_removed(w1_master_id master_id);
 
-typedef void w1_master_listed(int * master_ids, int master_count);
+typedef void w1_master_listed(w1_master_id * master_ids, int master_count);
+
 
 typedef void w1_slave_added(w1_slave_rn salve_rn);
 
@@ -46,7 +47,7 @@ typedef struct w1_user_interface{
 
     w1_master_removed * master_removed_callback;
 
-    w1_master_listed * master_listed_callback;
+    //w1_master_listed * master_listed_callback;
 
     w1_slave_added * slave_added_callback;
 
@@ -64,6 +65,8 @@ typedef struct w1_user_interface{
  */
 BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks);
 
+
+
 /**
  * Please stop userspace service once you finish of using it.
  */
@@ -72,25 +75,60 @@ BOOL w1_netlink_userservice_stop(void);
 
 
 
-/**
+/*
  * Synchronized method, only support SEARCH, ALARM_SEARCH, RESET.
  * Attention: the "cmd" is used as input & output parameter
+
+BOOL process_w1_master_cmd(w1_master_id masterId, struct w1_netlink_cmd * cmd);
  */
-BOOL process_w1_master_cmd(int masterId, struct w1_netlink_cmd * cmd);
+
+/**
+ * Synchronized method.
+ */
+BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
+                      w1_slave_rn * slaves, int * pSlaveCount);
+
+/**
+ * Synchronized method.
+ */
+BOOL w1_master_reset(w1_master_id masterId);
+
+/*
+ * Synchronized method, only support READ, WRITE, TOUCH.
+
+BOOL w1_process_master_cmd(w1_master_id masterId, BYTE w1CmdType,
+                          void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
+ */
+/*
+ * Synchronized method, only support READ, WRITE, TOUCH.
+
+BOOL w1_process_slave_cmd(w1_slave_rn * slaveId, BYTE w1CmdType,
+                          void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
+ */
 
 /**
  * Synchronized method, only support READ, WRITE, TOUCH.
- * Attention: the "cmd" is used as input & output parameter
  */
-BOOL process_w1_slave_cmd(w1_slave_rn * slaveId, struct w1_netlink_cmd * cmd);
-
+BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
+                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
 
 
 /**
- * Asynchronized method, the result will come back later
- *
+ * Synchronized method, cannot use Asynchronized way,
+ * because more than 1 ack will be received if succeed.
+ * Attention: the "master_ids" & "master_count" are used as output parameters.
  */
+BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount);
+
+
+
+/*
+ * Asynchronized method, the result will come back later
+ * Cannot take Asynchronized way, or we cannot distinguash the ack messages...
+*/
 BOOL request_to_list_w1_masters(void);
+
+
 
 /*
  * Asynchronized method, the result will come back later
