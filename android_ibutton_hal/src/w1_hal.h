@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+
+
 /* The most important header */
 #include <hardware/hardware.h>
 
@@ -37,7 +39,10 @@ struct w1hal_module_t {
 
 };
 
-struct w1hal_control_device_t {
+
+
+
+struct w1hal_device_t {
 
     /* struct hw_device_t must come first, and named common */
     struct hw_device_t common;
@@ -46,25 +51,20 @@ struct w1hal_control_device_t {
     int fd;
 
     /* Operation APIs, realy useful for upper layer */
-    struct w1hal_control_operations operations;
+    struct w1hal_device_operations * operations;
 };
 
-struct w1hal_control_operations {
 
-    int (*set_on)(struct w1hal_control_device_t *dev, int32_t led);
+struct w1hal_device_operations {
 
-    int (*set_off)(struct w1hal_control_device_t *dev, int32_t led);
+    int (*start)(struct w1hal_device_t *dev);
+
+    int (*stop)(struct w1hal_device_t *dev);
 
 };
 
 
 /***************************************************************************/
-
-struct w1hal_control_context_t {
-
-	struct w1hal_control_device_t device;
-
-};
 
 /* Module ID must be claimed. */
 #define W1HAL_HARDWARE_MODULE_ID "w1hal"

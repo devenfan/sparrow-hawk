@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="src\w1_hal.c" open="0" top="0" tabpos="0">
-		<Cursor position="1046" topLine="22" />
+	<File name="src\w1_hal.c" open="1" top="0" tabpos="2">
+		<Cursor position="1931" topLine="63" />
 	</File>
-	<File name="src\w1_hal.h" open="0" top="0" tabpos="0">
-		<Cursor position="1240" topLine="39" />
+	<File name="src\w1_hal.h" open="1" top="0" tabpos="1">
+		<Cursor position="639" topLine="12" />
 	</File>
 </CodeBlocks_layout_file>

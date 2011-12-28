@@ -21,6 +21,7 @@
 
 #include <stddef.h>
 
+#include "sh_types.h"
 #include "sh_queue.h"
 
 void sh_queue_init(sh_queue * myqueue)
@@ -54,9 +55,9 @@ sh_queue_node * sh_dequeue(sh_queue * myqueue)
 	return mynode;
 }
 
-int sh_queue_is_empty(sh_queue * myqueue)
+BOOL sh_queue_is_empty(sh_queue * myqueue)
 {
-	return (myqueue->head == NULL);
+	return (NULL == myqueue->head) ? TRUE : FALSE;
 }
 
 int sh_queue_get_length(sh_queue * myqueue)

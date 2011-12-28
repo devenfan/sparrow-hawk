@@ -24,8 +24,8 @@
 					<Add option="-nostdlib -Bdynamic" />
 					<Add option="-Wl,-T,armelf.x" />
 					<Add option="-Wl,-dynamic-linker,/system/bin/linker" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
 					<Add library="c" />
 					<Add library="dl" />
 				</Linker>
@@ -49,8 +49,8 @@
 					<Add option="-nostdlib -Bdynamic" />
 					<Add option="-Wl,-T,armelf.x" />
 					<Add option="-Wl,-dynamic-linker,/system/bin/linker" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
 					<Add library="c" />
 					<Add library="dl" />
 				</Linker>

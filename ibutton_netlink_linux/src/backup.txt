@@ -1,0 +1,157 @@
+
+###############################################################
+#################### w1_netlink_userapp.c #####################
+###############################################################
+
+
+static void print_all_masters(void)
+{
+    char buf[MASTER_MAX_COUNT * 20];
+    char * position;
+    int index = 0;
+
+    memset(buf, 0, MASTER_MAX_COUNT * 20);
+    for(index = 0, position = buf; index < m_masterCount; index++)
+    {
+        sprintf(position, "\tMaster[%d]: %d\n", index, m_masterIDs[index]);
+        position += strlen(position);
+    }
+    printf("Total %d Masters: \n%s\n", m_masterCount, buf);
+}
+
+
+
+
+/*
+static void on_master_listed(int * master_ids, int master_count)
+{
+    int index = 0;
+
+    DebugLine("on_master_listed");
+
+    memset( m_masterIDs, 0, sizeof(int) * MASTER_MAX_COUNT);
+    m_masterCount = master_count;
+    m_masterCurrentIndex = (master_count > 0) ? 0 : -1;
+
+    for(index = 0; index < master_count; index++)
+    {
+        m_masterIDs[index] = *(master_ids + index);
+    }
+
+    print_all_masters();
+}
+*/
+
+
+int main(void)
+{
+	int sleepSecond = 3;
+
+	char choice;
+    int msgType;
+    int cmdType;
+    char useless[50];
+
+    w1_slave_rn slaves[SLAVE_MAX_COUNT];
+    memset(slaves, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
+    int slaveCount = 0;
+
+    BOOL succeed = FALSE;
+
+    int cmdSize = sizeof(struct w1_netlink_cmd) + 1024;    //the more the better
+    struct w1_netlink_cmd * cmd = (struct w1_netlink_cmd *) malloc(cmdSize);
+
+    DebugLine("1");
+
+    initialize();
+
+    DebugLine("2");
+
+	if(!w1_netlink_userservice_start(&m_userCallbacks))
+	{
+	    printf("Cannot start w1 netlink userspace service...\n");
+	    goto GameOver;
+	}
+
+
+
+    /*
+	printf("Continue(C) or Quit(Q): \n");
+    scanf("%c", &choice);
+
+    if('Q' == choice) goto GameOver;
+
+    printf("Please input w1 msg type: \n");
+    scanf("%d", &msgType);
+    memset(useless, 0, 50);
+    describe_w1_msg_type(msgType, useless);
+    printf("Your input w1 msg type: %s\n", useless);
+
+    printf("Please input w1 cmd type: \n");
+    scanf("%d", &cmdType);
+    memset(useless, 0, 50);
+    describe_w1_cmd_type(cmdType, useless);
+    printf("Your input w1 cmd type: %s\n", useless);
+
+    */
+
+	/*
+	send_w1_forkmsg();
+    */
+
+/*
+
+    request_to_list_w1_masters();
+
+    request_to_list_w1_masters();
+
+    request_to_list_w1_masters();
+
+*/
+    sleep(sleepSecond);
+    printf("Main thread wake up after %d seconds...\n", sleepSecond);
+
+/*
+    //if(m_masterCount > 0)
+    {
+        memset(cmd, 0, cmdSize);
+        cmd->cmd == W1_CMD_SEARCH;
+        cmd->len = cmdSize - sizeof(struct w1_netlink_cmd);
+
+        if(process_w1_master_cmd(m_masterIDs[m_masterCurrentIndex],  cmd))
+        {
+            DebugLine("process_w1_master_cmd OK!");
+        }
+        else
+        {
+            DebugLine("process_w1_master_cmd Failed!");
+        }
+    }
+
+    free(cmd);
+*/
+
+    succeed = w1_master_search(m_masterIDs[m_masterCurrentIndex], FALSE, slaves, &slaveCount);
+
+    if(succeed)
+    {
+        DebugLine("w1_master_search Succeed!");
+    }
+    else
+    {
+        DebugLine("w1_master_search Failed!");
+    }
+
+    printf("Type something to quit: \n");
+    scanf("%s", useless);
+    printf("OK: %s\n", useless);
+
+    w1_netlink_userservice_stop();
+
+
+GameOver:
+
+	printf("Main thread Game Over...\n");
+	return 0;
+}
+

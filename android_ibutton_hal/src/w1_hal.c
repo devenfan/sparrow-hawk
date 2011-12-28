@@ -26,37 +26,43 @@
 
 #include "w1_hal.h"
 
+
 /*****************************************************************************/
+
+
+int w1hal_start(struct w1hal_device_t *dev)
+{
+	return 0;
+}
+
+int w1hal_stop(struct w1hal_device_t *dev)
+{
+	return 0;
+}
+
+static struct w1hal_device_operations s_w1hal_device_operations = {
+    start: w1hal_start,
+    stop: w1hal_stop,
+};
+
+
 
 int w1hal_device_close(struct hw_device_t* device)
 {
-	struct w1hal_control_device_t* ctx = (struct w1hal_control_device_t*)device;
+	struct w1hal_device_t* ctx = (struct w1hal_device_t*)device;
 	if (ctx) {
 		free(ctx);
 	}
 	return 0;
 }
 
-int w1hal_on(struct w1hal_control_device_t *dev, int32_t led)
-{
-	LOGI("LED Stub: set %d on.", led);
-
-	return 0;
-}
-
-int w1hal_off(struct w1hal_control_device_t *dev, int32_t led)
-{
-	LOGI("LED Stub: set %d off.", led);
-
-	return 0;
-}
 
 static int w1hal_device_open(const struct hw_module_t* module, const char* name,
         struct hw_device_t** device)
 {
-	struct w1hal_control_device_t *dev;
+	struct w1hal_device_t *dev;
 
-	dev = (struct w1hal_control_device_t *)malloc(sizeof(*dev));
+	dev = (struct w1hal_device_t *)malloc(sizeof(*dev));
 	memset(dev, 0, sizeof(*dev));
 
 	dev->common.tag =  HARDWARE_DEVICE_TAG;
@@ -65,8 +71,7 @@ static int w1hal_device_open(const struct hw_module_t* module, const char* name,
 	dev->common.close = w1hal_device_close;
 
     //
-	dev->set_on = w1hal_on;
-	dev->set_off = w1hal_off;
+	dev->operations = &s_w1hal_device_operations;
 
 	*device = &dev->common;
 
@@ -75,7 +80,7 @@ success:
 }
 
 
-static struct hw_module_methods_t w1hal_module_methods = {
+static struct hw_module_methods_t s_w1hal_module_methods = {
     open: w1hal_device_open
 };
 
@@ -97,7 +102,7 @@ const struct w1hal_module_t HAL_MODULE_INFO_SYM = {
         id: W1HAL_HARDWARE_MODULE_ID,
         name: "W1 HAL Stub",
         author: "Deven Fan",
-        methods: &w1hal_module_methods,
+        methods: &s_w1hal_module_methods,
     }
     /* supporting APIs go here */
 };

@@ -18,28 +18,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef __SH_QUEUE_H
-#define __SH_QUEUE_H
+#ifndef SH_LIST_H_INCLUDED
+#define SH_LIST_H_INCLUDED
 
-typedef struct sh_queue_node {
-	struct sh_queue_node * next;
+typedef struct sh_list_node {
+	struct sh_list_node * next;
 	int data_len;
 	void * data;
-} sh_queue_node;
+} sh_list_node;
 
-typedef struct sh_queue {
-	sh_queue_node * head;
-	sh_queue_node * tail;
-} sh_queue;
+typedef struct sh_list {
+	sh_list_node * head;
+} sh_list;
 
-void sh_queue_init(sh_queue * myqueue);
+void sh_list_init(sh_list * mylist);
 
-void sh_enqueue(sh_queue * myqueue, sh_queue_node * mynode);
+void sh_add_to_list(sh_list * mylist, sh_list_node * mynode);
 
-sh_queue_node * sh_dequeue(sh_queue * myqueue);
+void sh_remove_from_list(sh_list * mylist, sh_list_node * mynode);
 
-BOOL sh_queue_is_empty(sh_queue * myqueue);
+BOOL sh_list_is_empty(sh_list * mylist);
 
-int sh_queue_get_length(sh_queue * myqueue);
+int sh_list_get_length(sh_list * mylist);
 
-#endif /* __SH_QUEUE_H */
+#endif // SH_LIST_H_INCLUDED

@@ -24,10 +24,10 @@
 					<Add option="-nostdlib -Bdynamic" />
 					<Add option="-Wl,-T,armelf.x" />
 					<Add option="-Wl,-dynamic-linker,/system/bin/linker" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
-					<Add library="c" />
-					<Add library="dl" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
+					<Add library="libc" />
+					<Add library="libdl" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -49,8 +49,8 @@
 					<Add option="-nostdlib -Bdynamic" />
 					<Add option="-Wl,-T,armelf.x" />
 					<Add option="-Wl,-dynamic-linker,/system/bin/linker" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
-					<Add option="E:\Runtime\Google\android-ndk-r6b\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtbegin_dynamic.o" />
+					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
 					<Add library="c" />
 					<Add library="dl" />
 				</Linker>
@@ -60,15 +60,23 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="src\Makefile" />
+		<Unit filename="src\backup.txt" />
 		<Unit filename="src\ibutton_netlink_linux.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\kernel_connector.h" />
 		<Unit filename="src\sh_error.h" />
+		<Unit filename="src\sh_list.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\sh_list.h" />
 		<Unit filename="src\sh_queue.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\sh_queue.h" />
+		<Unit filename="src\sh_test_headers.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src\sh_thread.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -91,7 +99,11 @@
 		<Unit filename="src\w1_netlink_userspace.h" />
 		<Extensions>
 			<code_completion />
-			<debugger />
+			<debugger>
+				<remote_debugging target="Debug">
+					<options conn_type="2" serial_port="COM4" serial_baud="115200" ip_address="localhost" ip_port="12345" />
+				</remote_debugging>
+			</debugger>
 			<lib_finder disable_auto="1" />
 		</Extensions>
 	</Project>

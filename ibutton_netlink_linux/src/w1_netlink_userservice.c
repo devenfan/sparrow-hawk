@@ -75,16 +75,22 @@ static pthread_t receivingThread;
 static int receivingThreadStopFlag = 0;
 static sh_signal_ctrl recevingThreadStopSignal;
 
+BYTE g_currentW1MsgType;
+BYTE g_currentW1CmdType;
+BOOL g_isWaitingAckMsg;             //indicate if it's waiting ack from w1 kernel now
+sh_signal_ctrl g_waitAckMsgSignal;   //the ack signal
+struct cn_msg * g_ackMsg;           //the ack message
+BYTE g_ackStatus;                   //the ack status: OK, FAILED, TIMEOUT
 
-static BOOL g_isWaitingAckMsg;  //indicate if it's waiting ack from w1 kernel now!
-static sh_signal_ctrl g_waitAckMsgSignal;
-struct cn_msg * g_ackMsg;       //the ack message
+#define ACK_TIMEOUT    10       //TIMEOUT for waiting ACK, by seconds
+
 
 /* ====================================================================== */
 /* ========================== private methods =========================== */
 /* ====================================================================== */
 
-#define DebugLine(input)   printf(">>>>>>>>>>>>>>>>>>>> %s <<<<<<<<<<<<<<<<<<<<<<<<< \n", (input))
+
+#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userservice.c : %s  \n", (input))
 
 
 int generate_w1_global_sequence(void);
@@ -100,10 +106,11 @@ struct cn_msg * malloc_w1_netlinkmsg(void);
  */
 void free_w1_netlinkmsg(struct cn_msg * cnmsg);
 
-/**
+/*
  * You can re-use the message if you want to save the memory
- */
+
 void refresh_w1_netlinkmsg(struct cn_msg * cnmsg);
+ */
 
 /**
  * You can also recycle(free or reuse) it after you send it
@@ -120,12 +127,9 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 	struct w1_netlink_msg * w1msg = (struct w1_netlink_msg *)(cnmsg->data);
 	struct w1_netlink_cmd * w1cmd = NULL;
 
-    int master_id;
-    int master_count;
-    int master_index;
+    w1_master_id master_id;
+
     w1_slave_rn * slave_rn;
-    int slave_count;
-    int slave_index;
 
 	int idSize = 20;
 	char idDescribe[20];
@@ -149,7 +153,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     {
         //Only when Slave Device Found or removed, the slave id(w1msg->id.id) contains 64 bits
         //memcpy(slave_rn, w1msg->id.id, sizeof(w1_slave_rn)); //8 bytes
-        slave_rn = w1msg->id.id;
+        slave_rn = (w1_slave_rn *)w1msg->id.id;
 
         describe_w1_reg_num(slave_rn, idDescribe);
 
@@ -171,7 +175,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     {
         //Only when Master Device Found or Removed, the master id[w1msg->id.mst.id] contains 32 bits
         master_id = w1msg->id.mst.id;
-        convert_bytes_to_hexstr(&(w1msg->id.mst.id), 0, sizeof(w1msg->id.mst.id), idDescribe, &idSize);
+        convert_bytes_to_hexstr((BYTE *)&(w1msg->id.mst.id), 0, sizeof(w1msg->id.mst.id), idDescribe, &idSize);
 
         if(W1_MASTER_ADD == w1msg->type)
         {
@@ -189,20 +193,11 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     }
     else if(W1_LIST_MASTERS == w1msg->type)
     {
-        //It's the ack of the sending command, it will return the w1msg with master IDs (w1msg->data)
-        //It will be processed inside [w1_process_command_root] of w1_netlink.c
-        //If w1msg sent back one by one, then the ack will begin with 1, plus 1 by 1, and end with 0
-        //Here we consider it will send all IDs back inside one w1msg.
-        master_count = w1msg->len / sizeof(master_id);
-        for(master_index = 0; master_count < master_count; master_count++)
+        if(g_isWaitingAckMsg)
         {
-            master_id = *((int *)(w1msg->data));
-            convert_bytes_to_hexstr(&master_id, 0, sizeof(master_id), idDescribe, &idSize);
-
-            printf("w1(1-wire) master[%s] listed\n", idDescribe);
+            g_ackMsg = cnmsg; //the first ack message is useful
+            sh_signal_notify(&g_waitAckMsgSignal);
         }
-        if(g_userCallbacks != NULL && g_userCallbacks->master_listed_callback != NULL)
-                g_userCallbacks->master_listed_callback(w1msg->data, master_count);
         return;
     }
     else if(W1_MASTER_CMD == w1msg->type)
@@ -215,6 +210,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
         printf("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
 
+        /*
         if(W1_CMD_SEARCH == w1cmd->cmd || W1_CMD_ALARM_SEARCH == w1cmd->cmd)
         {
             slave_count = w1cmd->len / sizeof(w1_slave_rn);
@@ -227,10 +223,13 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 				printf("w1(1-wire) salve[%d] searched: %s \n", slave_index, idDescribe);
 			}
         }
-
-        g_ackMsg = cnmsg;
-
-        sh_signal_notify(&g_waitAckMsgSignal);
+        */
+        if(g_isWaitingAckMsg)
+        {
+            g_ackMsg = cnmsg; //the first ack message is useful
+            sh_signal_notify(&g_waitAckMsgSignal);
+        }
+        return;
     }
     else if(W1_SLAVE_CMD == w1msg->type)
     {
@@ -242,12 +241,13 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
         printf("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
 
-        g_ackMsg = cnmsg;
-
-        sh_signal_notify(&g_waitAckMsgSignal);
+        if(g_isWaitingAckMsg)
+        {
+            g_ackMsg = cnmsg; //the first ack message is useful
+            sh_signal_notify(&g_waitAckMsgSignal);
+        }
+        return;
     }
-
-    printf("w1 netlinkmsg process done!\n");
 
 }
 
@@ -485,7 +485,13 @@ struct cn_msg * malloc_w1_netlinkmsg(void)
 
 	cnmsg = (struct cn_msg *) buffer;
 
-	refresh_w1_netlinkmsg(cnmsg);
+    //struct cb_id w1_id = {.idx = CN_W1_IDX, .val = CN_W1_VAL};
+
+	memset(cnmsg, 0, MAX_CNMSG_SIZE);
+
+    cnmsg->id.idx = CN_W1_IDX;
+    cnmsg->id.val = CN_W1_VAL;
+    cnmsg->seq = generate_w1_global_sequence();
 
 	//we cannot take "__u8	data[0]" as "void *", because former one don't take any mem.
 	//printf("sizeof(struct w1_netlink_msg): %d bytes\n", sizeof(struct w1_netlink_msg));
@@ -507,18 +513,6 @@ void free_w1_netlinkmsg(struct cn_msg * cnmsg)
 
 	free(cnmsg);
 }
-
-void refresh_w1_netlinkmsg(struct cn_msg * cnmsg)
-{
-	//struct cb_id w1_id = {.idx = CN_W1_IDX, .val = CN_W1_VAL};
-
-	memset(cnmsg, 0, MAX_CNMSG_SIZE);
-
-    cnmsg->id.idx = CN_W1_IDX;
-    cnmsg->id.val = CN_W1_VAL;
-    cnmsg->seq = generate_w1_global_sequence();
-}
-
 
 BOOL send_w1_netlinkmsg(struct cn_msg * cnmsg)
 {
@@ -563,146 +557,293 @@ BOOL send_w1_netlinkmsg(struct cn_msg * cnmsg)
     return FALSE;
 }
 
+
+/* ====================================================================== */
+/* ======================== w1 message transact ========================= */
+/* ====================================================================== */
+
+BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
+                     BYTE * masterOrSlaveId, int idLen,
+                     void * data, int dataLen,
+                     struct w1_netlink_msg ** ppRecvMsg)
+{
+    if((idLen < 0) || (idLen > 0 && NULL == masterOrSlaveId)) return FALSE;
+    if((dataLen < 0) || (dataLen > 0 && NULL == data))  return FALSE;
+    if(NULL == ppRecvMsg) return FALSE;
+
+    //check busy or not
+    BOOL isBusy = FALSE;
+    pthread_mutex_lock(&g_globalLocker);
+    if(g_isWaitingAckMsg)
+        isBusy = TRUE;              //already busy
+    else
+        g_isWaitingAckMsg = TRUE;   //mark busy
+    pthread_mutex_unlock(&g_globalLocker);
+    if(isBusy) return FALSE;        //busy
+
+    //declaration
+    BOOL succeed = FALSE;
+    struct cn_msg * cnmsg = NULL;
+    struct w1_netlink_msg * w1msg = NULL;
+    struct w1_netlink_cmd * w1cmd = NULL;
+
+    //allocate new message
+    cnmsg = malloc_w1_netlinkmsg();
+    w1msg = (struct w1_netlink_msg *)(cnmsg + 1);
+    w1cmd = (struct w1_netlink_cmd *)(w1msg + 1);
+
+    //assemble w1cmd
+    g_currentW1CmdType = w1CmdType;
+    w1cmd->cmd = w1CmdType;
+    if(dataLen > 0)
+    {
+        memcpy(w1cmd->data, data, dataLen);
+    }
+    w1cmd->len = dataLen;
+
+    //assemble w1msg
+    g_currentW1MsgType = w1MsgType;
+    w1msg->type = w1MsgType;
+    if(idLen > 0)
+    {
+        memcpy(w1msg->id.id, masterOrSlaveId, idLen);
+    }
+    w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
+
+    //assemble cnmsg
+	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+    //send the message
+	succeed = send_w1_netlinkmsg(cnmsg);
+
+	if(!succeed) goto End;
+
+    //waiting for the ack message
+    sh_signal_wait(&g_waitAckMsgSignal);
+
+    if(NULL == g_ackMsg)
+    {
+        succeed = FALSE;
+        goto End;
+    }
+
+    *ppRecvMsg = (struct w1_netlink_msg *)(g_ackMsg + 1);
+
+    g_ackMsg = NULL;
+
+End:
+    //free message
+    free_w1_netlinkmsg(cnmsg);
+    g_isWaitingAckMsg = FALSE;
+    return succeed;
+}
+
+
 /* ====================================================================== */
 /* =========================== public methods =========================== */
 /* ====================================================================== */
 
 
-BOOL process_w1_master_cmd(int masterId, struct w1_netlink_cmd * cmd)
+
+BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
+                      w1_slave_rn * slaves, int * pSlaveCount)
 {
     if(0 == masterId) return FALSE;   //no master id
+    if(NULL == slaves) return FALSE;
+    if(NULL == pSlaveCount) return FALSE;
 
-    if(NULL == cmd) return FALSE;     //no cmd
+    BOOL succeed = FALSE;
 
-    BOOL isBusy = FALSE;
+    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
 
-    pthread_mutex_lock(&g_globalLocker);
-    if(g_isWaitingAckMsg)
-        isBusy = TRUE;              //busy now
-    else
-        g_isWaitingAckMsg = TRUE;   //mark busy
-    pthread_mutex_unlock(&g_globalLocker);
+    struct w1_netlink_msg * w1msgRecv = NULL;
+    struct w1_netlink_msg * w1cmdRecv = NULL;
 
-    if(isBusy) return FALSE;        //busy
+    succeed = transact_w1_msg(W1_MASTER_CMD, (isSearchAlarm ? W1_CMD_ALARM_SEARCH : W1_CMD_SEARCH),
+                              (BYTE *)&masterId, sizeof(w1_master_id), NULL, 0, &w1msgRecv);
 
-    if(W1_CMD_SEARCH == cmd->cmd || W1_CMD_ALARM_SEARCH == cmd->cmd || W1_CMD_RESET == cmd->cmd)
+    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+
+    if(succeed)
     {
-        BOOL ret = FALSE;
-        struct cn_msg * cnmsg = NULL;
-        struct w1_netlink_msg * w1msg = NULL;
-        struct w1_netlink_cmd * w1cmd = NULL;
-        struct w1_netlink_msg * ackW1Msg = NULL;
-        struct w1_netlink_cmd * ackW1Cmd = NULL;
+        w1cmdRecv = (struct w1_netlink_cmd *)(w1msgRecv + 1);
 
-        if(g_isWaitingAckMsg) return FALSE;    //busy
-
-        cnmsg = malloc_w1_netlinkmsg();
-        w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
-        w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
-
-        memset(w1cmd, cmd, sizeof(struct w1_netlink_cmd) + cmd->len);
-
-        memset(w1msg->id.id, &masterId, sizeof(masterId));
-        w1msg->type = W1_MASTER_CMD;
-        w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
-
-        cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
-
-        ret = send_w1_netlinkmsg(cnmsg);
-
-        sh_signal_wait(&g_waitAckMsgSignal);
-
-        if(g_ackMsg != NULL)
+        *pSlaveCount = w1cmdRecv->len / sizeof(w1_slave_rn);
+        if(*pSlaveCount > 0)
         {
-            ackW1Msg = (struct w1_netlink_msg *) (g_ackMsg + 1);
-            ackW1Cmd = (struct w1_netlink_cmd *) (ackW1Msg + 1);
-
-            memset(cmd, ackW1Cmd, sizeof(struct w1_netlink_cmd) + ackW1Cmd->len);
-
-            ret = (0 == ackW1Msg->status) ? TRUE : FALSE;
-
-            g_ackMsg = NULL;
+            memcpy(slaves, w1cmdRecv->data, (*pSlaveCount) * sizeof(w1_slave_rn));
         }
-
-        free_w1_netlinkmsg(cnmsg);
-
-        return ret;
     }
 
-    pthread_mutex_lock(&g_globalLocker);
-    g_isWaitingAckMsg = FALSE;   //mark idle
-    pthread_mutex_unlock(&g_globalLocker);
-
-    return FALSE;
+    return succeed;
 }
 
 
-BOOL process_w1_slave_cmd(w1_slave_rn * slaveId, struct w1_netlink_cmd * cmd)
+
+BOOL w1_master_reset(w1_master_id masterId)
 {
-    if(NULL == slaveId) return FALSE;   //no slave id
+    if(0 == masterId) return FALSE;   //no master id
 
-    if(NULL == cmd) return FALSE;     //no cmd
+    BOOL succeed = FALSE;
 
-    BOOL isBusy = FALSE;
+    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
 
-    pthread_mutex_lock(&g_globalLocker);
-    if(g_isWaitingAckMsg)
-        isBusy = TRUE;              //busy now
-    else
-        g_isWaitingAckMsg = TRUE;   //mark busy
-    pthread_mutex_unlock(&g_globalLocker);
+    struct w1_netlink_msg * w1msgRecv = NULL;
+    //struct w1_netlink_msg * w1cmdRecv = NULL;
 
-    if(isBusy) return FALSE;        //busy
+    succeed = transact_w1_msg(W1_MASTER_CMD, W1_CMD_RESET, (BYTE *)&masterId, sizeof(w1_master_id),
+                              NULL, 0, &w1msgRecv);
 
-    if(W1_CMD_READ == cmd->cmd || W1_CMD_WRITE == cmd->cmd || W1_CMD_TOUCH == cmd->cmd)
+    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+
+    return succeed;
+}
+
+/*
+BOOL process_w1_master_cmd(w1_master_id masterId, BYTE w1CmdType,
+                           void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+{
+    if(0 == masterId) return FALSE;   //no master id
+    if(NULL == dataIn) return FALSE;
+    if(NULL == pDataOut) return FALSE;
+    if(NULL == pDataOutLen) return FALSE;
+
+    if(W1_CMD_SEARCH != w1CmdType &&
+       W1_CMD_ALARM_SEARCH != w1CmdType &&
+       W1_CMD_RESET != w1CmdType)
+       return FALSE;
+
+    BOOL succeed = FALSE;
+
+    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
+
+    struct w1_netlink_msg * w1msgRecv = NULL;
+    struct w1_netlink_msg * w1cmdRecv = NULL;
+
+    succeed = transact_w1_msg(W1_MASTER_CMD, w1CmdType, &w1_master_id, sizeof(w1_master_id),
+                              dataIn, dataInLen, &w1msgRecv);
+
+    if(succeed)
     {
-        BOOL ret = FALSE;
-        struct cn_msg * cnmsg = NULL;
-        struct w1_netlink_msg * w1msg = NULL;
-        struct w1_netlink_cmd * w1cmd = NULL;
-        struct w1_netlink_msg * ackW1Msg = NULL;
-        struct w1_netlink_cmd * ackW1Cmd = NULL;
+        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
 
-        if(g_isWaitingAckMsg) return FALSE;    //busy
+        *pDataOut = w1cmdRecv->data;
+        *pDataOutLen = w1cmdRecv->len;
 
-        cnmsg = malloc_w1_netlinkmsg();
-        w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
-        w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
-
-        memset(w1cmd, cmd, sizeof(struct w1_netlink_cmd) + cmd->len);
-
-        memset(w1msg->id.id, slaveId, sizeof(w1_slave_rn));
-        w1msg->type = W1_SLAVE_CMD;
-        w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
-
-        cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
-
-        ret = send_w1_netlinkmsg(cnmsg);
-
-        sh_signal_wait(&g_waitAckMsgSignal);
-
-        if(g_ackMsg != NULL)
-        {
-            ackW1Msg = (struct w1_netlink_msg *) (g_ackMsg + 1);
-            ackW1Cmd = (struct w1_netlink_cmd *) (ackW1Msg + 1);
-
-            memset(cmd, ackW1Cmd, sizeof(struct w1_netlink_cmd) + ackW1Cmd->len);
-
-            ret = (0 == ackW1Msg->status) ? TRUE : FALSE;
-
-            g_ackMsg = NULL;
-        }
-
-        free_w1_netlinkmsg(cnmsg);
-
-        return ret;
+        succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
     }
 
-    pthread_mutex_lock(&g_globalLocker);
-    g_isWaitingAckMsg = FALSE;   //mark idle
-    pthread_mutex_unlock(&g_globalLocker);
+    return succeed;
+}
+*/
 
-    return FALSE;
+
+/*
+BOOL w1_process_slave_cmd(w1_slave_rn * slaveId, BYTE w1CmdType,
+                          void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+{
+    if(NULL == slaveId) return FALSE;
+    if(NULL == dataIn) return FALSE;
+    if(NULL == pDataOut) return FALSE;
+    if(NULL == pDataOutLen) return FALSE;
+
+    if(W1_CMD_READ != w1CmdType &&
+       W1_CMD_WRITE != w1CmdType &&
+       W1_CMD_TOUCH != w1CmdType) return FALSE;
+
+    BOOL succeed = FALSE;
+
+    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
+
+    struct w1_netlink_msg * w1msgRecv = NULL;
+    struct w1_netlink_msg * w1cmdRecv = NULL;
+
+    succeed = transact_w1_msg(W1_SLAVE_CMD, w1CmdType, slaveId, sizeof(w1_slave_rn),
+                              dataIn, dataInLen, &w1msgRecv);
+
+    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+
+    if(succeed)
+    {
+        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
+
+        *pDataOut = w1cmdRecv->data;
+        *pDataOutLen = w1cmdRecv->len;
+    }
+
+    return succeed;
+}
+*/
+
+
+BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
+                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+{
+    if(NULL == masterOrSlaveId) return FALSE;
+    if(sizeof(w1_master_id) != idLen && sizeof(w1_slave_rn) != idLen) return FALSE;
+
+    if(NULL == dataIn) return FALSE;
+    if(NULL == pDataOut) return FALSE;
+    if(NULL == pDataOutLen) return FALSE;
+
+    if(W1_CMD_READ != w1CmdType &&
+       W1_CMD_WRITE != w1CmdType &&
+       W1_CMD_TOUCH != w1CmdType) return FALSE;
+
+    BOOL succeed = FALSE;
+
+    struct w1_netlink_msg * w1msgRecv = NULL;
+    struct w1_netlink_msg * w1cmdRecv = NULL;
+
+    succeed = transact_w1_msg((sizeof(w1_slave_rn) == idLen) ? W1_SLAVE_CMD : W1_MASTER_CMD,
+                              w1CmdType, masterOrSlaveId, idLen,
+                              dataIn, dataInLen, &w1msgRecv);
+
+    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+
+    if(succeed)
+    {
+        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
+
+        *pDataOut = w1cmdRecv->data;
+        *pDataOutLen = w1cmdRecv->len;
+    }
+
+    return succeed;
+}
+
+
+BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
+{
+    //check input
+    if(NULL == masters) return FALSE;
+    if(NULL == pMasterCount) return FALSE;
+
+    BOOL succeed = FALSE;
+
+    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
+
+    struct w1_netlink_msg * w1msg = NULL;
+
+    succeed = transact_w1_msg(W1_LIST_MASTERS, 0, NULL, 0, NULL, 0, &w1msg);
+
+    succeed = (0 == w1msg->status) ? TRUE : FALSE;
+
+    if(succeed)
+    {
+        //It will return the w1msg with master IDs (w1msg->data)
+        //It is processed inside [w1_process_command_root] of w1_netlink.c
+        //If w1msg sent back one by one, then the ack will begin with 1, plus 1 by 1, and end with 0
+        //Here we consider it will send all IDs back inside one w1msg.
+        *pMasterCount = w1msg->len / sizeof(w1_master_id);
+
+        if(*pMasterCount > 0)
+        {
+            memcpy(masters, w1msg->data, (*pMasterCount) * sizeof(w1_master_id));
+        }
+    }
+
+    return succeed;
 }
 
 

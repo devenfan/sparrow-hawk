@@ -18,19 +18,45 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "w1_netlink_userspace.h"
+
+#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userspace.c : %s  \n", (input))
 
 
 BOOL is_w1_slave_rn_empty(w1_slave_rn rn)
 {
     w1_slave_rn empty_rn = W1_EMPTY_REG_NUM;
-    return (memcmp(&rn, &empty_rn) == 0) ? TRUE : FALSE;
+
+    /*
+    char salveIDStr[20];
+
+    describe_w1_reg_num(&rn, salveIDStr);
+    DebugLine(salveIDStr);
+
+    describe_w1_reg_num(&empty_rn, salveIDStr);
+    DebugLine(salveIDStr);
+    */
+
+    return (memcmp(&rn, &empty_rn, sizeof(w1_slave_rn)) == 0) ? TRUE : FALSE;
 }
 
 
 BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2)
 {
-    return (memcmp(&rn1, &rn2) == 0) ? TRUE : FALSE;
+    /*
+    char salveIDStr[20];
+
+    describe_w1_reg_num(&rn1, salveIDStr);
+    DebugLine(salveIDStr);
+
+    describe_w1_reg_num(&rn2, salveIDStr);
+    DebugLine(salveIDStr);
+    */
+
+    return (memcmp(&rn1, &rn2, sizeof(w1_slave_rn)) == 0) ? TRUE : FALSE;
 }
 
 BOOL describe_w1_msg_type(int msgType, char * outputStr)
@@ -126,7 +152,7 @@ BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr)
 {
     if(w1RegNum == NULL || outputStr == NULL) return FALSE;
 
-    sprintf(outputStr, "%02X.%012llX.%02X", w1RegNum->family, w1RegNum->id, w1RegNum->crc);
+    sprintf(outputStr, "%02X.%012llX.%02X", w1RegNum->family, (unsigned long long)w1RegNum->id, w1RegNum->crc);
 
     return TRUE;
 }
