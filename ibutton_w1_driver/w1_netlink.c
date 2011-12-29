@@ -59,6 +59,7 @@ static void w1_send_slave(struct w1_master *dev, u64 rn)
 	avail = dev->priv_size - cmd->len;
 
 	if (avail > 8) {
+        //generally, we will get into this line
 		u64 *data = (void *)(cmd + 1) + cmd->len;
 
 		*data = rn;
@@ -89,7 +90,7 @@ static int w1_process_search_command(struct w1_master *dev, struct cn_msg *msg,
 	w1_search_devices(dev, search_type, w1_send_slave);
 
 	msg->ack = 0;
-	cn_netlink_send(msg, 0, GFP_KERNEL);
+	cn_netlink_send(msg, 0, GFP_KERNEL); //we will finally send msg in this line!
 
 	dev->priv = NULL;
 	dev->priv_size = 0;
@@ -378,7 +379,13 @@ static void w1_cn_callback(void *data)
 			else
 				err = w1_process_command_master(dev, msg, m, cmd);
 
-			w1_netlink_send_error(msg, m, cmd, err);
+            //Those cmds don't need to send back additional msg:
+            //W1_CMD_TOUCH, W1_CMD_READ, W1_CMD_SEARCH, W1_CMD_ALARM_SEARCH
+
+			//w1_netlink_send_error(msg, m, cmd, err);
+            if(W1_CMD_WRITE == cmd->cmd || W1_CMD_RESET == cmd->cmd)
+                w1_netlink_send_error(msg, m, cmd, err);
+
 			err = 0;
 
 			cmd_data += cmd->len + sizeof(struct w1_netlink_cmd);
