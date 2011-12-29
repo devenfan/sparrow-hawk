@@ -142,12 +142,18 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
     describe_w1_msg_type(w1msg->type, msgTypeStr);
 
+    /*
+
     //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
 	printf("RECV: cnmsg seq[%d], ack[%d], dataLen[%d]\n",
         cnmsg->seq, cnmsg->ack, cnmsg->len);
 
 	printf("RECV: w1msg type[%s], dataLen[%d], status[%d]\n",
         msgTypeStr, w1msg->len, w1msg->status);
+    */
+    print_cnmsg(cnmsg);
+
+    print_w1msg(w1msg);
 
     if(W1_SLAVE_ADD == w1msg->type || W1_SLAVE_REMOVE == w1msg->type)
     {
@@ -195,8 +201,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     {
         if(g_isWaitingAckMsg)
         {
-            g_ackMsg = cnmsg; //the first ack message is useful
+            //only use the first ack cnmsg
+            memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
             sh_signal_notify(&g_waitAckMsgSignal);
+            printf("Notify for msgType[%s]!\n", msgTypeStr);
         }
         return;
     }
@@ -207,10 +215,13 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         //    1. w1_search_master_id
         //    2. w1_process_command_master OR w1_process_command_slave
         w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
+
+        print_w1cmd(w1cmd);
+
+        /*
         describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
         printf("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
 
-        /*
         if(W1_CMD_SEARCH == w1cmd->cmd || W1_CMD_ALARM_SEARCH == w1cmd->cmd)
         {
             slave_count = w1cmd->len / sizeof(w1_slave_rn);
@@ -226,8 +237,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         */
         if(g_isWaitingAckMsg)
         {
-            g_ackMsg = cnmsg; //the first ack message is useful
+            //only use the first ack cnmsg
+            memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
             sh_signal_notify(&g_waitAckMsgSignal);
+            printf("Notify for msgType[%s]!\n", msgTypeStr);
         }
         return;
     }
@@ -243,8 +256,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         if(g_isWaitingAckMsg)
         {
-            g_ackMsg = cnmsg; //the first ack message is useful
+            //only use the first ack cnmsg
+            memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
             sh_signal_notify(&g_waitAckMsgSignal);
+            printf("Notify for msgType[%s]!\n", msgTypeStr);
         }
         return;
     }
@@ -411,15 +426,15 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	memset(nlMsgSend, 0, NLMSG_SPACE(MAX_MSG_SIZE));
 	memset(nlMsgRecv, 0, NLMSG_SPACE(MAX_MSG_SIZE));
 
-	/*
-	cnmsgBuf = (struct cn_msg *)malloc(MAX_CNMSG_SIZE);
-	if(NULL == cnmsgBuf)
+    //init cnmsg as ack buffer
+	g_ackMsg = (struct cn_msg *)malloc(MAX_CNMSG_SIZE);
+	if(NULL == g_ackMsg)
 	{
-		printf("Cannot allocate memory for netlink message \n");
+		printf("Cannot allocate memory for ack cnmsg!\n");
 		return -1;
 	}
-	memset(cnmsgBuf, 0, MAX_CNMSG_SIZE);
-	*/
+	memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
+
 
 	g_userCallbacks = w1UserCallbacks;
 
@@ -448,7 +463,7 @@ BOOL w1_netlink_userservice_stop(void)
 
 	free(nlMsgSend);
 	free(nlMsgRecv);
-	//free(cnmsgBuf);
+	free(g_ackMsg);
 
 	pthread_mutex_destroy(&g_globalLocker);
 
@@ -621,15 +636,20 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //waiting for the ack message
     sh_signal_wait(&g_waitAckMsgSignal);
 
+    /*
     if(NULL == g_ackMsg)
     {
         succeed = FALSE;
         goto End;
     }
-
+    */
     *ppRecvMsg = (struct w1_netlink_msg *)(g_ackMsg + 1);
 
-    g_ackMsg = NULL;
+    printf("Print AckMsg below...................................\n");
+    print_cnmsg(g_ackMsg);
+    print_w1msg(*ppRecvMsg);
+
+    //g_ackMsg = NULL;
 
 End:
     //free message
@@ -673,6 +693,10 @@ BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
         {
             memcpy(slaves, w1cmdRecv->data, (*pSlaveCount) * sizeof(w1_slave_rn));
         }
+
+        printf("Recv w1msg & w1cmd below................................\n");
+        print_w1msg(w1msgRecv);
+        print_w1cmd(w1cmdRecv);
     }
 
     return succeed;

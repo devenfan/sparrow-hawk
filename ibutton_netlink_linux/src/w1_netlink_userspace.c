@@ -157,3 +157,37 @@ BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr)
     return TRUE;
 }
 
+
+void print_cnmsg(struct cn_msg * cnmsg)
+{
+    //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
+    printf("CNMSG: seq[%d], ack[%d], dataLen[%d]\n",
+        cnmsg->seq, cnmsg->ack, cnmsg->len);
+}
+
+
+void print_w1msg(struct w1_netlink_msg * w1msg)
+{
+	char msgTypeStr[20];
+
+    memset(msgTypeStr, 0, 20);
+
+    describe_w1_msg_type(w1msg->type, msgTypeStr);
+
+    //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
+    printf("W1MSG: type[%s], dataLen[%d], status[%d]\n",
+        msgTypeStr, w1msg->len, w1msg->status);
+}
+
+
+void print_w1cmd(struct w1_netlink_cmd * w1cmd)
+{
+	char cmdTypeStr[20];
+
+    memset(cmdTypeStr, 0, 20);
+
+    describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
+
+    //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
+    printf("W1CMD: type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
+}

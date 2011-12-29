@@ -208,17 +208,18 @@ int main(void)
 
     BOOL succeed = FALSE;
 
-    DebugLine("1");
-
     initialize();
 
-    DebugLine("2");
 
 	if(!w1_netlink_userservice_start(&m_userCallbacks))
 	{
 	    printf("Cannot start w1 netlink userspace service...\n");
 	    goto GameOver;
 	}
+
+    //sleep a while...
+    sleep(sleepSecond);
+    printf("Main thread wake up after %d seconds...\n", sleepSecond);
 
     succeed = w1_list_masters(masters, &masterCount);
     if(succeed)
@@ -233,6 +234,7 @@ int main(void)
     }
     print_master();
 
+    //sleep a while...
     sleep(sleepSecond);
     printf("Main thread wake up after %d seconds...\n", sleepSecond);
 
@@ -240,14 +242,10 @@ int main(void)
     if(succeed)
     {
         DebugLine("w1_master_search Succeed!");
-        memset( m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
+
         m_slaveCount = slaveCount;
         m_slaveCurrentIndex = (slaveCount > 0) ? 0 : -1;
-
-        for(index = 0; index < slaveCount; index++)
-        {
-            m_slaveIDs[index] = *(slaves + index);
-        }
+        memcpy(m_slaveIDs, slaves, sizeof(w1_slave_rn) * m_slaveCount);
     }
     else
     {
