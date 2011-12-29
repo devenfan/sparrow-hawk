@@ -397,8 +397,20 @@ out_up:
 			atomic_dec(&sl->refcnt);
 		mutex_unlock(&dev->mutex);
 out_cont:
-		if (!cmd || err)
-			w1_netlink_send_error(msg, m, cmd, err);
+        //no need to send msg if W1_LIST_MASTERS is OK
+		//if (!cmd || err)
+		//	w1_netlink_send_error(msg, m, cmd, err);
+		if(W1_LIST_MASTERS == m->type)
+		{
+            if(err)
+                w1_netlink_send_error(msg, m, cmd, err);
+		}
+		else
+		{
+            if (!cmd || err)
+                w1_netlink_send_error(msg, m, cmd, err);
+		}
+
 		msg->len -= sizeof(struct w1_netlink_msg) + m->len;
 		m = (struct w1_netlink_msg *)(((u8 *)m) + sizeof(struct w1_netlink_msg) + m->len);
 
