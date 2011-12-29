@@ -412,8 +412,15 @@ public class RXTXCommDriver implements CommDriver
 
 		try
 		    {
+			System.out.println("=============================================");
+			System.out.println("USER DIR: " + System.getProperty("user.dir"));
+			System.out.println("=============================================");
 
-		     String ext_dir="/etc"+System.getProperty("file.separator");
+			//temporary
+		    String ext_dir= "/dev/temp/";
+		     
+		     //String ext_dir="/etc"+System.getProperty("file.separator");
+		    
 		     FileInputStream rxtx_prop=new FileInputStream(ext_dir+"gnu.io.rxtx.properties");
 		     Properties p=new Properties();
 		     p.load(rxtx_prop);

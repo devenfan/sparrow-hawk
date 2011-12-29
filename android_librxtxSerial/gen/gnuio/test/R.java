@@ -23,7 +23,7 @@ public final class R {
         public static final int btnSerialClose=0x7f060007;
         public static final int btnSerialOpen=0x7f060006;
         public static final int btnSerialSend=0x7f060004;
-        public static final int lblIndication=0x7f060009;
+        public static final int lblDataRecv=0x7f060009;
         public static final int mainLayout=0x7f060000;
         public static final int txtSendData=0x7f060003;
     }

@@ -36,6 +36,6 @@
 	
 	
 	
-	<TextView android:layout_width="fill_parent" android:text="RECV: " android:id="@+id/lblIndication" android:layout_height="62dp" android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="0.46"></TextView>
+	<TextView android:layout_width="fill_parent" android:text="RECV: " android:id="@+id/lblDataRecv" android:layout_height="62dp" android:textAppearance="?android:attr/textAppearanceMedium" android:layout_weight="0.46"></TextView>
 
 </LinearLayout>

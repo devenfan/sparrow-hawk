@@ -77,7 +77,7 @@ final public class RXTXPort extends SerialPort
 	protected final static boolean debug_read = false;
 	protected final static boolean debug_read_results = false;
 	protected final static boolean debug_write = false;
-	protected final static boolean debug_events = false;
+	protected final static boolean debug_events = true;
 	protected final static boolean debug_verbose = false;
 
 	private static Zystem z;

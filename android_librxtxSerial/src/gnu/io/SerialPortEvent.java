@@ -81,24 +81,71 @@ public class SerialPortEvent extends EventObject
 	private boolean NewValue;
 	private int eventType;
 	/*public int eventType           =0; depricated */
+	
+	private static final HashMap<Integer, String> s_eventLabels;
+	
+	static {
+		s_eventLabels = new HashMap<Integer, String>();
+		s_eventLabels.put ( SerialPortEvent.DATA_AVAILABLE, "DATA_IN" );
+		s_eventLabels.put ( SerialPortEvent.OUTPUT_BUFFER_EMPTY, "OUT_EMPTY" );
+		s_eventLabels.put ( SerialPortEvent.CTS, "CTS" );
+		s_eventLabels.put ( SerialPortEvent.DSR, "DSR" );
+		s_eventLabels.put ( SerialPortEvent.RI, "RI" );
+		s_eventLabels.put ( SerialPortEvent.CD, "CD" );
+		s_eventLabels.put ( SerialPortEvent.OE, "OE" );
+		s_eventLabels.put ( SerialPortEvent.PE, "PE" );
+		s_eventLabels.put ( SerialPortEvent.FE, "FE" );
+		s_eventLabels.put ( SerialPortEvent.BI, "BI" );
+	}
 
-	public SerialPortEvent(SerialPort srcport, int eventtype, boolean oldvalue, boolean newvalue)
-	{
-		super( srcport );	
-		OldValue=oldvalue;
-		NewValue=newvalue;
-		eventType=eventtype;
+	public SerialPortEvent(SerialPort srcport, int eventtype, boolean oldvalue,
+			boolean newvalue) {
+		super(srcport);
+		OldValue = oldvalue;
+		NewValue = newvalue;
+		eventType = eventtype;
 	}
-	public int getEventType()
-	{
-		return(eventType);
+
+	public int getEventType() {
+		return (eventType);
 	}
-	public boolean getNewValue()
-	{
-		return( NewValue );
+	
+	public String getEventLable(){
+		return s_eventLabels.get(eventType);
 	}
-	public boolean getOldValue()
-	{
-		return( OldValue );
+
+	public boolean getNewValue() {
+		return (NewValue);
 	}
+
+	public boolean getOldValue() {
+		return (OldValue);
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(this.getClass().getSimpleName());
+		sb.append("[");
+		switch(eventType){
+			case DATA_AVAILABLE: 		sb.append("DATA_IN"); break;
+			case OUTPUT_BUFFER_EMPTY: 	sb.append("OUT_EMPTY"); break;
+			case CTS                : 	sb.append("CTS"); break;
+			case DSR                : 	sb.append("DSR"); break;
+			case RI                 : 	sb.append("RI"); break;
+			case CD                 : 	sb.append("CD"); break;
+			case OE                 : 	sb.append("OE"); break;
+			case PE                 : 	sb.append("PE"); break;
+			case FE                 : 	sb.append("FE"); break;
+			case BI                 : 	sb.append("BI"); break;
+			default					:	sb.append("NA"); break;
+		}
+		sb.append("]: ");
+		sb.append(OldValue);
+		sb.append(" -> ");
+		sb.append(NewValue);
+		return sb.toString();
+	}
+	
+	
 }

@@ -37,14 +37,24 @@ public class GNUIOTest extends Activity {
 
 	private static final String LOG_TAG = "GNUIOTest";
 	
-	private static final String SERIAL_PORT = "/dev/s3c_serial1";
+	//private static final String SERIAL_PORT = "/dev/s3c_serial1";
+	private static final String SERIAL_PORT = "/dev/ttyS1";
 
     private CommPortIdentifier portId;
 	private SerialPort serialPort;
 	private InputStream in;
 	private OutputStream out;	
 	private Map<String, View> indicatorMap;
-	private Handler mHandler;
+	
+	
+	// A Handler allows you to send and process Message and Runnable objects associated with 
+	// a thread's MessageQueue. 
+	// Each Handler instance is associated with a single thread and that thread's message queue. 
+	// When you create a new Handler, it is bound to the thread / message queue of the thread 
+	// that is creating it -- from that point on, it will deliver messages and runnables to 
+	// that message queue and execute them as they come out of the message queue.
+	private Handler msgHandler;
+	
 	//private Random rnd;
 
 	private EditText txtSendData;
@@ -52,7 +62,7 @@ public class GNUIOTest extends Activity {
 	private Button btnSerialOpen;
 	private Button btnSerialClose;
 
-	private TextView txtIndication; 
+	private TextView txtDataRecv; 
 	private Button btnClear;
 	
 	private boolean keepReading;
@@ -87,6 +97,7 @@ public class GNUIOTest extends Activity {
 			 in  = serialPort.getInputStream();
 			 out = serialPort.getOutputStream();
 			 
+			 /*
 			 serialPort.notifyOnCarrierDetect(true);//CD
 			 serialPort.notifyOnCTS(true);
 			 serialPort.notifyOnDSR(true);
@@ -96,6 +107,8 @@ public class GNUIOTest extends Activity {
 			 serialPort.notifyOnOutputEmpty(false);
 			 
 			 serialPort.addEventListener(new SerialEventsListener());
+			 */
+			 
 			 
 			 
 			 serialPort.setSerialPortParams(9600, 
@@ -105,8 +118,11 @@ public class GNUIOTest extends Activity {
 			 
 			 //serialPort.setFlowControlMode( SerialPort.FLOWCONTROL_RTSCTS_IN  | SerialPort.FLOWCONTROL_RTSCTS_OUT );
 			 serialPort.setFlowControlMode( SerialPort.FLOWCONTROL_NONE );
-			 serialPort.setDTR(true);
-			 serialPort.setRTS(true);
+			 //serialPort.setDTR(true);
+			 //serialPort.setRTS(true);
+			 
+			 
+			 Log.d(LOG_TAG, "SerialPort Opened!");
 			 
 			 return true;
 		
@@ -120,9 +136,9 @@ public class GNUIOTest extends Activity {
 		} catch (UnsupportedCommOperationException e) {
 			 toast ("Unsupported Operation " + e.getMessage());
        				
-		} catch (TooManyListenersException e) {
+		} /*catch (TooManyListenersException e) {
 			 toast ("Too many listeners");
-		}
+		}*/
 		
 		return false;
 	}
@@ -135,13 +151,17 @@ public class GNUIOTest extends Activity {
 			serialPort = null;
 			in = null;
 			out = null;
+			
+			Log.d(LOG_TAG, "SerialPort Closed!");
 		}
 	}
 	
 	private void StartReadingThread(){
 		keepReading = true;
-		readingThread = new SerialReadingThread ();
-		readingThread.start();
+		//readingThread = new SerialReadingThread ();
+		//readingThread.start();
+		
+		Log.d(LOG_TAG, "Reading Thread started...");
 	}
 	
 	private void StopReadingThread() {
@@ -152,6 +172,7 @@ public class GNUIOTest extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		Log.d(LOG_TAG, "Reading Thread stopped...");
 	}
 	
 	private class SerialReadingThread extends Thread{
@@ -181,7 +202,7 @@ public class GNUIOTest extends Activity {
 					Message msg = Message.obtain();
 					dBundle.putString("ERR", e.getMessage() );
 					msg.setData(dBundle);
-					mHandler.sendMessage(msg);
+					msgHandler.sendMessage(msg);
 				}
 				
 				/// If any data was read ship it to the UI
@@ -191,17 +212,17 @@ public class GNUIOTest extends Activity {
 					Message msg = Message.obtain();
 					dBundle.putString("DATA", sReadBuff );
 					msg.setData(dBundle);
-					mHandler.sendMessage(msg);
+					msgHandler.sendMessage(msg);
 				}
 				
-				/*
+				
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				*/
+				
 			}
 		
 		}
@@ -221,7 +242,7 @@ public class GNUIOTest extends Activity {
 		btnSerialOpen = (Button)findViewById(R.id.btnSerialOpen);
 		btnSerialClose = (Button)findViewById(R.id.btnSerialClose);
 
-		txtIndication = (TextView) findViewById(R.id.lblIndication);
+		txtDataRecv = (TextView) findViewById(R.id.lblDataRecv);
 		btnClear = (Button)findViewById(R.id.btnClear);
 		
 		btnSerialSend.setEnabled(false);
@@ -230,8 +251,8 @@ public class GNUIOTest extends Activity {
 		txtSendData.setText("0001020304");
         
 		// Create Status Indicators
-		final String[] Signals = new String[] { "CD", "CTS", "DSR", "RI" };
-		indicatorMap = createIndicators(Signals, (ViewGroup) findViewById(R.id.IndContainer));
+		final String[] indicators = new String[] { "CD", "CTS", "DSR", "RI" };
+		indicatorMap = createIndicators(indicators, (ViewGroup) findViewById(R.id.IndContainer));
 		//rnd = new java.util.Random();
         
 		// / Find serial ports...
@@ -247,46 +268,39 @@ public class GNUIOTest extends Activity {
 		toast("Good, find the Serial Port!");
 		
 	   
-	   /// Handler object that receives events from read and
-	   /// notification threads..
-       mHandler = new Handler() {
-    	   public void handleMessage(Message msg) 
-    	   {
-    		   Bundle d = msg.getData();
-    		   
-    		   /// Check if it is a status IND.  If it is .
-    		   /// change the state of the inidicator
-    		   for (String s : Signals) {
-    			   if ( d.containsKey(s))
-    			   {
-    				   setIndicator(s, d.getBoolean(s));
-    			   }    
-    			}
-    		   
-    		   /// Notify user of the error message
-    		   if ( d.containsKey("ERR"))
-    		   {
-    			   toast ( "Error: " + d.getString("ERR"));
-    		   }
-    		   
-    		   /// Append data to the data area..
-    		   if ( d.containsKey("DATA"))
-    		   {   
-    			   txtIndication.append(d.getString("DATA"));
-    		   }
-    		   
-    		   /// Notify user that sending is complete...
-    		   if ( d.containsKey("OUT"))
-    		   {
-    			   toast ( "OUT " + d.getString("OUT"));
-    		   }
-    		   
-    		   if ( d.containsKey("BI"))
-    		   {
-    			   toast ( "BI: " + d.getString("BI"));
-    		   }
-    	   };
-       };
+		msgHandler = new Handler() {
+			
+			public void handleMessage(Message msg) {
+				
+				Bundle data = msg.getData();
+
+				// Check if it is a status IND. 
+				// If it is, change the state of the indicator
+				for (String s : indicators) {
+					if (data.containsKey(s)) {
+						setIndicator(s, data.getBoolean(s));
+					}
+				}
+				
+				if (data.containsKey("ERR")) {
+					// Notify user of the error message
+					toast("Error: " + data.getString("ERR"));
+					
+				}else if (data.containsKey("BI")) {
+					// Notify user that Break Interrupted...
+					toast("BI: " + data.getString("BI"));
+					
+				} else if (data.containsKey("OUT_EMPTY")) {
+					// Notify user that sending is complete...
+					toast("OUT_EMPTY handled...");
+					
+				} else if (data.containsKey("DATA_IN")) {
+					// Append data to the data area..
+					//txtDataRecv.append(data.getString("DATA"));
+					toast("DATA_IN handled...");
+				}
+			};
+		};
        
       
        
@@ -329,8 +343,8 @@ public class GNUIOTest extends Activity {
 		btnSerialSend.setOnClickListener(new Button.OnClickListener() {
     		public void onClick(View v) {
     			
-    			//sendInputData();
-    			oneWirePresent();
+    			sendInputData();
+    			//oneWirePresent();
     			
     		}
     	});
@@ -339,7 +353,7 @@ public class GNUIOTest extends Activity {
 		btnClear.setOnClickListener(new Button.OnClickListener() {
 			public void onClick(View v) {
 
-				txtIndication.setText("RECV: ");
+				txtDataRecv.setText("RECV: ");
 			}
 		});
 		
@@ -347,6 +361,31 @@ public class GNUIOTest extends Activity {
 		btnSerialOpen.setEnabled(true);
     }
 
+    
+
+	// Set Indicator
+	private void setIndicator(String key, boolean b) {
+		View v = indicatorMap.get(key);
+		if (b)
+			v.setBackgroundDrawable(getResources().getDrawable(
+					R.drawable.ind_on));
+		else
+			v.setBackgroundDrawable(getResources().getDrawable(
+					R.drawable.ind_off));
+		v.invalidate();
+		toast(key + (b ? "On" : "Off"));
+	}
+
+	// Show the toast notification..
+	private void toast(String msg) {
+		Log.d(LOG_TAG, msg);
+
+		Toast t3 = Toast.makeText(this, msg, 100);
+		t3.show();
+	}
+    
+    
+    
     
     
     private void oneWirePresent(){
@@ -414,6 +453,8 @@ public class GNUIOTest extends Activity {
 //		} 
     }
 
+    
+    
 	private void sendInputData(){
 		// Get Data to Send...
 		//txtSendData = (EditText) findViewById(R.id.txtSerialSend);
@@ -452,39 +493,28 @@ public class GNUIOTest extends Activity {
 		}
 	}
     
+	
+	
     
     private final class SerialEventsListener implements SerialPortEventListener {
-		private final HashMap<Integer, String> evtLabels;
-
-		private SerialEventsListener() {
-			evtLabels = new HashMap<Integer, String>();
-			evtLabels.put ( SerialPortEvent.CTS, "CTS" );
-			evtLabels.put ( SerialPortEvent.DSR, "DSR" );
-			evtLabels.put ( SerialPortEvent.RI, "RI" );
-			evtLabels.put ( SerialPortEvent.CD, "CD" );
-		}
-
+    	
 		@Override
 		public void serialEvent(SerialPortEvent ev) {
 			
-			/// Create message bundle
-			Bundle dBundle = new Bundle();
+			Log.d(LOG_TAG, "SerialPortEvent arrived: " + ev);
+			
+			// Create message bundle
+			Bundle bundle = new Bundle();
 			Message msg = Message.obtain();
 			
-			/// Get Event type
-			int t = ev.getEventType();
-			Boolean v = ev.getNewValue();
-			
-			/// If it is one of the status events just forward it to the
-			/// handler as is
-			if ( evtLabels.containsKey(t))
-			{
-				dBundle.putBoolean(evtLabels.get(t), v);
-			}	
-			//TODO:  Not sure it does anything...
-			//       data reading is handled by the separate thread
-			else if ( t == SerialPortEvent.DATA_AVAILABLE  )
-			{
+			if (ev.getEventType() == SerialPortEvent.CTS || ev.getEventType() == SerialPortEvent.DSR || 
+					ev.getEventType() == SerialPortEvent.RI || ev.getEventType() == SerialPortEvent.CD) {
+				
+				bundle.putBoolean(ev.getEventLable(), ev.getNewValue());
+				
+			} else if ( ev.getEventType() == SerialPortEvent.DATA_AVAILABLE  ) {
+				//TODO:  Not sure it does anything...
+				//       data reading is handled by the separate thread
 				byte[] readBuffer = new byte[20];
 				int numBytes;
 				int numBytesTotal = 0;
@@ -494,43 +524,29 @@ public class GNUIOTest extends Activity {
 					while (in.available() > 0) {
 						numBytes = in.read(readBuffer);
 						numBytesTotal += numBytes;
-						String tmpR = new String(readBuffer);
-						sReadBuff += tmpR.substring(0, numBytes); 
+						
+						//String tmpR = new String(readBuffer);
+						//sReadBuff += tmpR.substring(0, numBytes); 
+						
+						sReadBuff += ConvertCodec.bytesToHexString(readBuffer, 0, numBytes);
 					}
-					dBundle.putString("DATA", sReadBuff );
+					bundle.putString(ev.getEventLable(), sReadBuff );
 				} catch (IOException e) {
-					dBundle.putString("ERR", "Error Reading from serial port" );
+					bundle.putString("ERR", "Error Reading from serial port" );
 				}
 				
-
-				msg.setData(dBundle);
-				mHandler.sendMessage(msg);
+			} else if (ev.getEventType() == SerialPortEvent.OUTPUT_BUFFER_EMPTY) {
+				// bundle.putString(ev.getEventLable(), "Empty" );
 				
-			}
-			else if ( t == SerialPortEvent.OUTPUT_BUFFER_EMPTY )
-			{
-				dBundle.putString("OUT", "Empty" );
-
-				//msg.setData(dBundle);
-				//mHandler.sendMessage(msg);
-			}
-			else if ( t == SerialPortEvent.BI )
-			{
-				dBundle.putString("BI", "Break Interupt" );
-
-				msg.setData(dBundle);
-				mHandler.sendMessage(msg);
-			}
-			else
-			{
-				dBundle.putString("ERR", "Unhandled COMM Event" );
+			} else if (ev.getEventType() == SerialPortEvent.BI) {
+				bundle.putString(ev.getEventLable(), "Break Interupt");
 				
-
-				msg.setData(dBundle);
-				mHandler.sendMessage(msg);
+			} else {
+				bundle.putString("ERR", "Unhandled COMM Event");
 			}
-			
-			
+
+			msg.setData(bundle);
+			msgHandler.sendMessage(msg);
 		}
 	}
     
@@ -558,22 +574,4 @@ public class GNUIOTest extends Activity {
 	}
 
 	
-	// Set Indicator
-	private void setIndicator(String key, boolean b) {
-		View v = indicatorMap.get(key);
-		if ( b )
-			v.setBackgroundDrawable(getResources().getDrawable(R.drawable.ind_on));
-		else
-			v.setBackgroundDrawable(getResources().getDrawable(R.drawable.ind_off));	
-		v.invalidate();
-		toast( key + ( b ? "On" : "Off"));
-	}
-
-	// Show the toast notification..
-	private void toast(String msg) {
-		Log.d(LOG_TAG, msg);
-		
-		Toast t3 = Toast.makeText(this, msg, 100);
-		t3.show();
-	}
 }
