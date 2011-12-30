@@ -30,30 +30,20 @@ typedef void w1_master_added(w1_master_id master_id);
 
 typedef void w1_master_removed(w1_master_id master_id);
 
-typedef void w1_master_listed(w1_master_id * master_ids, int master_count);
-
-
 typedef void w1_slave_added(w1_slave_rn salve_rn);
 
 typedef void w1_slave_removed(w1_slave_rn salve_rn);
 
-typedef void w1_slave_found(w1_slave_rn * slave_ids, int slave_count);
 
-
-
-typedef struct w1_user_interface{
+typedef struct w1_user_callbacks{
 
     w1_master_added * master_added_callback;
 
     w1_master_removed * master_removed_callback;
 
-    //w1_master_listed * master_listed_callback;
-
     w1_slave_added * slave_added_callback;
 
     w1_slave_removed * slave_removed_callback;
-
-    w1_slave_found * slave_found_callback;
 
 }w1_user_callbacks;
 
@@ -125,9 +115,9 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount);
 /*
  * Asynchronized method, the result will come back later
  * Cannot take Asynchronized way, or we cannot distinguash the ack messages...
-*/
-BOOL request_to_list_w1_masters(void);
 
+BOOL request_to_list_w1_masters(void);
+*/
 
 
 /*

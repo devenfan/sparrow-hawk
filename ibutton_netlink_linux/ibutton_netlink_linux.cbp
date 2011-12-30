@@ -28,6 +28,9 @@
 					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
 					<Add library="libc" />
 					<Add library="libdl" />
+					<Add library="libm" />
+					<Add library="libstdc++" />
+					<Add library="liblog" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -53,6 +56,9 @@
 					<Add option="%ANDROID_NDK_HOME%\platforms\android-5\arch-arm\usr\lib\crtend_android.o" />
 					<Add library="c" />
 					<Add library="dl" />
+					<Add library="m" />
+					<Add library="log" />
+					<Add library="stdc++" />
 				</Linker>
 			</Target>
 		</Build>

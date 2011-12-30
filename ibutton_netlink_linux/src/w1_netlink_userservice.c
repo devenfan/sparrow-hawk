@@ -33,6 +33,9 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <android/log.h>    //android log support
+
+
 #include "w1_netlink_userservice.h"
 #include "sh_thread.h"
 #include "sh_util.h"
@@ -75,22 +78,44 @@ static pthread_t receivingThread;
 static int receivingThreadStopFlag = 0;
 static sh_signal_ctrl recevingThreadStopSignal;
 
-BYTE g_currentW1MsgType;
-BYTE g_currentW1CmdType;
-BOOL g_isWaitingAckMsg;             //indicate if it's waiting ack from w1 kernel now
-sh_signal_ctrl g_waitAckMsgSignal;   //the ack signal
-struct cn_msg * g_ackMsg;           //the ack message
-BYTE g_ackStatus;                   //the ack status: OK, FAILED, TIMEOUT
+static BYTE g_currentW1MsgType;
+static BYTE g_currentW1CmdType;
+static BOOL g_isWaitingAckMsg;             //indicate if it's waiting ack from w1 kernel now
+static sh_signal_ctrl g_waitAckMsgSignal;  //the ack signal
+static struct cn_msg * g_ackMsg;           //the ack message
+static BYTE g_ackStatus;                   //the ack status: OK, FAILED, TIMEOUT
 
 #define ACK_TIMEOUT    10       //TIMEOUT for waiting ACK, by seconds
+
+/* ====================================================================== */
+/* ============================ log ralated ============================= */
+/* ====================================================================== */
+
+#define MAX_LOG_SIZE  1024
+
+static char g_logBuf[MAX_LOG_SIZE];
+
+
+#define LOG_TAG   "w1_netlink_userservice"
+
+//logLevel: DEBUG, INFO, WARN, ERROR, FATAL
+#define logging(logLevel, format, args...)              \
+{                                                       \
+    memset(g_logBuf, 0, MAX_LOG_SIZE * sizeof(char));   \
+    sprintf(g_logBuf, format, ##args);                  \
+    __android_log_write(ANDROID_LOG_##logLevel, LOG_TAG, g_logBuf);   \
+}
+
+//print
+//#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userservice.c : %s  \n", (input))
+
+//logcat
+#define DebugLine(input)     __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, (input));
 
 
 /* ====================================================================== */
 /* ========================== private methods =========================== */
 /* ====================================================================== */
-
-
-#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userservice.c : %s  \n", (input))
 
 
 int generate_w1_global_sequence(void);
@@ -361,7 +386,20 @@ static void stop_receiving_thread(void)
 {
 	int ret = 0;
 
+    struct cn_msg * cnmsg = NULL;
+    struct w1_netlink_msg * w1msg = NULL;
+
+	cnmsg = malloc_w1_netlinkmsg();
+	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+
+	w1msg->len = 0;
+	w1msg->type = W1_LIST_MASTERS;
+	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
 	receivingThreadStopFlag = 1;
+
+	send_w1_netlinkmsg(cnmsg); //send something to activate the receiving thread
+	free_w1_netlinkmsg(cnmsg);
 
 	{
 		ret = sh_signal_wait(&recevingThreadStopSignal);
@@ -451,7 +489,7 @@ BOOL w1_netlink_userservice_stop(void)
     //Attesntion:
     //if the thread is blocked inside [recvmsg], then this method will be blocked here forever!!!
     //TODO: We should send something initiatively, so that we can get ack later...
-    request_to_list_w1_masters();
+    //request_to_list_w1_masters();
 
 	stop_receiving_thread();
 
@@ -870,35 +908,6 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
     return succeed;
 }
 
-
-BOOL request_to_list_w1_masters(void)
-{
-    BOOL ret = FALSE;
-    struct cn_msg * cnmsg = NULL;
-    struct w1_netlink_msg * w1msg = NULL;
-	//struct w1_netlink_cmd * w1cmd = NULL;
-
-    if(g_isWaitingAckMsg) return FALSE;    //busy
-
-	cnmsg = malloc_w1_netlinkmsg();
-	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
-	//w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
-
-	//w1cmd->len = sizeof(u_int64_t) * slave_count;
-	//w1cmd->cmd = W1_CMD_SEARCH;
-
-	//w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
-	w1msg->len = 0;
-	w1msg->type = W1_LIST_MASTERS;
-
-	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
-
-	ret = send_w1_netlinkmsg(cnmsg);
-
-	free_w1_netlinkmsg(cnmsg);
-
-	return ret;
-}
 
 /*
 BOOL request_to_search_w1_slaves(BOOL alarmSearch)

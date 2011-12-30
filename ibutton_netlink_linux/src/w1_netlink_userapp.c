@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <android/log.h>    //android log support
+
 #include "w1_netlink_userspace.h"
 #include "sh_error.h"
 #include "sh_thread.h"
@@ -28,9 +30,21 @@ int m_slaveCurrentIndex;
 
 w1_user_callbacks m_userCallbacks;
 
+#define LOG_TAG   "w1_netlink_userservice"
 
-#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userapp.c : %s  \n", (input))
+//logLevel: DEBUG, INFO, WARN, ERROR, FATAL
+#define logging(logLevel, format, args...)              \
+{                                                       \
+    memset(g_logBuf, 0, MAX_LOG_SIZE * sizeof(char));   \
+    sprintf(g_logBuf, format, ##args);                  \
+    __android_log_write(ANDROID_LOG_##logLevel, LOG_TAG, g_logBuf);   \
+}
 
+//print
+//#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userapp.c : %s  \n", (input))
+
+//logcat
+#define DebugLine(input)     __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, (input));
 
 /* ====================================================================== */
 /* ============================== utilities ============================= */
@@ -185,7 +199,7 @@ static void initialize()
     //m_userCallbacks.master_listed_callback = on_master_listed;
     m_userCallbacks.slave_added_callback = on_slave_added;
     m_userCallbacks.slave_removed_callback = on_slave_removed;
-    m_userCallbacks.slave_found_callback = on_salve_found;
+    //m_userCallbacks.slave_found_callback = on_salve_found;
 }
 
 
