@@ -23,11 +23,14 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <cutils/log.h>
+//#include <cutils/log.h>
 #include <cutils/atomic.h>
 
-#include "w1_hal.h"
+#include "../inc/sh_types.h"
+#include "../inc/w1_netlink_userspace.h"
+#include "../inc/w1_netlink_userservice.h"
 
+#include "w1_hal.h"
 
 /*****************************************************************************/
 

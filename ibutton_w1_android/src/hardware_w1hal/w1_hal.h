@@ -18,13 +18,14 @@
 
 
 /* The most important header */
-#include <hardware/hardware.h>
+//#include <hardware/hardware.h>
 
-#include <fcntl.h>
-#include <errno.h>
+//#include <fcntl.h>
+//#include <errno.h>
 
-#include <cutils/log.h>
-#include <cutils/atomic.h>
+//#include <cutils/log.h>
+//#include <cutils/atomic.h>
+
 
 /***************************************************************************/
 
@@ -40,19 +41,6 @@ struct w1hal_module_t {
 };
 
 
-
-
-struct w1hal_device_t {
-
-    /* struct hw_device_t must come first, and named common */
-    struct hw_device_t common;
-
-    /* attributes */
-    //int fd;
-
-    /* Useful APIs for upper layer */
-    const w1hal_interface* (*get_w1_interface)(struct w1hal_device_t* dev);
-};
 
 
 
@@ -89,6 +77,19 @@ typedef struct w1hal_device_operations {
 }w1hal_interface;
 
 
+
+
+struct w1hal_device_t {
+
+    /* struct hw_device_t must come first, and named common */
+    struct hw_device_t common;
+
+    /* attributes */
+    //int fd;
+
+    /* Useful APIs for upper layer */
+    const w1hal_interface* (*get_w1_interface)(struct w1hal_device_t* dev);
+};
 
 
 

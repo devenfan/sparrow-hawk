@@ -1,10 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="src\hardware_w1hal\w1_hal.c" open="1" top="1" tabpos="2">
-		<Cursor position="760" topLine="100" />
+	<File name="src\hardware_w1hal\w1_hal.c" open="0" top="0" tabpos="0">
+		<Cursor position="891" topLine="15" />
 	</File>
-	<File name="src\hardware_w1hal\w1_hal.h" open="1" top="0" tabpos="1">
-		<Cursor position="2525" topLine="41" />
+	<File name="src\hardware_w1hal\w1_hal.h" open="0" top="0" tabpos="0">
+		<Cursor position="680" topLine="9" />
+	</File>
+	<File name="src\inc\kernel_connector.h" open="0" top="0" tabpos="0">
+		<Cursor position="1797" topLine="53" />
+	</File>
+	<File name="src\inc\sh_error.h" open="0" top="0" tabpos="0">
+		<Cursor position="1338" topLine="10" />
+	</File>
+	<File name="src\inc\sh_list.h" open="0" top="0" tabpos="0">
+		<Cursor position="329" topLine="21" />
+	</File>
+	<File name="src\inc\sh_queue.h" open="0" top="0" tabpos="0">
+		<Cursor position="329" topLine="21" />
+	</File>
+	<File name="src\inc\sh_thread.h" open="0" top="0" tabpos="0">
+		<Cursor position="353" topLine="20" />
+	</File>
+	<File name="src\inc\sh_types.h" open="0" top="0" tabpos="0">
+		<Cursor position="352" topLine="20" />
+	</File>
+	<File name="src\inc\sh_util.h" open="0" top="0" tabpos="0">
+		<Cursor position="424" topLine="15" />
+	</File>
+	<File name="src\inc\w1_netlink_userservice.h" open="0" top="0" tabpos="0">
+		<Cursor position="1035" topLine="0" />
+	</File>
+	<File name="src\inc\w1_netlink_userspace.h" open="0" top="0" tabpos="0">
+		<Cursor position="968" topLine="17" />
 	</File>
 </CodeBlocks_layout_file>
