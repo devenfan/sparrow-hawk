@@ -21,6 +21,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+
+#include "sh_types.h"
+#include "sh_error.h"
+#include "sh_util.h"
+#include "sh_thread.h"
+
+//<linux/connector.h> is not contained inside NDK android-5
+//Attention: NDK android-5 support android-6 & android 7
+#include "kernel_connector.h"
+
 #include "w1_netlink_userspace.h"
 
 #define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userspace.c : %s  \n", (input))

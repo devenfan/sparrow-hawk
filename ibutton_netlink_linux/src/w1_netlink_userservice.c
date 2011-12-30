@@ -33,13 +33,22 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include <android/log.h>    //android log support
-
-
-#include "w1_netlink_userservice.h"
-#include "sh_thread.h"
-#include "sh_util.h"
+#include "sh_types.h"
 #include "sh_error.h"
+#include "sh_util.h"
+#include "sh_thread.h"
+
+
+#include <linux/netlink.h>		//it will include <linux/socket.h>
+
+//<linux/connector.h> is not contained inside NDK android-5
+//Attention: NDK android-5 support android-6 & android 7
+#include "kernel_connector.h"
+
+#include "w1_netlink_userspace.h"
+#include "w1_netlink_userservice.h"
+
+#include <android/log.h>    //android log support
 
 /* ====================================================================== */
 /* ============================ Constants =============================== */

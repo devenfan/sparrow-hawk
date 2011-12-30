@@ -22,7 +22,7 @@
 #define __SH_UTIL_H
 
 
-#include "sh_types.h"
+//#include "sh_types.h"
 
 BOOL is_hexstr(char * str, int length);
 

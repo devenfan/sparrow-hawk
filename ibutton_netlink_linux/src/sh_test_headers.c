@@ -12,9 +12,11 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include "w1_netlink_userspace.h"
-#include "sh_error.h"
+#include "sh_types.h"
 #include "sh_thread.h"
+#include "sh_error.h"
+
+#include "w1_netlink_userspace.h"
 
 
 #include "w1_netlink_userservice.h"

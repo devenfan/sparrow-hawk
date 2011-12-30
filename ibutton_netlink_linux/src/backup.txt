@@ -43,6 +43,24 @@ static void on_master_listed(int * master_ids, int master_count)
 */
 
 
+static void on_salve_found(w1_slave_rn * slave_ids, int slave_count)
+{
+    int index = 0;
+
+    DebugLine("on_salve_found");
+
+    memset( m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
+    m_slaveCount = slave_count;
+    m_slaveCurrentIndex = (slave_count > 0) ? 0 : -1;
+
+    for(index = 0; index < slave_count; index++)
+    {
+        m_slaveIDs[index] = *(slave_ids + index);
+    }
+
+    print_all_slaves();
+}
+
 int main(void)
 {
 	int sleepSecond = 3;

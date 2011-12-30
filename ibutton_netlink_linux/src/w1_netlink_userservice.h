@@ -22,7 +22,7 @@
 #define __W1_NETLINK_USERSERVICE_H
 
 
-#include "w1_netlink_userspace.h"
+//#include "w1_netlink_userspace.h"
 
 
 

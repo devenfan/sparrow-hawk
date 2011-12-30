@@ -8,15 +8,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include "sh_types.h"
+#include "sh_error.h"
+#include "sh_util.h"
+#include "sh_thread.h"
+#include "w1_netlink_userspace.h"
+#include "w1_netlink_userservice.h"
 
 #include <android/log.h>    //android log support
-
-#include "w1_netlink_userspace.h"
-#include "sh_error.h"
-#include "sh_thread.h"
-
-
-#include "w1_netlink_userservice.h"
 
 #define MASTER_MAX_COUNT   3
 #define SLAVE_MAX_COUNT   10
@@ -157,23 +156,7 @@ static void on_slave_removed(w1_slave_rn slave_id)
     print_all_slaves();
 }
 
-static void on_salve_found(w1_slave_rn * slave_ids, int slave_count)
-{
-    int index = 0;
 
-    DebugLine("on_salve_found");
-
-    memset( m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
-    m_slaveCount = slave_count;
-    m_slaveCurrentIndex = (slave_count > 0) ? 0 : -1;
-
-    for(index = 0; index < slave_count; index++)
-    {
-        m_slaveIDs[index] = *(slave_ids + index);
-    }
-
-    print_all_slaves();
-}
 
 /* ====================================================================== */
 /* ============================ main method ============================= */

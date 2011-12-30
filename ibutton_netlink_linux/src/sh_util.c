@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-
+#include "sh_types.h"
 #include "sh_util.h"
 
 static BOOL get_hexchar(BYTE fourBits, char * hexChar)

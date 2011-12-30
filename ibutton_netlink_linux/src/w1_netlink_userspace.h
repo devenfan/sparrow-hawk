@@ -23,13 +23,14 @@
 #ifndef __W1_NETLINK_USERSPACE_H
 #define __W1_NETLINK_USERSPACE_H
 
-#include "sh_types.h"
+//#include "sh_types.h"
 
-#include <linux/netlink.h>		//it will include <linux/socket.h>
+//netlink.h cannot be here... It will cause issues if other file include "w1_netlink_userspace.h"
+//#include <linux/netlink.h>		//it will include <linux/socket.h>
 
 //<linux/connector.h> is not contained inside NDK android-5
 //Attention: NDK android-5 support android-6 & android 7
-#include "kernel_connector.h"
+//#include "kernel_connector.h"
 
 #ifndef	W1_GROUP
 #define W1_GROUP  	CN_W1_IDX
