@@ -48,20 +48,48 @@ struct w1hal_device_t {
     struct hw_device_t common;
 
     /* attributes */
-    int fd;
+    //int fd;
 
-    /* Operation APIs, realy useful for upper layer */
-    struct w1hal_device_operations * operations;
+    /* Useful APIs for upper layer */
+    const w1hal_interface* (*get_w1_interface)(struct w1hal_device_t* dev);
 };
 
 
-struct w1hal_device_operations {
 
-    int (*start)(struct w1hal_device_t *dev);
+typedef struct w1hal_device_operations {
 
-    int (*stop)(struct w1hal_device_t *dev);
+    BOOL (*start)(w1_user_callbacks * w1UserCallbacks);
 
-};
+    BOOL (*stop)(void);
+
+    /* List all the Masters */
+    BOOL (*list_masters)(w1_master_id * masters, int * pMasterCount);
+
+    /* Search Slaves by Master Id */
+    BOOL (*search_slaves)(w1_master_id masterId, BOOL isSearchAlarm,
+                      w1_slave_rn * slaves, int * pSlaveCount);
+
+    /* Reset the Master */
+    BOOL (*master_reset)(w1_master_id masterId);
+
+    /* Process Commands By Master or slave: W1_CMD_TOUCH, W1_CMD_READ or W1_CMD_WRITE
+    BOOL (*process_cmd)(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
+                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
+    */
+
+    BOOL (*slave_touch)(BYTE * slaveId, int idLen,
+                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
+
+    BOOL (*slave_read)(BYTE * slaveId, int idLen,
+                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
+
+    BOOL (*slave_write)(BYTE * slaveId, int idLen,
+                    void * dataIn, int dataInLen);
+
+}w1hal_interface;
+
+
+
 
 
 /***************************************************************************/

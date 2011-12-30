@@ -18,6 +18,8 @@
 
 #include <hardware/hardware.h>
 
+#include <stdlib.h>
+
 #include <fcntl.h>
 #include <errno.h>
 
@@ -29,7 +31,15 @@
 
 /*****************************************************************************/
 
+extern const w1hal_interface* get_w1_interface();
 
+const w1hal_interface* w1hal__get_w1_interface(struct w1hal_device_t* dev)
+{
+    return get_w1_interface();
+}
+
+
+/*
 int w1hal_start(struct w1hal_device_t *dev)
 {
 	return 0;
@@ -44,7 +54,7 @@ static struct w1hal_device_operations s_w1hal_device_operations = {
     start: w1hal_start,
     stop: w1hal_stop,
 };
-
+*/
 
 
 int w1hal_device_close(struct hw_device_t* device)
@@ -70,8 +80,8 @@ static int w1hal_device_open(const struct hw_module_t* module, const char* name,
 	dev->common.module = module;
 	dev->common.close = w1hal_device_close;
 
-    //
-	dev->operations = &s_w1hal_device_operations;
+	//dev->operations = &s_w1hal_device_operations;
+    dev->get_w1_interface = w1hal__get_w1_interface;
 
 	*device = &dev->common;
 
