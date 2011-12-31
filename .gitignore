@@ -9,3 +9,5 @@
 /ibutton_netlink_linux/Release
 /ibutton_netlink_linux/bin
 /ibutton_netlink_linux/obj
+/ibutton_w1_android/bin
+/ibutton_w1_android/obj
