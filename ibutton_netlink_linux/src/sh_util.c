@@ -18,6 +18,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "sh_types.h"
 #include "sh_util.h"
 
@@ -91,4 +94,16 @@ BOOL convert_hexstr_to_bytes(char * hexstrIn, int hexstrLen, BYTE * bytesOut, in
     }
     *bytesLen = j;
     return TRUE; //TODO
+}
+
+void print_bytes(BYTE * bytesIn, int bytesOffset, int bytesLen)
+{
+    int bufLen = bytesLen * 2 + 1;
+    char buf[bufLen];
+
+    memset(buf, 0, bufLen);
+
+    convert_bytes_to_hexstr(bytesIn, bytesOffset, bytesLen, buf, &bufLen);
+
+    printf(">>>>>>>>>> print %d bytes from the %dth byte: %s\n", bytesLen, bytesOffset, buf);
 }

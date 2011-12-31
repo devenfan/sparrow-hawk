@@ -48,8 +48,6 @@
 #include "w1_netlink_userspace.h"
 #include "w1_netlink_userservice.h"
 
-#include <android/log.h>    //android log support
-
 /* ====================================================================== */
 /* ============================ Constants =============================== */
 /* ====================================================================== */
@@ -100,27 +98,13 @@ static BYTE g_ackStatus;                   //the ack status: OK, FAILED, TIMEOUT
 /* ============================ log ralated ============================= */
 /* ====================================================================== */
 
-#define MAX_LOG_SIZE  1024
-
-static char g_logBuf[MAX_LOG_SIZE];
-
-
 #define LOG_TAG   "w1_netlink_userservice"
 
-//logLevel: DEBUG, INFO, WARN, ERROR, FATAL
-#define logging(logLevel, format, args...)              \
-{                                                       \
-    memset(g_logBuf, 0, MAX_LOG_SIZE * sizeof(char));   \
-    sprintf(g_logBuf, format, ##args);                  \
-    __android_log_write(ANDROID_LOG_##logLevel, LOG_TAG, g_logBuf);   \
-}
+#define ANDROID_NDK
 
-//print
-//#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userservice.c : %s  \n", (input))
+#include "sh_log.h"
 
-//logcat
-#define DebugLine(input)     __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, (input));
-
+#define Debug(format, args...)    android_debug(LOG_TAG, format, ##args)
 
 /* ====================================================================== */
 /* ========================== private methods =========================== */
@@ -179,10 +163,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     /*
 
     //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
-	printf("RECV: cnmsg seq[%d], ack[%d], dataLen[%d]\n",
+	Debug("RECV: cnmsg seq[%d], ack[%d], dataLen[%d]\n",
         cnmsg->seq, cnmsg->ack, cnmsg->len);
 
-	printf("RECV: w1msg type[%s], dataLen[%d], status[%d]\n",
+	Debug("RECV: w1msg type[%s], dataLen[%d], status[%d]\n",
         msgTypeStr, w1msg->len, w1msg->status);
     */
     print_cnmsg(cnmsg);
@@ -199,13 +183,13 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         if(W1_SLAVE_ADD == w1msg->type)
         {
-            printf("w1(1-wire) slave[%s] added\n", idDescribe);
+            Debug("w1(1-wire) slave[%s] added\n", idDescribe);
             if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
                 g_userCallbacks->slave_added_callback(*slave_rn);
         }
         else
         {
-            printf("w1(1-wire) slave[%s] removed\n", idDescribe);
+            Debug("w1(1-wire) slave[%s] removed\n", idDescribe);
             if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
                 g_userCallbacks->slave_removed_callback(*slave_rn);
         }
@@ -219,13 +203,13 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         if(W1_MASTER_ADD == w1msg->type)
         {
-            printf("w1(1-wire) master[%d] added\n", master_id);
+            Debug("w1(1-wire) master[%d] added\n", master_id);
             if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
                 g_userCallbacks->master_added_callback(master_id);
         }
         else
         {
-            printf("w1(1-wire) master[%d] removed\n", master_id);
+            Debug("w1(1-wire) master[%d] removed\n", master_id);
             if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
                 g_userCallbacks->master_removed_callback(master_id);
         }
@@ -238,7 +222,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
             //only use the first ack cnmsg
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
             sh_signal_notify(&g_waitAckMsgSignal);
-            printf("Notify for msgType[%s]!\n", msgTypeStr);
+            Debug("Notify for msgType[%s]!\n", msgTypeStr);
         }
         return;
     }
@@ -254,7 +238,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         /*
         describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
-        printf("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
+        Debug("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
 
         if(W1_CMD_SEARCH == w1cmd->cmd || W1_CMD_ALARM_SEARCH == w1cmd->cmd)
         {
@@ -265,7 +249,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 			for(slave_index = 0; slave_index < slave_count; slave_index++)
 			{
 			    describe_w1_reg_num(slave_rn + slave_index, idDescribe);
-				printf("w1(1-wire) salve[%d] searched: %s \n", slave_index, idDescribe);
+				Debug("w1(1-wire) salve[%d] searched: %s \n", slave_index, idDescribe);
 			}
         }
         */
@@ -274,7 +258,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
             //only use the first ack cnmsg
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
             sh_signal_notify(&g_waitAckMsgSignal);
-            printf("Notify for msgType[%s]!\n", msgTypeStr);
+            Debug("Notify for msgType[%s]!\n", msgTypeStr);
         }
         return;
     }
@@ -286,14 +270,14 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         //    2. w1_process_command_master OR w1_process_command_slave
         w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
         describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
-        printf("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
+        Debug("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
 
         if(g_isWaitingAckMsg)
         {
             //only use the first ack cnmsg
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
             sh_signal_notify(&g_waitAckMsgSignal);
-            printf("Notify for msgType[%s]!\n", msgTypeStr);
+            Debug("Notify for msgType[%s]!\n", msgTypeStr);
         }
         return;
     }
@@ -345,14 +329,14 @@ static void * socketmsg_receiving_loop(void * param)
 {
 	int ret;
 
-	printf("w1 socketmsg receiving thread started!\n");
+	Debug("w1 socketmsg receiving thread started!\n");
 
 	while(!receivingThreadStopFlag)
 	{
 		ret = retrieve_socket_msg();
 
 		if (E_SOCKET_PEER_GONE == ret) {
-			printf("System error, socket peer is gone, application exit.\n");
+			Debug("System error, socket peer is gone, application exit.\n");
 			exit(0);
 		}
 		else if (E_SOCKET_CANNOT_RECV == ret) {
@@ -361,13 +345,13 @@ static void * socketmsg_receiving_loop(void * param)
 		}
 		else
 		{
-			printf("RECV: socketmsg received, which size is %d ........................\n", ret);
+			Debug("RECV: socketmsg received, which size is %d ........................\n", ret);
 			//base on the ret size...
 			on_w1_netlinkmsg_received((struct cn_msg *)NLMSG_DATA(nlMsgRecv));
 		}
 	}
 
-	printf("w1 socketmsg receiving thread stopped!\n");
+	Debug("w1 socketmsg receiving thread stopped!\n");
 
 	sh_signal_notify(&recevingThreadStopSignal);
 
@@ -382,8 +366,12 @@ static void start_receiving_thread(void)
 	sh_signal_init(&recevingThreadStopSignal);
 
     {
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
         //Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
-        pthread_create(&receivingThread, NULL, socketmsg_receiving_loop, NULL);
+        pthread_create(&receivingThread, &attr, socketmsg_receiving_loop, NULL);
     }
 
     g_isWaitingAckMsg = FALSE;
@@ -467,7 +455,7 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	nlMsgRecv = (struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_MSG_SIZE));
 	if (nlMsgSend == NULL || nlMsgRecv == NULL)
 	{
-		printf("Cannot allocate memory for netlink message header\n");
+		Debug("Cannot allocate memory for netlink message header\n");
         return FALSE;
 	}
 	memset(nlMsgSend, 0, NLMSG_SPACE(MAX_MSG_SIZE));
@@ -477,7 +465,7 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	g_ackMsg = (struct cn_msg *)malloc(MAX_CNMSG_SIZE);
 	if(NULL == g_ackMsg)
 	{
-		printf("Cannot allocate memory for ack cnmsg!\n");
+		Debug("Cannot allocate memory for ack cnmsg!\n");
 		return -1;
 	}
 	memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
@@ -487,7 +475,7 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 
 	start_receiving_thread();
 
-	printf("w1 netlink userspace service started!\n");
+	Debug("w1 netlink userspace service started!\n");
 
 	return TRUE;
 }
@@ -514,7 +502,7 @@ BOOL w1_netlink_userservice_stop(void)
 
 	pthread_mutex_destroy(&g_globalLocker);
 
-	printf("w1 netlink userspace service stopped!\n");
+	Debug("w1 netlink userspace service stopped!\n");
 
 	return TRUE;
 }
@@ -556,7 +544,7 @@ struct cn_msg * malloc_w1_netlinkmsg(void)
     cnmsg->seq = generate_w1_global_sequence();
 
 	//we cannot take "__u8	data[0]" as "void *", because former one don't take any mem.
-	//printf("sizeof(struct w1_netlink_msg): %d bytes\n", sizeof(struct w1_netlink_msg));
+	//Debug("sizeof(struct w1_netlink_msg): %d bytes\n", sizeof(struct w1_netlink_msg));
 
 	return cnmsg;
 }
@@ -612,7 +600,7 @@ BOOL send_w1_netlinkmsg(struct cn_msg * cnmsg)
 
 	if(ret != -1)
 	{
-		printf("SEND: w1 socketmsg sent, which size is " + ret);
+		Debug("SEND: w1 socketmsg sent, which size is " + ret);
         return TRUE;
 	}
 
@@ -680,8 +668,17 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
 
 	if(!succeed) goto End;
 
+	Debug("Before sh_signal_wait...\n");
+
     //waiting for the ack message
-    sh_signal_wait(&g_waitAckMsgSignal);
+    if(sh_signal_wait(&g_waitAckMsgSignal) != 0)
+    {
+        Debug("After sh_signal_wait... Failed\n");
+        succeed = FALSE;
+        goto End;
+    }
+
+	Debug("After sh_signal_wait... OK\n");
 
     /*
     if(NULL == g_ackMsg)
@@ -692,7 +689,7 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     */
     *ppRecvMsg = (struct w1_netlink_msg *)(g_ackMsg + 1);
 
-    printf("Print AckMsg below...................................\n");
+    Debug("Print AckMsg below...................................\n");
     print_cnmsg(g_ackMsg);
     print_w1msg(*ppRecvMsg);
 
@@ -729,21 +726,30 @@ BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
     succeed = transact_w1_msg(W1_MASTER_CMD, (isSearchAlarm ? W1_CMD_ALARM_SEARCH : W1_CMD_SEARCH),
                               (BYTE *)&masterId, sizeof(w1_master_id), NULL, 0, &w1msgRecv);
 
-    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+    if(succeed)
+        succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
     if(succeed)
     {
-        w1cmdRecv = (struct w1_netlink_cmd *)(w1msgRecv + 1);
+        w1cmdRecv = (struct w1_netlink_cmd *)(w1msgRecv->data);
 
         *pSlaveCount = w1cmdRecv->len / sizeof(w1_slave_rn);
+
         if(*pSlaveCount > 0)
         {
+            //Debug("(*pSlaveCount) * sizeof(w1_slave_rn): %d\n", (*pSlaveCount) * sizeof(w1_slave_rn));
+
+            print_bytes(w1cmdRecv->data, 0, (*pSlaveCount) * sizeof(w1_slave_rn));
+
             memcpy(slaves, w1cmdRecv->data, (*pSlaveCount) * sizeof(w1_slave_rn));
+
+            print_bytes((BYTE *)slaves, 0, (*pSlaveCount) * sizeof(w1_slave_rn));
         }
 
-        printf("Recv w1msg & w1cmd below................................\n");
+        Debug("Recv w1msg & w1cmd below................................\n");
         print_w1msg(w1msgRecv);
         print_w1cmd(w1cmdRecv);
+
     }
 
     return succeed;
@@ -765,7 +771,8 @@ BOOL w1_master_reset(w1_master_id masterId)
     succeed = transact_w1_msg(W1_MASTER_CMD, W1_CMD_RESET, (BYTE *)&masterId, sizeof(w1_master_id),
                               NULL, 0, &w1msgRecv);
 
-    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+    if(succeed)
+        succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
     return succeed;
 }
@@ -870,11 +877,12 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
                               w1CmdType, masterOrSlaveId, idLen,
                               dataIn, dataInLen, &w1msgRecv);
 
-    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+    if(succeed)
+        succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
     if(succeed)
     {
-        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
+        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv->data);
 
         *pDataOut = w1cmdRecv->data;
         *pDataOutLen = w1cmdRecv->len;
@@ -898,7 +906,8 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
 
     succeed = transact_w1_msg(W1_LIST_MASTERS, 0, NULL, 0, NULL, 0, &w1msg);
 
-    succeed = (0 == w1msg->status) ? TRUE : FALSE;
+    if(succeed)
+        succeed = (0 == w1msg->status) ? TRUE : FALSE;
 
     if(succeed)
     {

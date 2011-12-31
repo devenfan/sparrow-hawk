@@ -76,6 +76,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\sh_list.h" />
+		<Unit filename="src\sh_log.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\sh_log.h" />
 		<Unit filename="src\sh_queue.c">
 			<Option compilerVar="CC" />
 		</Unit>

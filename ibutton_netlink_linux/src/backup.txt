@@ -27,7 +27,7 @@ static void on_master_listed(int * master_ids, int master_count)
 {
     int index = 0;
 
-    DebugLine("on_master_listed");
+    Debug("on_master_listed");
 
     memset( m_masterIDs, 0, sizeof(int) * MASTER_MAX_COUNT);
     m_masterCount = master_count;
@@ -47,7 +47,7 @@ static void on_salve_found(w1_slave_rn * slave_ids, int slave_count)
 {
     int index = 0;
 
-    DebugLine("on_salve_found");
+    Debug("on_salve_found");
 
     memset( m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
     m_slaveCount = slave_count;
@@ -79,11 +79,11 @@ int main(void)
     int cmdSize = sizeof(struct w1_netlink_cmd) + 1024;    //the more the better
     struct w1_netlink_cmd * cmd = (struct w1_netlink_cmd *) malloc(cmdSize);
 
-    DebugLine("1");
+    Debug("1");
 
     initialize();
 
-    DebugLine("2");
+    Debug("2");
 
 	if(!w1_netlink_userservice_start(&m_userCallbacks))
 	{
@@ -138,11 +138,11 @@ int main(void)
 
         if(process_w1_master_cmd(m_masterIDs[m_masterCurrentIndex],  cmd))
         {
-            DebugLine("process_w1_master_cmd OK!");
+            Debug("process_w1_master_cmd OK!");
         }
         else
         {
-            DebugLine("process_w1_master_cmd Failed!");
+            Debug("process_w1_master_cmd Failed!");
         }
     }
 
@@ -153,11 +153,11 @@ int main(void)
 
     if(succeed)
     {
-        DebugLine("w1_master_search Succeed!");
+        Debug("w1_master_search Succeed!");
     }
     else
     {
-        DebugLine("w1_master_search Failed!");
+        Debug("w1_master_search Failed!");
     }
 
     printf("Type something to quit: \n");
@@ -172,4 +172,39 @@ GameOver:
 	printf("Main thread Game Over...\n");
 	return 0;
 }
+
+###############################################################
+######################### w1_ndklog.c #########################
+###############################################################
+
+#ifndef SH_NDKLOG_H_INCLUDED
+#define SH_NDKLOG_H_INCLUDED
+
+
+#include <android/log.h>    //android log support
+
+/*
+#define MAX_LOG_SIZE  1024
+
+static char g_logBuf[MAX_LOG_SIZE];
+
+#define logging(logLevel, format, args...)              \
+{                                                       \
+    memset(g_logBuf, 0, MAX_LOG_SIZE * sizeof(char));   \
+    sprintf(g_logBuf, format, ##args);                  \
+    __android_log_write(logLevel, LOG_TAG, g_logBuf);   \
+}
+*/
+
+
+
+#define Debug(LOG_TAG, format, args...)                                 \
+{                                                                       \
+    __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, format, ##args);    \
+    printf("[%s]: \t", LOG_TAG);                                        \
+    printf(format, ##args);                                             \
+}
+
+
+#endif // SH_NDKLOG_H_INCLUDED
 

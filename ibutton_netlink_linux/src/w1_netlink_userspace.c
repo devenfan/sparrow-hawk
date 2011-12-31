@@ -36,8 +36,23 @@
 
 #include "w1_netlink_userspace.h"
 
-#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userspace.c : %s  \n", (input))
 
+/* ====================================================================== */
+/* ============================ log ralated ============================= */
+/* ====================================================================== */
+
+#define LOG_TAG   "w1_netlink_userspace"
+
+#define ANDROID_NDK
+
+#include "sh_log.h"
+
+#define Debug(format, args...)    android_debug(LOG_TAG, format, ##args)
+
+
+/* ====================================================================== */
+/* =========================== public methods =========================== */
+/* ====================================================================== */
 
 BOOL is_w1_slave_rn_empty(w1_slave_rn rn)
 {
@@ -47,10 +62,10 @@ BOOL is_w1_slave_rn_empty(w1_slave_rn rn)
     char salveIDStr[20];
 
     describe_w1_reg_num(&rn, salveIDStr);
-    DebugLine(salveIDStr);
+    Debug(salveIDStr);
 
     describe_w1_reg_num(&empty_rn, salveIDStr);
-    DebugLine(salveIDStr);
+    Debug(salveIDStr);
     */
 
     return (memcmp(&rn, &empty_rn, sizeof(w1_slave_rn)) == 0) ? TRUE : FALSE;
@@ -63,10 +78,10 @@ BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2)
     char salveIDStr[20];
 
     describe_w1_reg_num(&rn1, salveIDStr);
-    DebugLine(salveIDStr);
+    Debug(salveIDStr);
 
     describe_w1_reg_num(&rn2, salveIDStr);
-    DebugLine(salveIDStr);
+    Debug(salveIDStr);
     */
 
     return (memcmp(&rn1, &rn2, sizeof(w1_slave_rn)) == 0) ? TRUE : FALSE;
@@ -174,7 +189,7 @@ BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr)
 void print_cnmsg(struct cn_msg * cnmsg)
 {
     //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
-    printf("CNMSG: seq[%d], ack[%d], dataLen[%d]\n",
+    Debug("CNMSG: seq[%d], ack[%d], dataLen[%d]\n",
         cnmsg->seq, cnmsg->ack, cnmsg->len);
 }
 
@@ -188,7 +203,7 @@ void print_w1msg(struct w1_netlink_msg * w1msg)
     describe_w1_msg_type(w1msg->type, msgTypeStr);
 
     //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
-    printf("W1MSG: type[%s], dataLen[%d], status[%d]\n",
+    Debug("W1MSG: type[%s], dataLen[%d], status[%d]\n",
         msgTypeStr, w1msg->len, w1msg->status);
 }
 
@@ -196,11 +211,16 @@ void print_w1msg(struct w1_netlink_msg * w1msg)
 void print_w1cmd(struct w1_netlink_cmd * w1cmd)
 {
 	char cmdTypeStr[20];
+	char cmdDataStr[64];
+	int cmdDataStrLen = 0;
 
     memset(cmdTypeStr, 0, 20);
+    memset(cmdDataStr, 0, 64);
 
     describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
 
+    convert_bytes_to_hexstr(w1cmd->data, 0, w1cmd->len, cmdDataStr, &cmdDataStrLen);
+
     //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
-    printf("W1CMD: type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
+    Debug("W1CMD: type[%s], dataLen[%d], data[%s]\n", cmdTypeStr,  w1cmd->len, cmdDataStr);
 }

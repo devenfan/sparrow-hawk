@@ -21,9 +21,15 @@
 #ifndef __SH_THREAD_H
 #define __SH_THREAD_H
 
+/**
+ * Please refer to below link:
+ * http://www.ibm.com/developerworks/cn/linux/l-cn-mthreadps/
+ */
 typedef struct sh_signal_ctrl {
+    pthread_mutexattr_t mutex_attr;
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
+	int cond_counter;
 } sh_signal_ctrl;
 
 

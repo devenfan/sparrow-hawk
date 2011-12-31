@@ -15,35 +15,30 @@
 #include "w1_netlink_userspace.h"
 #include "w1_netlink_userservice.h"
 
-#include <android/log.h>    //android log support
 
 #define MASTER_MAX_COUNT   3
 #define SLAVE_MAX_COUNT   10
 
 
-w1_master_id m_masterId;    //current master id
+static w1_master_id m_masterId;    //current master id
 
-w1_slave_rn m_slaveIDs[SLAVE_MAX_COUNT];
-int m_slaveCount;
-int m_slaveCurrentIndex;
+static w1_slave_rn m_slaveIDs[SLAVE_MAX_COUNT];
+static int m_slaveCount;
+static int m_slaveCurrentIndex;
 
-w1_user_callbacks m_userCallbacks;
+static w1_user_callbacks m_userCallbacks;
 
-#define LOG_TAG   "w1_netlink_userservice"
+/* ====================================================================== */
+/* ============================ log ralated ============================= */
+/* ====================================================================== */
 
-//logLevel: DEBUG, INFO, WARN, ERROR, FATAL
-#define logging(logLevel, format, args...)              \
-{                                                       \
-    memset(g_logBuf, 0, MAX_LOG_SIZE * sizeof(char));   \
-    sprintf(g_logBuf, format, ##args);                  \
-    __android_log_write(ANDROID_LOG_##logLevel, LOG_TAG, g_logBuf);   \
-}
+#define LOG_TAG   "w1_netlink_userapp"
 
-//print
-//#define DebugLine(input)   printf(">>>>>>>>>> w1_netlink_userapp.c : %s  \n", (input))
+#define ANDROID_NDK
 
-//logcat
-#define DebugLine(input)     __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, (input));
+#include "sh_log.h"
+
+#define Debug(format, args...)    android_debug(LOG_TAG, format, ##args)
 
 /* ====================================================================== */
 /* ============================== utilities ============================= */
@@ -51,13 +46,13 @@ w1_user_callbacks m_userCallbacks;
 
 static void print_master(void)
 {
-    printf("Master: %d\n", m_masterId);
+    Debug("w1(1-wire) Master: %d\n", m_masterId);
 }
 
 static void print_all_slaves(void)
 {
     char buf[SLAVE_MAX_COUNT * 30];
-    char * position;
+    char * position = NULL;
     int index = 0;
 
     memset(buf, 0, SLAVE_MAX_COUNT * 30);
@@ -67,7 +62,7 @@ static void print_all_slaves(void)
                 m_slaveIDs[index].family, (long long unsigned int)m_slaveIDs[index].id, m_slaveIDs[index].crc);
         position += strlen(position);
     }
-    printf("Total %d Slaves: \n%s\n", m_slaveCount, buf);
+    Debug("Total %d w1(1-wire) Slaves: \n%s\n", m_slaveCount, buf);
 }
 
 
@@ -77,7 +72,7 @@ static void print_all_slaves(void)
 
 static void on_master_added(int master_id)
 {
-    DebugLine("on_master_added");
+    Debug("on_master_added");
 
     m_masterId = master_id;
 
@@ -86,7 +81,7 @@ static void on_master_added(int master_id)
 
 static void on_master_removed(int master_id)
 {
-    DebugLine("on_master_removed");
+    Debug("on_master_removed");
 
     if(m_masterId == master_id)
         m_masterId = 0;
@@ -100,7 +95,7 @@ static void on_slave_added(w1_slave_rn slave_id)
     int index = 0;
     BOOL found = FALSE;
 
-    DebugLine("on_slave_added");
+    Debug("on_slave_added");
 
     if(!is_w1_slave_rn_empty(slave_id))
     {
@@ -130,7 +125,7 @@ static void on_slave_removed(w1_slave_rn slave_id)
     int index = 0;
     BOOL found = FALSE;
 
-    DebugLine("on_slave_removed");
+    Debug("on_slave_removed");
 
     if(!is_w1_slave_rn_empty(slave_id))
     {
@@ -207,59 +202,67 @@ int main(void)
 
     initialize();
 
-
 	if(!w1_netlink_userservice_start(&m_userCallbacks))
 	{
-	    printf("Cannot start w1 netlink userspace service...\n");
+	    Debug("Cannot start w1 netlink userspace service...\n");
 	    goto GameOver;
 	}
 
     //sleep a while...
     sleep(sleepSecond);
-    printf("Main thread wake up after %d seconds...\n", sleepSecond);
+    Debug("Main thread wake up after %d seconds...\n", sleepSecond);
 
     succeed = w1_list_masters(masters, &masterCount);
     if(succeed)
     {
         m_masterId = (masterCount > 0) ? masters[0] : 0;
-        DebugLine("w1_list_masters Succeed!");
+        Debug("w1_list_masters Succeed!\n");
     }
     else
     {
         m_masterId = 0;
-        DebugLine("w1_list_masters Failed!");
+        Debug("w1_list_masters Failed!\n");
     }
     print_master();
 
     //sleep a while...
     sleep(sleepSecond);
-    printf("Main thread wake up after %d seconds...\n", sleepSecond);
+    Debug("Main thread wake up after %d seconds...\n", sleepSecond);
 
     succeed = w1_master_search(m_masterId, FALSE, slaves, &slaveCount);
     if(succeed)
     {
-        DebugLine("w1_master_search Succeed!");
+        Debug("w1_master_search Succeed!\n");
 
         m_slaveCount = slaveCount;
         m_slaveCurrentIndex = (slaveCount > 0) ? 0 : -1;
-        memcpy(m_slaveIDs, slaves, sizeof(w1_slave_rn) * m_slaveCount);
+
+        memset(m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
+        for(index = 0; index < slaveCount; index++)
+        {
+            m_slaveIDs[index] = slaves[index];
+        }
+
+        //memcpy(m_slaveIDs, slaves, sizeof(w1_slave_rn) * m_slaveCount);
+
+        Debug("slaveCount: %d\n", m_slaveCount);
     }
     else
     {
-        DebugLine("w1_master_search Failed!");
+        Debug("w1_master_search Failed!\n");
     }
     print_all_slaves();
 
-    printf("Type something to quit: \n");
+    Debug("Type something to quit: \n");
     scanf("%s", useless);
-    printf("OK: %s\n", useless);
+    Debug("OK: %s\n", useless);
 
     w1_netlink_userservice_stop();
 
 
 GameOver:
 
-	printf("Main thread Game Over...\n");
+	Debug("Main thread Game Over...\n");
 	return 0;
 }
 

@@ -31,16 +31,22 @@ int sh_signal_init(sh_signal_ctrl * signal)
 {
 	if(NULL == signal)	return E_NULL_POINTER;
 
-	if(0 != pthread_mutex_init(&signal->mutex, NULL))
+	pthread_mutexattr_init(&(signal->mutex_attr));
+    //Add recursive attribute
+    pthread_mutexattr_settype(&(signal->mutex_attr), PTHREAD_MUTEX_RECURSIVE_NP);
+
+	if(0 != pthread_mutex_init(&(signal->mutex), &(signal->mutex_attr)))
 	{
 		return E_CANNOT_INIT;
 	}
 
-	if(0 != pthread_cond_init(&signal->cond, NULL))
+	if(0 != pthread_cond_init(&(signal->cond), NULL))
 	{
-		pthread_mutex_destroy(&signal->mutex);
+		pthread_mutex_destroy(&(signal->mutex));
 		return E_CANNOT_INIT;
 	}
+
+    signal->cond_counter = 0;
 
 	return E_OK;
 }
@@ -52,12 +58,12 @@ int sh_signal_destroy(sh_signal_ctrl * signal)
 
 	int ret = E_OK;
 
-	if(0 != pthread_mutex_destroy(&signal->mutex))
+	if(0 != pthread_mutex_destroy(&(signal->mutex)))
 	{
 		ret = E_CANNOT_DESTROY;
 	}
 
-	if(0 != pthread_cond_destroy(&signal->cond))
+	if(0 != pthread_cond_destroy(&(signal->cond)))
 	{
 		ret = E_CANNOT_DESTROY;
 	}
@@ -68,71 +74,45 @@ int sh_signal_destroy(sh_signal_ctrl * signal)
 
 int sh_signal_wait(sh_signal_ctrl * signal)
 {
-	//OK will return 0
-	return pthread_cond_wait(&signal->cond, &signal->mutex);
+    int result;
+
+    pthread_mutex_lock(&(signal->mutex));
+
+    signal->cond_counter++;
+
+	//OK will get 0
+	result = pthread_cond_wait(&(signal->cond), &(signal->mutex));
+
+    pthread_mutex_unlock(&(signal->mutex));
+
+    return result;
 }
 
 
 int sh_signal_notify(sh_signal_ctrl * signal)
 {
+    int result;
+
+    while(1)
+    {
+        pthread_mutex_lock(&(signal->mutex));
+
+        if(signal->cond_counter > 0)
+        {
+            //it will notify the first thread waiting for this signal
+            //pthread_cond_signal(&signal->cond);
+
+            //it will notify all the threads waiting for this signal
+            result = pthread_cond_broadcast(&(signal->cond));
+            pthread_mutex_unlock(&(signal->mutex));
+            break;
+        }
+
+        pthread_mutex_unlock(&(signal->mutex));
+    }
+
 	//OK will return 0
-
-	//it will notify the first thread waiting for this signal
-	//pthread_cond_signal(&signal->cond);
-
-	//it will notify all the threads waiting for this signal
-	return pthread_cond_broadcast(&signal->cond);
+    return result;
 }
-
-
-
-
-
-
-/*
-int sh_thread_ctrl_init(sh_signal_ctrl * myctrl)
-{
-	int mystatus;
-	if (pthread_mutex_init(&(myctrl->mutex), NULL))
-		return 1;
-	if (pthread_cond_init(&(myctrl->cond), NULL))
-		return 1;
-	myctrl->active = 0;
-	return 0;
-}
-
-int sh_signal_ctrl_destroy(sh_signal_ctrl *myctrl)
-{
-	int mystatus;
-	if (pthread_cond_destroy(&(myctrl->cond)))
-		return 1;
-	if (pthread_cond_destroy(&(myctrl->cond)))
-		return 1;
-	myctrl->active = 0;
-	return 0;
-}
-
-int sh_signal_ctrl_activate(sh_signal_ctrl *myctrl)
-{
-	int mystatus;
-	if (pthread_mutex_lock(&(myctrl->mutex)))
-		return 0;
-	myctrl->active = 1;
-	pthread_mutex_unlock(&(myctrl->mutex));
-	pthread_cond_broadcast(&(myctrl->cond));
-	return 1;
-}
-
-int sh_signal_ctrl_deactivate(sh_signal_ctrl *myctrl)
-{
-	int mystatus;
-	if (pthread_mutex_lock(&(myctrl->mutex)))
-		return 0;
-	myctrl->active = 0;
-	pthread_mutex_unlock(&(myctrl->mutex));
-	pthread_cond_broadcast(&(myctrl->cond));
-	return 1;
-}
-*/
 
 
