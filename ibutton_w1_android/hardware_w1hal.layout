@@ -2,7 +2,7 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
 	<File name="src\hardware_w1hal\w1_hal.c" open="0" top="0" tabpos="0">
-		<Cursor position="891" topLine="15" />
+		<Cursor position="905" topLine="15" />
 	</File>
 	<File name="src\hardware_w1hal\w1_hal.h" open="0" top="0" tabpos="0">
 		<Cursor position="680" topLine="9" />
@@ -20,7 +20,7 @@
 		<Cursor position="329" topLine="21" />
 	</File>
 	<File name="src\inc\sh_thread.h" open="0" top="0" tabpos="0">
-		<Cursor position="353" topLine="20" />
+		<Cursor position="850" topLine="22" />
 	</File>
 	<File name="src\inc\sh_types.h" open="0" top="0" tabpos="0">
 		<Cursor position="352" topLine="20" />
@@ -31,7 +31,7 @@
 	<File name="src\inc\w1_netlink_userservice.h" open="0" top="0" tabpos="0">
 		<Cursor position="1035" topLine="0" />
 	</File>
-	<File name="src\inc\w1_netlink_userspace.h" open="0" top="0" tabpos="0">
-		<Cursor position="968" topLine="17" />
+	<File name="src\inc\w1_netlink_userspace.h" open="1" top="1" tabpos="0">
+		<Cursor position="3469" topLine="147" />
 	</File>
 </CodeBlocks_layout_file>
