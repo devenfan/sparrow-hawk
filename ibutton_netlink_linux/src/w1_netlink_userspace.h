@@ -132,35 +132,4 @@ BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2);
 typedef __u32 w1_master_id;
 
 
-/**
-* OK return TRUE, Error return FALSE.
-* The input-output parameter "outputStr" must be at least 20.
-*/
-BOOL describe_w1_msg_type(int msgType, char * outputStr);
-
-
-/**
-* OK return TRUE, Error return FALSE.
-* The input-output parameter "outputStr" must be at least 20.
-*/
-BOOL describe_w1_cmd_type(int cmdType, char * outputStr);
-
-
-/**
-* OK return TRUE, Error return FALSE.
-* The input-output parameter "outputStr" must be at least 20.
-* It's formart Like: %02x.%012llx.%02x
-*/
-BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr);
-
-
-void print_cnmsg(struct cn_msg * cnmsg);
-
-
-void print_w1msg(struct w1_netlink_msg * w1msg);
-
-
-void print_w1cmd(struct w1_netlink_cmd * w1cmd);
-
-
 #endif /* __W1_NETLINK_USERSPACE_H */

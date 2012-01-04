@@ -208,3 +208,116 @@ static char g_logBuf[MAX_LOG_SIZE];
 
 #endif // SH_NDKLOG_H_INCLUDED
 
+
+###############################################################
+################## w1_netlink_userservice.c ###################
+###############################################################
+
+/*
+BOOL process_w1_master_cmd(w1_master_id masterId, BYTE w1CmdType,
+                           void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+{
+    if(0 == masterId) return FALSE;   //no master id
+    if(NULL == dataIn) return FALSE;
+    if(NULL == pDataOut) return FALSE;
+    if(NULL == pDataOutLen) return FALSE;
+
+    if(W1_CMD_SEARCH != w1CmdType &&
+       W1_CMD_ALARM_SEARCH != w1CmdType &&
+       W1_CMD_RESET != w1CmdType)
+       return FALSE;
+
+    BOOL succeed = FALSE;
+
+    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
+
+    struct w1_netlink_msg * w1msgRecv = NULL;
+    struct w1_netlink_msg * w1cmdRecv = NULL;
+
+    succeed = transact_w1_msg(W1_MASTER_CMD, w1CmdType, &w1_master_id, sizeof(w1_master_id),
+                              dataIn, dataInLen, &w1msgRecv);
+
+    if(succeed)
+    {
+        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
+
+        *pDataOut = w1cmdRecv->data;
+        *pDataOutLen = w1cmdRecv->len;
+
+        succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+    }
+
+    return succeed;
+}
+*/
+
+
+/*
+BOOL w1_process_slave_cmd(w1_slave_rn * slaveId, BYTE w1CmdType,
+                          void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+{
+    if(NULL == slaveId) return FALSE;
+    if(NULL == dataIn) return FALSE;
+    if(NULL == pDataOut) return FALSE;
+    if(NULL == pDataOutLen) return FALSE;
+
+    if(W1_CMD_READ != w1CmdType &&
+       W1_CMD_WRITE != w1CmdType &&
+       W1_CMD_TOUCH != w1CmdType) return FALSE;
+
+    BOOL succeed = FALSE;
+
+    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
+
+    struct w1_netlink_msg * w1msgRecv = NULL;
+    struct w1_netlink_msg * w1cmdRecv = NULL; //issue here!!!! Wrong declaration!!!!
+
+    succeed = transact_w1_msg(W1_SLAVE_CMD, w1CmdType, slaveId, sizeof(w1_slave_rn),
+                              dataIn, dataInLen, &w1msgRecv);
+
+    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+
+    if(succeed)
+    {
+        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
+
+        *pDataOut = w1cmdRecv->data;
+        *pDataOutLen = w1cmdRecv->len;
+    }
+
+    return succeed;
+}
+*/
+
+
+/*
+BOOL request_to_search_w1_slaves(BOOL alarmSearch)
+{
+    BOOL ret = FALSE;
+    struct cn_msg * cnmsg = NULL;
+    struct w1_netlink_msg * w1msg = NULL;
+	struct w1_netlink_cmd * w1cmd = NULL;
+
+    if(g_isWaitingAckMsg) return FALSE;    //busy
+
+	cnmsg = malloc_w1_netlinkmsg();
+	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+	w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
+
+	w1cmd->len = 0;
+	w1cmd->cmd = alarmSearch ? W1_CMD_ALARM_SEARCH : W1_CMD_SEARCH;
+
+	w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
+	w1msg->len = 0;
+	w1msg->type = W1_MASTER_CMD;
+	//TODO: w1-msg->id = master_id...
+
+	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+	ret = send_w1_netlinkmsg(cnmsg);
+
+	free_w1_netlinkmsg(cnmsg);
+
+	return ret;
+}
+*/

@@ -4,14 +4,14 @@
 	<File name="src\Makefile" open="0" top="0" tabpos="0">
 		<Cursor position="594" topLine="12" />
 	</File>
-	<File name="src\backup.txt" open="0" top="0" tabpos="1">
-		<Cursor position="3214" topLine="130" />
+	<File name="src\backup.txt" open="1" top="0" tabpos="3">
+		<Cursor position="6955" topLine="262" />
 	</File>
 	<File name="src\ibutton_netlink_linux.c" open="0" top="0" tabpos="0">
 		<Cursor position="428" topLine="0" />
 	</File>
 	<File name="src\kernel_connector.h" open="0" top="0" tabpos="2">
-		<Cursor position="924" topLine="13" />
+		<Cursor position="924" topLine="79" />
 	</File>
 	<File name="src\sh_error.h" open="0" top="0" tabpos="0">
 		<Cursor position="8" topLine="0" />
@@ -22,13 +22,13 @@
 	<File name="src\sh_list.h" open="0" top="0" tabpos="0">
 		<Cursor position="969" topLine="23" />
 	</File>
-	<File name="src\sh_log.c" open="1" top="0" tabpos="1">
-		<Cursor position="47" topLine="0" />
+	<File name="src\sh_log.c" open="0" top="0" tabpos="1">
+		<Cursor position="49" topLine="0" />
 	</File>
-	<File name="src\sh_log.h" open="1" top="0" tabpos="3">
-		<Cursor position="513" topLine="0" />
+	<File name="src\sh_log.h" open="0" top="0" tabpos="3">
+		<Cursor position="548" topLine="0" />
 	</File>
-	<File name="src\sh_queue.c" open="1" top="0" tabpos="6">
+	<File name="src\sh_queue.c" open="0" top="0" tabpos="6">
 		<Cursor position="687" topLine="17" />
 	</File>
 	<File name="src\sh_queue.h" open="0" top="0" tabpos="0">
@@ -37,8 +37,8 @@
 	<File name="src\sh_test_headers.c" open="0" top="0" tabpos="4">
 		<Cursor position="228" topLine="3" />
 	</File>
-	<File name="src\sh_thread.c" open="1" top="0" tabpos="7">
-		<Cursor position="2096" topLine="18" />
+	<File name="src\sh_thread.c" open="0" top="0" tabpos="7">
+		<Cursor position="2216" topLine="91" />
 	</File>
 	<File name="src\sh_thread.h" open="0" top="0" tabpos="0">
 		<Cursor position="853" topLine="26" />
@@ -46,25 +46,28 @@
 	<File name="src\sh_types.h" open="0" top="0" tabpos="0">
 		<Cursor position="920" topLine="20" />
 	</File>
-	<File name="src\sh_util.c" open="1" top="0" tabpos="8">
-		<Cursor position="866" topLine="9" />
+	<File name="src\sh_util.c" open="0" top="0" tabpos="8">
+		<Cursor position="2915" topLine="90" />
 	</File>
-	<File name="src\sh_util.h" open="1" top="0" tabpos="5">
-		<Cursor position="1131" topLine="17" />
+	<File name="src\sh_util.h" open="0" top="0" tabpos="5">
+		<Cursor position="1057" topLine="16" />
 	</File>
-	<File name="src\w1_netlink_userapp.c" open="1" top="0" tabpos="4">
-		<Cursor position="4486" topLine="166" />
+	<File name="src\w1_netlink_userapp.c" open="1" top="0" tabpos="6">
+		<Cursor position="5173" topLine="184" />
 	</File>
-	<File name="src\w1_netlink_userservice.c" open="1" top="1" tabpos="9">
-		<Cursor position="27138" topLine="875" />
+	<File name="src\w1_netlink_userservice.c" open="1" top="0" tabpos="1">
+		<Cursor position="1649" topLine="30" />
 	</File>
-	<File name="src\w1_netlink_userservice.h" open="0" top="0" tabpos="1">
-		<Cursor position="1182" topLine="112" />
+	<File name="src\w1_netlink_userservice.h" open="1" top="1" tabpos="7">
+		<Cursor position="3132" topLine="97" />
 	</File>
-	<File name="src\w1_netlink_userspace.c" open="1" top="0" tabpos="2">
-		<Cursor position="4737" topLine="179" />
+	<File name="src\w1_netlink_userspace.h" open="0" top="0" tabpos="4">
+		<Cursor position="2885" topLine="114" />
 	</File>
-	<File name="src\w1_netlink_userspace.h" open="1" top="0" tabpos="10">
-		<Cursor position="3469" topLine="147" />
+	<File name="src\w1_netlink_util.c" open="1" top="0" tabpos="4">
+		<Cursor position="5665" topLine="208" />
+	</File>
+	<File name="src\w1_netlink_util.h" open="0" top="0" tabpos="6">
+		<Cursor position="687" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>

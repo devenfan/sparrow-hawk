@@ -12,7 +12,9 @@
 #include "sh_error.h"
 #include "sh_util.h"
 #include "sh_thread.h"
+#include "kernel_connector.h"
 #include "w1_netlink_userspace.h"
+#include "w1_netlink_util.h"
 #include "w1_netlink_userservice.h"
 
 
@@ -70,7 +72,7 @@ static void print_all_slaves(void)
 /* =========================== user callbacks =========================== */
 /* ====================================================================== */
 
-static void on_master_added(int master_id)
+static void on_master_added(w1_master_id master_id)
 {
     Debug("on_master_added");
 
@@ -79,7 +81,7 @@ static void on_master_added(int master_id)
     print_master();
 }
 
-static void on_master_removed(int master_id)
+static void on_master_removed(w1_master_id master_id)
 {
     Debug("on_master_removed");
 
@@ -181,36 +183,14 @@ static void initialize()
 }
 
 
-
-int main(void)
+static BOOL Test1()
 {
-	int sleepSecond = 3;
-
-    char useless[50];
+    BOOL succeed;
 
     w1_master_id masters[MASTER_MAX_COUNT];
-    w1_slave_rn slaves[SLAVE_MAX_COUNT];
-
     int masterCount = 0;
-    int slaveCount = 0;
-    int index = 0;
 
     memset(masters, 0, sizeof(w1_master_id) * MASTER_MAX_COUNT);
-    memset(slaves, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
-
-    BOOL succeed = FALSE;
-
-    initialize();
-
-	if(!w1_netlink_userservice_start(&m_userCallbacks))
-	{
-	    Debug("Cannot start w1 netlink userspace service...\n");
-	    goto GameOver;
-	}
-
-    //sleep a while...
-    sleep(sleepSecond);
-    Debug("Main thread wake up after %d seconds...\n", sleepSecond);
 
     succeed = w1_list_masters(masters, &masterCount);
     if(succeed)
@@ -224,10 +204,18 @@ int main(void)
         Debug("w1_list_masters Failed!\n");
     }
     print_master();
+    return succeed;
+}
 
-    //sleep a while...
-    sleep(sleepSecond);
-    Debug("Main thread wake up after %d seconds...\n", sleepSecond);
+static BOOL Test2()
+{
+    BOOL succeed;
+
+    w1_slave_rn slaves[SLAVE_MAX_COUNT];
+    int slaveCount = 0;
+    int index = 0;
+
+    memset(slaves, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
 
     succeed = w1_master_search(m_masterId, FALSE, slaves, &slaveCount);
     if(succeed)
@@ -244,14 +232,75 @@ int main(void)
         }
 
         //memcpy(m_slaveIDs, slaves, sizeof(w1_slave_rn) * m_slaveCount);
-
-        Debug("slaveCount: %d\n", m_slaveCount);
     }
     else
     {
         Debug("w1_master_search Failed!\n");
     }
     print_all_slaves();
+    return succeed;
+}
+
+static BOOL Test3()
+{
+    BOOL succeed;
+
+    succeed = w1_master_reset(m_masterId);
+
+    return succeed;
+}
+
+int main(void)
+{
+	int sleepSecond = 3;
+
+    char useless[50];
+
+
+
+
+    BOOL succeed = FALSE;
+
+    initialize();
+
+    Debug("sizeof cnmsg: %d \n", sizeof(struct cn_msg));
+    Debug("sizeof w1msg: %d \n", sizeof(struct w1_netlink_msg));
+    Debug("sizeof w1cmd: %d \n", sizeof(struct w1_netlink_cmd));
+
+    Debug("======================================================\n");
+
+	if(!w1_netlink_userservice_start(&m_userCallbacks))
+	{
+	    Debug("Cannot start w1 netlink userspace service...\n");
+	    goto GameOver;
+	}
+
+    Debug("======================================================\n");
+    //sleep a while...
+    sleep(sleepSecond);
+    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
+
+    succeed = Test1();
+
+    Debug("======================================================\n");
+    //sleep a while...
+    sleep(sleepSecond);
+    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
+
+	Test3();
+
+    Debug("======================================================\n");
+    //sleep a while...
+    sleep(sleepSecond);
+    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
+
+    Test2();
+
+    Debug("======================================================\n");
+    //sleep a while...
+    sleep(sleepSecond);
+    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
+
 
     Debug("Type something to quit: \n");
     scanf("%s", useless);
@@ -265,6 +314,8 @@ GameOver:
 	Debug("Main thread Game Over...\n");
 	return 0;
 }
+
+
 
 
 

@@ -46,14 +46,15 @@
 #include "kernel_connector.h"
 
 #include "w1_netlink_userspace.h"
+#include "w1_netlink_util.h"
 #include "w1_netlink_userservice.h"
 
 /* ====================================================================== */
 /* ============================ Constants =============================== */
 /* ====================================================================== */
 
-#define MAX_MSG_SIZE    768
-#define MAX_CNMSG_SIZE  512
+#define MAX_MSG_SIZE    256
+#define MAX_CNMSG_SIZE  192
 
 
 /* ====================================================================== */
@@ -90,7 +91,7 @@ static BYTE g_currentW1CmdType;
 static BOOL g_isWaitingAckMsg;             //indicate if it's waiting ack from w1 kernel now
 static sh_signal_ctrl g_waitAckMsgSignal;  //the ack signal
 static struct cn_msg * g_ackMsg;           //the ack message
-static BYTE g_ackStatus;                   //the ack status: OK, FAILED, TIMEOUT
+//static BYTE g_ackStatus;                   //the ack status: OK, FAILED, TIMEOUT
 
 #define ACK_TIMEOUT    10       //TIMEOUT for waiting ACK, by seconds
 
@@ -219,10 +220,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     {
         if(g_isWaitingAckMsg)
         {
-            //only use the first ack cnmsg
+            memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
-            sh_signal_notify(&g_waitAckMsgSignal);
             Debug("Notify for msgType[%s]!\n", msgTypeStr);
+            sh_signal_notify(&g_waitAckMsgSignal);
         }
         return;
     }
@@ -255,10 +256,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         */
         if(g_isWaitingAckMsg)
         {
-            //only use the first ack cnmsg
+            memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
-            sh_signal_notify(&g_waitAckMsgSignal);
             Debug("Notify for msgType[%s]!\n", msgTypeStr);
+            sh_signal_notify(&g_waitAckMsgSignal);
         }
         return;
     }
@@ -274,10 +275,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         if(g_isWaitingAckMsg)
         {
-            //only use the first ack cnmsg
+            memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
-            sh_signal_notify(&g_waitAckMsgSignal);
             Debug("Notify for msgType[%s]!\n", msgTypeStr);
+            sh_signal_notify(&g_waitAckMsgSignal);
         }
         return;
     }
@@ -408,6 +409,28 @@ static void stop_receiving_thread(void)
 }
 
 
+static BOOL request_to_list_w1_masters(void)
+{
+    BOOL ret = FALSE;
+    struct cn_msg * cnmsg = NULL;
+    struct w1_netlink_msg * w1msg = NULL;
+
+	cnmsg = malloc_w1_netlinkmsg();
+	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+
+    w1msg->len = 0;
+	w1msg->type = W1_LIST_MASTERS;
+
+	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+	ret = send_w1_netlinkmsg(cnmsg);
+
+	free_w1_netlinkmsg(cnmsg);
+
+	return ret;
+}
+
+
 /* ====================================================================== */
 /* =========================== Public functions ========================= */
 /* ====================================================================== */
@@ -486,7 +509,7 @@ BOOL w1_netlink_userservice_stop(void)
     //Attesntion:
     //if the thread is blocked inside [recvmsg], then this method will be blocked here forever!!!
     //TODO: We should send something initiatively, so that we can get ack later...
-    //request_to_list_w1_masters();
+    request_to_list_w1_masters();
 
 	stop_receiving_thread();
 
@@ -608,6 +631,8 @@ BOOL send_w1_netlinkmsg(struct cn_msg * cnmsg)
 }
 
 
+
+
 /* ====================================================================== */
 /* ======================== w1 message transact ========================= */
 /* ====================================================================== */
@@ -619,7 +644,7 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
 {
     if((idLen < 0) || (idLen > 0 && NULL == masterOrSlaveId)) return FALSE;
     if((dataLen < 0) || (dataLen > 0 && NULL == data))  return FALSE;
-    if(NULL == ppRecvMsg) return FALSE;
+    //if(NULL == ppRecvMsg) return FALSE;
 
     //check busy or not
     BOOL isBusy = FALSE;
@@ -680,25 +705,26 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
 
 	Debug("After sh_signal_wait... OK\n");
 
-    /*
-    if(NULL == g_ackMsg)
+    //*ppRecvMsg = (struct w1_netlink_msg *)(g_ackMsg + 1);
+
+    *ppRecvMsg = (struct w1_netlink_msg *)malloc(g_ackMsg->len);
+    if(NULL == *ppRecvMsg)
     {
+        Debug("Out of memory!\n");
         succeed = FALSE;
         goto End;
     }
-    */
-    *ppRecvMsg = (struct w1_netlink_msg *)(g_ackMsg + 1);
+    memset(*ppRecvMsg, 0, g_ackMsg->len);
+    memcpy(*ppRecvMsg, g_ackMsg->data, g_ackMsg->len);
 
     Debug("Print AckMsg below...................................\n");
     print_cnmsg(g_ackMsg);
     print_w1msg(*ppRecvMsg);
 
-    //g_ackMsg = NULL;
-
 End:
+    g_isWaitingAckMsg = FALSE;
     //free message
     free_w1_netlinkmsg(cnmsg);
-    g_isWaitingAckMsg = FALSE;
     return succeed;
 }
 
@@ -721,7 +747,11 @@ BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
     //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
 
     struct w1_netlink_msg * w1msgRecv = NULL;
-    struct w1_netlink_msg * w1cmdRecv = NULL;
+    //Pay attention of all warnings, or you will get unspected result....
+    //struct w1_netlink_msg * w1cmdRecv = NULL; //issue here!!!! Wrong declaration!!!!
+    struct w1_netlink_cmd * w1cmdRecv = NULL;
+
+	//int index;
 
     succeed = transact_w1_msg(W1_MASTER_CMD, (isSearchAlarm ? W1_CMD_ALARM_SEARCH : W1_CMD_SEARCH),
                               (BYTE *)&masterId, sizeof(w1_master_id), NULL, 0, &w1msgRecv);
@@ -733,24 +763,37 @@ BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
     {
         w1cmdRecv = (struct w1_netlink_cmd *)(w1msgRecv->data);
 
+        print_bytes((BYTE *)w1cmdRecv, 0, sizeof(w1cmdRecv) + w1cmdRecv->len);
+
+        /*
+        Debug("Recv w1msg & w1cmd below................................\n");
+        print_w1msg(w1msgRecv);
+        print_w1cmd(w1cmdRecv);
+
+        print_bytes(w1cmdRecv, 0, sizeof(struct w1_netlink_cmd) + w1cmdRecv->len);
+        print_bytes(w1cmdRecv, 0, sizeof(struct w1_netlink_cmd));
+        print_bytes(w1cmdRecv, sizeof(struct w1_netlink_cmd), w1cmdRecv->len);
+
+        print_bytes(bytesOfSlaveRNs, 0, w1cmdRecv->len);
+
+        print_bytes(w1cmdRecv + 1, 0, w1cmdRecv->len);
+        print_bytes(w1cmdRecv->data, 0, w1cmdRecv->len);
+        print_bytes(w1cmdRecv, 0, sizeof(struct w1_netlink_cmd) + w1cmdRecv->len * 2);
+        */
+
         *pSlaveCount = w1cmdRecv->len / sizeof(w1_slave_rn);
 
         if(*pSlaveCount > 0)
         {
-            //Debug("(*pSlaveCount) * sizeof(w1_slave_rn): %d\n", (*pSlaveCount) * sizeof(w1_slave_rn));
-
-            print_bytes(w1cmdRecv->data, 0, (*pSlaveCount) * sizeof(w1_slave_rn));
 
             memcpy(slaves, w1cmdRecv->data, (*pSlaveCount) * sizeof(w1_slave_rn));
 
             print_bytes((BYTE *)slaves, 0, (*pSlaveCount) * sizeof(w1_slave_rn));
         }
 
-        Debug("Recv w1msg & w1cmd below................................\n");
-        print_w1msg(w1msgRecv);
-        print_w1cmd(w1cmdRecv);
-
     }
+
+    if(!w1msgRecv) free(w1msgRecv);
 
     return succeed;
 }
@@ -766,7 +809,7 @@ BOOL w1_master_reset(w1_master_id masterId)
     //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
 
     struct w1_netlink_msg * w1msgRecv = NULL;
-    //struct w1_netlink_msg * w1cmdRecv = NULL;
+    //struct w1_netlink_msg * w1cmdRecv = NULL; //issue here!!!! Wrong declaration!!!!
 
     succeed = transact_w1_msg(W1_MASTER_CMD, W1_CMD_RESET, (BYTE *)&masterId, sizeof(w1_master_id),
                               NULL, 0, &w1msgRecv);
@@ -774,84 +817,10 @@ BOOL w1_master_reset(w1_master_id masterId)
     if(succeed)
         succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
-    return succeed;
-}
-
-/*
-BOOL process_w1_master_cmd(w1_master_id masterId, BYTE w1CmdType,
-                           void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
-{
-    if(0 == masterId) return FALSE;   //no master id
-    if(NULL == dataIn) return FALSE;
-    if(NULL == pDataOut) return FALSE;
-    if(NULL == pDataOutLen) return FALSE;
-
-    if(W1_CMD_SEARCH != w1CmdType &&
-       W1_CMD_ALARM_SEARCH != w1CmdType &&
-       W1_CMD_RESET != w1CmdType)
-       return FALSE;
-
-    BOOL succeed = FALSE;
-
-    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
-
-    struct w1_netlink_msg * w1msgRecv = NULL;
-    struct w1_netlink_msg * w1cmdRecv = NULL;
-
-    succeed = transact_w1_msg(W1_MASTER_CMD, w1CmdType, &w1_master_id, sizeof(w1_master_id),
-                              dataIn, dataInLen, &w1msgRecv);
-
-    if(succeed)
-    {
-        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
-
-        *pDataOut = w1cmdRecv->data;
-        *pDataOutLen = w1cmdRecv->len;
-
-        succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
-    }
+    if(!w1msgRecv) free(w1msgRecv);
 
     return succeed;
 }
-*/
-
-
-/*
-BOOL w1_process_slave_cmd(w1_slave_rn * slaveId, BYTE w1CmdType,
-                          void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
-{
-    if(NULL == slaveId) return FALSE;
-    if(NULL == dataIn) return FALSE;
-    if(NULL == pDataOut) return FALSE;
-    if(NULL == pDataOutLen) return FALSE;
-
-    if(W1_CMD_READ != w1CmdType &&
-       W1_CMD_WRITE != w1CmdType &&
-       W1_CMD_TOUCH != w1CmdType) return FALSE;
-
-    BOOL succeed = FALSE;
-
-    //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
-
-    struct w1_netlink_msg * w1msgRecv = NULL;
-    struct w1_netlink_msg * w1cmdRecv = NULL;
-
-    succeed = transact_w1_msg(W1_SLAVE_CMD, w1CmdType, slaveId, sizeof(w1_slave_rn),
-                              dataIn, dataInLen, &w1msgRecv);
-
-    succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
-
-    if(succeed)
-    {
-        w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv + 1);
-
-        *pDataOut = w1cmdRecv->data;
-        *pDataOutLen = w1cmdRecv->len;
-    }
-
-    return succeed;
-}
-*/
 
 
 BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
@@ -871,7 +840,8 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
     BOOL succeed = FALSE;
 
     struct w1_netlink_msg * w1msgRecv = NULL;
-    struct w1_netlink_msg * w1cmdRecv = NULL;
+    //struct w1_netlink_msg * w1cmdRecv = NULL; //issue here!!!! Wrong declaration!!!!
+    struct w1_netlink_cmd * w1cmdRecv = NULL;
 
     succeed = transact_w1_msg((sizeof(w1_slave_rn) == idLen) ? W1_SLAVE_CMD : W1_MASTER_CMD,
                               w1CmdType, masterOrSlaveId, idLen,
@@ -888,6 +858,8 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
         *pDataOutLen = w1cmdRecv->len;
     }
 
+    if(!w1msgRecv) free(w1msgRecv);
+
     return succeed;
 }
 
@@ -902,12 +874,12 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
 
     //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
 
-    struct w1_netlink_msg * w1msg = NULL;
+    struct w1_netlink_msg * w1msgRecv = NULL;
 
-    succeed = transact_w1_msg(W1_LIST_MASTERS, 0, NULL, 0, NULL, 0, &w1msg);
+    succeed = transact_w1_msg(W1_LIST_MASTERS, 0, NULL, 0, NULL, 0, &w1msgRecv);
 
     if(succeed)
-        succeed = (0 == w1msg->status) ? TRUE : FALSE;
+        succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
     if(succeed)
     {
@@ -915,46 +887,18 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
         //It is processed inside [w1_process_command_root] of w1_netlink.c
         //If w1msg sent back one by one, then the ack will begin with 1, plus 1 by 1, and end with 0
         //Here we consider it will send all IDs back inside one w1msg.
-        *pMasterCount = w1msg->len / sizeof(w1_master_id);
+        *pMasterCount = w1msgRecv->len / sizeof(w1_master_id);
 
         if(*pMasterCount > 0)
         {
-            memcpy(masters, w1msg->data, (*pMasterCount) * sizeof(w1_master_id));
+            memcpy(masters, w1msgRecv->data, (*pMasterCount) * sizeof(w1_master_id));
         }
     }
+
+    if(!w1msgRecv) free(w1msgRecv);
 
     return succeed;
 }
 
 
-/*
-BOOL request_to_search_w1_slaves(BOOL alarmSearch)
-{
-    BOOL ret = FALSE;
-    struct cn_msg * cnmsg = NULL;
-    struct w1_netlink_msg * w1msg = NULL;
-	struct w1_netlink_cmd * w1cmd = NULL;
 
-    if(g_isWaitingAckMsg) return FALSE;    //busy
-
-	cnmsg = malloc_w1_netlinkmsg();
-	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
-	w1cmd = (struct w1_netlink_cmd *) (w1msg + 1);
-
-	w1cmd->len = 0;
-	w1cmd->cmd = alarmSearch ? W1_CMD_ALARM_SEARCH : W1_CMD_SEARCH;
-
-	w1msg->len = sizeof(struct w1_netlink_cmd) + w1cmd->len;
-	w1msg->len = 0;
-	w1msg->type = W1_MASTER_CMD;
-	//TODO: w1-msg->id = master_id...
-
-	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
-
-	ret = send_w1_netlinkmsg(cnmsg);
-
-	free_w1_netlinkmsg(cnmsg);
-
-	return ret;
-}
-*/

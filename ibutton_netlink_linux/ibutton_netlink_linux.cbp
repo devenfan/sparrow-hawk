@@ -103,10 +103,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\w1_netlink_userservice.h" />
-		<Unit filename="src\w1_netlink_userspace.c">
+		<Unit filename="src\w1_netlink_userspace.h" />
+		<Unit filename="src\w1_netlink_util.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\w1_netlink_userspace.h" />
+		<Unit filename="src\w1_netlink_util.h" />
 		<Extensions>
 			<code_completion />
 			<debugger>
