@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Release" />
+	<File name="main.c" open="0" top="0" tabpos="0">
+		<Cursor position="951" topLine="33" />
+	</File>
+	<File name="memutil.c" open="0" top="0" tabpos="1">
+		<Cursor position="11463" topLine="385" />
+	</File>
+	<File name="memutil.h" open="0" top="0" tabpos="8">
+		<Cursor position="1177" topLine="38" />
+	</File>
+	<File name="..\..\common\ReadMe.txt" open="0" top="0" tabpos="0">
+		<Cursor position="553" topLine="15" />
+	</File>
+	<File name="..\..\common\ibsha33.h" open="0" top="0" tabpos="0">
+		<Cursor position="1850" topLine="53" />
+	</File>
+	<File name="..\..\common\ioutil.c" open="0" top="0" tabpos="0">
+		<Cursor position="9246" topLine="393" />
+	</File>
+	<File name="..\..\common\mbappreg.c" open="0" top="0" tabpos="0">
+		<Cursor position="33091" topLine="1050" />
+	</File>
+	<File name="..\..\common\mbee.c" open="0" top="0" tabpos="6">
+		<Cursor position="4036" topLine="90" />
+	</File>
+	<File name="..\..\common\mbee.h" open="0" top="0" tabpos="5">
+		<Cursor position="1628" topLine="24" />
+	</File>
+	<File name="..\..\common\mbscree.h" open="0" top="0" tabpos="0">
+		<Cursor position="1787" topLine="20" />
+	</File>
+	<File name="..\..\common\mbshaee.c" open="0" top="0" tabpos="0">
+		<Cursor position="1653" topLine="26" />
+	</File>
+	<File name="..\..\common\ownet.h" open="0" top="0" tabpos="0">
+		<Cursor position="15130" topLine="355" />
+	</File>
+	<File name="..\..\common\ps02.h" open="0" top="0" tabpos="0">
+		<Cursor position="2109" topLine="54" />
+	</File>
+	<File name="..\..\common\pw77.h" open="0" top="0" tabpos="0">
+		<Cursor position="1734" topLine="31" />
+	</File>
+	<File name="..\..\common\rawmem.c" open="0" top="0" tabpos="2">
+		<Cursor position="37556" topLine="1012" />
+	</File>
+	<File name="..\..\common\rawmem.h" open="0" top="0" tabpos="0">
+		<Cursor position="4454" topLine="66" />
+	</File>
+	<File name="..\..\common\screenio.c" open="0" top="0" tabpos="0">
+		<Cursor position="1994" topLine="45" />
+	</File>
+	<File name="..\..\common\sha33.c" open="0" top="0" tabpos="0">
+		<Cursor position="28122" topLine="852" />
+	</File>
+	<File name="..\..\common\shadebit.c" open="0" top="0" tabpos="0">
+		<Cursor position="2094" topLine="38" />
+	</File>
+	<File name="..\..\common\thermo21.h" open="0" top="0" tabpos="0">
+		<Cursor position="1825" topLine="38" />
+	</File>
+	<File name="..\..\common\time04.h" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="15" />
+	</File>
+	<File name="..\..\common\weather.c" open="0" top="0" tabpos="0">
+		<Cursor position="22871" topLine="760" />
+	</File>
+	<File name="..\..\lib\userial\link\Win32\win32lnk.c" open="0" top="0" tabpos="0">
+		<Cursor position="12100" topLine="329" />
+	</File>
+	<File name="..\..\lib\userial\shared\ds2480.h" open="0" top="0" tabpos="4">
+		<Cursor position="7540" topLine="189" />
+	</File>
+	<File name="..\..\lib\userial\shared\ds2480ut.c" open="0" top="0" tabpos="3">
+		<Cursor position="2419" topLine="36" />
+	</File>
+	<File name="..\..\lib\userial\shared\ownetu.c" open="0" top="0" tabpos="7">
+		<Cursor position="8156" topLine="205" />
+	</File>
+	<File name="..\..\lib\userial\shared\owsesu.c" open="0" top="0" tabpos="0">
+		<Cursor position="3601" topLine="88" />
+	</File>
+</CodeBlocks_layout_file>

@@ -64,7 +64,8 @@ int main(int argc, char **argv)
 
    printf("  Press any CTRL-C to stop this program.\n\n");
    printf("  Output   [Serial Number(s) ... Counter Value ... Counter Value ... "
-                         "Counter Value ... Counter Value] \n\n");
+                         "Counter Value ... Counter Value] \n");
+   printf("\n/---------------------------------------------\n");
 
    // check for required port name
    if (argc != 2)
@@ -74,6 +75,8 @@ int main(int argc, char **argv)
              "(Linux DS2480),\"{1,5}\" (Win32 TMEX)\n");
       exit(1);
    }
+
+   printf("Your Input: \n(1)%s\n(2)%s\n", argv[0], argv[1]);
 
    // attempt to acquire the 1-Wire Net
    if ((portnum = owAcquireEx(argv[1])) < 0)

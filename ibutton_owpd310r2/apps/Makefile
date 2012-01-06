@@ -10,12 +10,14 @@
 #APPNAME = temp
 #APPNAME = thermo
 #APPNAME = atodtst
-APPNAME = humalog
+#APPNAME = humalog
+APPNAME = counter
 
 #################################################
 
-#BUILD_TYPE = Win32
-BUILD_TYPE = Linux
+BUILD_TYPE = Win32
+#BUILD_TYPE = Linux
+#BUILD_TYPE = S3C6410
 
 #################################################
 
@@ -89,26 +91,13 @@ endif
 
 ############################################
 
-ifeq ($(APPNAME), shaapp)
-	APP_SRC = shaapp.c
-endif
-
-ifeq ($(APPNAME), temp)
-	APP_SRC = temp.c
-endif
-
 ifeq ($(APPNAME), thermo)
 	#APP_SRC = thermodl.c 
 	APP_SRC = thermoms.c
+else
+	APP_SRC = $(APPNAME).c
 endif
 
-ifeq ($(APPNAME), atodtst)
-	APP_SRC = atodtst.c
-endif
-
-ifeq ($(APPNAME), humalog)
-	APP_SRC = humalog.c
-endif
 
 ############################################
 
