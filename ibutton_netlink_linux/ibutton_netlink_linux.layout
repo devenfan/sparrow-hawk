@@ -4,7 +4,7 @@
 	<File name="src\Makefile" open="0" top="0" tabpos="0">
 		<Cursor position="594" topLine="12" />
 	</File>
-	<File name="src\backup.txt" open="1" top="0" tabpos="3">
+	<File name="src\backup.txt" open="0" top="0" tabpos="2">
 		<Cursor position="6955" topLine="262" />
 	</File>
 	<File name="src\ibutton_netlink_linux.c" open="0" top="0" tabpos="0">
@@ -52,20 +52,20 @@
 	<File name="src\sh_util.h" open="0" top="0" tabpos="5">
 		<Cursor position="1057" topLine="16" />
 	</File>
-	<File name="src\w1_netlink_userapp.c" open="1" top="0" tabpos="6">
+	<File name="src\w1_netlink_userapp.c" open="0" top="0" tabpos="4">
 		<Cursor position="5173" topLine="184" />
 	</File>
-	<File name="src\w1_netlink_userservice.c" open="1" top="0" tabpos="1">
+	<File name="src\w1_netlink_userservice.c" open="0" top="0" tabpos="1">
 		<Cursor position="1649" topLine="30" />
 	</File>
-	<File name="src\w1_netlink_userservice.h" open="1" top="1" tabpos="7">
+	<File name="src\w1_netlink_userservice.h" open="0" top="0" tabpos="5">
 		<Cursor position="3132" topLine="97" />
 	</File>
 	<File name="src\w1_netlink_userspace.h" open="0" top="0" tabpos="4">
 		<Cursor position="2885" topLine="114" />
 	</File>
-	<File name="src\w1_netlink_util.c" open="1" top="0" tabpos="4">
-		<Cursor position="5665" topLine="208" />
+	<File name="src\w1_netlink_util.c" open="0" top="0" tabpos="3">
+		<Cursor position="5665" topLine="206" />
 	</File>
 	<File name="src\w1_netlink_util.h" open="0" top="0" tabpos="6">
 		<Cursor position="687" topLine="0" />

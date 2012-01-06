@@ -11,3 +11,7 @@
 /ibutton_netlink_linux/obj
 /ibutton_w1_android/bin
 /ibutton_w1_android/obj
+/ibutton_owpd310r2/apps/memutil/obj
+/ibutton_owpd310r2/apps/memutil/bin
+/ibutton_owpd310r2/apps/counter/bin
+/ibutton_owpd310r2/apps/counter/obj

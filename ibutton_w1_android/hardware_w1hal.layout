@@ -20,7 +20,7 @@
 		<Cursor position="329" topLine="21" />
 	</File>
 	<File name="src\inc\sh_thread.h" open="0" top="0" tabpos="0">
-		<Cursor position="850" topLine="22" />
+		<Cursor position="1263" topLine="26" />
 	</File>
 	<File name="src\inc\sh_types.h" open="0" top="0" tabpos="0">
 		<Cursor position="352" topLine="20" />
@@ -29,9 +29,9 @@
 		<Cursor position="424" topLine="15" />
 	</File>
 	<File name="src\inc\w1_netlink_userservice.h" open="0" top="0" tabpos="0">
-		<Cursor position="1035" topLine="0" />
+		<Cursor position="3456" topLine="59" />
 	</File>
-	<File name="src\inc\w1_netlink_userspace.h" open="1" top="1" tabpos="0">
-		<Cursor position="3469" topLine="147" />
+	<File name="src\inc\w1_netlink_userspace.h" open="0" top="0" tabpos="1">
+		<Cursor position="2168" topLine="77" />
 	</File>
 </CodeBlocks_layout_file>
