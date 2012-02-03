@@ -28,7 +28,8 @@
 #include "../inc/w1_netlink_util.h"
 #include "../inc/w1_netlink_userservice.h"
 
-#include "w1_hal.h"
+
+#include "w1_hal.h" //<hardware/w1_hal.h>
 
 
 

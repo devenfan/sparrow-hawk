@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
+	<File name="src\hardware\w1_hal\w1_hal.c" open="0" top="0" tabpos="0">
+		<Cursor position="944" topLine="21" />
+	</File>
+	<File name="src\hardware\w1_hal\w1_hal_impl.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="668" topLine="9" />
+	</File>
 </CodeBlocks_layout_file>
