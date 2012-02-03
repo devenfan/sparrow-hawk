@@ -4,6 +4,9 @@
 	<File name="masters\ds1wm.c" open="0" top="0" tabpos="0">
 		<Cursor position="12175" topLine="453" />
 	</File>
+	<File name="masters\ds2490.c" open="0" top="0" tabpos="0">
+		<Cursor position="19381" topLine="766" />
+	</File>
 	<File name="masters\w1-gpio.c" open="0" top="0" tabpos="0">
 		<Cursor position="1697" topLine="43" />
 	</File>
@@ -11,7 +14,7 @@
 		<Cursor position="24507" topLine="889" />
 	</File>
 	<File name="w1.h" open="0" top="0" tabpos="2">
-		<Cursor position="2317" topLine="82" />
+		<Cursor position="5705" topLine="204" />
 	</File>
 	<File name="w1_family.c" open="0" top="0" tabpos="5">
 		<Cursor position="3209" topLine="123" />
@@ -20,13 +23,13 @@
 		<Cursor position="4968" topLine="163" />
 	</File>
 	<File name="w1_io.c" open="0" top="0" tabpos="2">
-		<Cursor position="9653" topLine="346" />
+		<Cursor position="7444" topLine="261" />
 	</File>
 	<File name="w1_log.h" open="0" top="0" tabpos="0">
 		<Cursor position="864" topLine="15" />
 	</File>
 	<File name="w1_netlink.c" open="0" top="0" tabpos="1">
-		<Cursor position="4296" topLine="140" />
+		<Cursor position="4178" topLine="166" />
 	</File>
 	<File name="w1_netlink.h" open="0" top="0" tabpos="0">
 		<Cursor position="1091" topLine="59" />

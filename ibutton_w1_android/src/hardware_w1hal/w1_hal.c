@@ -80,15 +80,15 @@ static int w1hal_device_open(const struct hw_module_t* module, const char* name,
 
 	dev->common.tag =  HARDWARE_DEVICE_TAG;
 	dev->common.version = 0;
-	dev->common.module = module;
+	dev->common.module = (struct hw_module_t*)module;
 	dev->common.close = w1hal_device_close;
 
 	//dev->operations = &s_w1hal_device_operations;
     dev->get_w1_interface = w1hal__get_w1_interface;
 
-	*device = &dev->common;
+	//*device = &dev->common;
+	*device = (struct hw_device_t*)dev;
 
-success:
 	return 0;
 }
 

@@ -74,6 +74,7 @@
 		<Unit filename="src\hardware_w1hal\w1_hal.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src\hardware_w1hal\w1_hal.cpp" />
 		<Unit filename="src\hardware_w1hal\w1_hal.h" />
 		<Unit filename="src\inc\kernel_connector.h" />
 		<Unit filename="src\inc\sh_error.h" />

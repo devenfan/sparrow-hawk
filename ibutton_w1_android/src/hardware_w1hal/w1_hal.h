@@ -46,18 +46,21 @@ struct w1hal_module_t {
 
 typedef struct w1hal_device_operations {
 
+    /** set to sizeof(w1hal_interface) */
+    size_t size;
+
     BOOL (*start)(w1_user_callbacks * w1UserCallbacks);
 
     BOOL (*stop)(void);
 
-    /* List all the Masters */
+    /** List all the Masters */
     BOOL (*list_masters)(w1_master_id * masters, int * pMasterCount);
 
-    /* Search Slaves by Master Id */
+    /** Search Slaves by Master Id */
     BOOL (*search_slaves)(w1_master_id masterId, BOOL isSearchAlarm,
                       w1_slave_rn * slaves, int * pSlaveCount);
 
-    /* Reset the Master */
+    /** Reset the Master */
     BOOL (*master_reset)(w1_master_id masterId);
 
     /* Process Commands By Master or slave: W1_CMD_TOUCH, W1_CMD_READ or W1_CMD_WRITE
