@@ -35,6 +35,8 @@ typedef void w1_slave_added(w1_slave_rn salve_rn);
 typedef void w1_slave_removed(w1_slave_rn salve_rn);
 
 
+
+
 typedef struct w1_user_callbacks{
 
     w1_master_added * master_added_callback;
@@ -83,12 +85,14 @@ BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
  */
 BOOL w1_master_reset(w1_master_id masterId);
 
+
 /*
  * Synchronized method, only support READ, WRITE, TOUCH.
 
 BOOL w1_process_master_cmd(w1_master_id masterId, BYTE w1CmdType,
                           void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
  */
+
 /*
  * Synchronized method, only support READ, WRITE, TOUCH.
 
@@ -98,19 +102,23 @@ BOOL w1_process_slave_cmd(w1_slave_rn * slaveId, BYTE w1CmdType,
 
 /**
  * Synchronized method, only support READ, WRITE, TOUCH.
+ *
+ * Input Parameters: masterOrSlaveId, idLen, w1CmdType, dataIn, dataInLen
+ * Output Parameters: dataOut, pDataOutLen
  */
 BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
+                    void * dataIn, int dataInLen, void * dataOut, int * pDataOutLen);
+
+
+
 
 
 /**
  * Synchronized method, cannot use Asynchronized way,
  * because more than 1 ack will be received if succeed.
- * Attention: the "master_ids" & "master_count" are used as output parameters.
+ * Attention: the "masters" & "pMasterCount" are used as output parameters.
  */
 BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount);
-
-
 
 /*
  * Asynchronized method, the result will come back later

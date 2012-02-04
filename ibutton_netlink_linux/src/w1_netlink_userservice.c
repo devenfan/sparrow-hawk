@@ -170,9 +170,10 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 	Debug("RECV: w1msg type[%s], dataLen[%d], status[%d]\n",
         msgTypeStr, w1msg->len, w1msg->status);
     */
-    print_cnmsg(cnmsg);
 
-    print_w1msg(w1msg);
+    Debug("Print RecvMsg below >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n");
+    print_cnmsg(cnmsg);
+    //print_w1msg(w1msg);
 
     if(W1_SLAVE_ADD == w1msg->type || W1_SLAVE_REMOVE == w1msg->type)
     {
@@ -222,7 +223,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         {
             memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
-            Debug("Notify for msgType[%s]!\n", msgTypeStr);
+            //Debug("Notify for msgType[%s]!\n", msgTypeStr);
             sh_signal_notify(&g_waitAckMsgSignal);
         }
         return;
@@ -258,7 +259,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         {
             memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
-            Debug("Notify for msgType[%s]!\n", msgTypeStr);
+            //Debug("Notify for msgType[%s]!\n", msgTypeStr);
             sh_signal_notify(&g_waitAckMsgSignal);
         }
         return;
@@ -270,14 +271,16 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         //    1. w1_search_slave
         //    2. w1_process_command_master OR w1_process_command_slave
         w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
-        describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
-        Debug("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
+
+        //describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
+        //Debug("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
+        print_w1cmd(w1cmd);
 
         if(g_isWaitingAckMsg)
         {
             memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
-            Debug("Notify for msgType[%s]!\n", msgTypeStr);
+            //Debug("Notify for msgType[%s]!\n", msgTypeStr);
             sh_signal_notify(&g_waitAckMsgSignal);
         }
         return;
@@ -688,22 +691,27 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //assemble cnmsg
 	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
 
+    Debug("Print OutMsg below >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n");
+    print_cnmsg(cnmsg);
+    print_w1msg(w1msg);
+    print_w1cmd(w1cmd);
+
     //send the message
 	succeed = send_w1_netlinkmsg(cnmsg);
 
 	if(!succeed) goto End;
 
-	Debug("Before sh_signal_wait...\n");
+	//Debug("Before sh_signal_wait...\n");
 
     //waiting for the ack message
     if(sh_signal_wait(&g_waitAckMsgSignal) != 0)
     {
-        Debug("After sh_signal_wait... Failed\n");
+        //Debug("After sh_signal_wait... Failed\n");
         succeed = FALSE;
         goto End;
     }
 
-	Debug("After sh_signal_wait... OK\n");
+	//Debug("After sh_signal_wait... OK\n");
 
     //*ppRecvMsg = (struct w1_netlink_msg *)(g_ackMsg + 1);
 
@@ -717,7 +725,7 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     memset(*ppRecvMsg, 0, g_ackMsg->len);
     memcpy(*ppRecvMsg, g_ackMsg->data, g_ackMsg->len);
 
-    Debug("Print AckMsg below...................................\n");
+    Debug("Print AckMsg below >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n");
     print_cnmsg(g_ackMsg);
     print_w1msg(*ppRecvMsg);
 
@@ -763,7 +771,7 @@ BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
     {
         w1cmdRecv = (struct w1_netlink_cmd *)(w1msgRecv->data);
 
-        print_bytes((BYTE *)w1cmdRecv, 0, sizeof(w1cmdRecv) + w1cmdRecv->len);
+        //print_bytes((BYTE *)w1cmdRecv, 0, sizeof(w1cmdRecv) + w1cmdRecv->len);
 
         /*
         Debug("Recv w1msg & w1cmd below................................\n");
@@ -788,7 +796,7 @@ BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
 
             memcpy(slaves, w1cmdRecv->data, (*pSlaveCount) * sizeof(w1_slave_rn));
 
-            print_bytes((BYTE *)slaves, 0, (*pSlaveCount) * sizeof(w1_slave_rn));
+            //print_bytes((BYTE *)slaves, 0, (*pSlaveCount) * sizeof(w1_slave_rn));
         }
 
     }
@@ -824,13 +832,13 @@ BOOL w1_master_reset(w1_master_id masterId)
 
 
 BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+                    void * dataIn, int dataInLen, void * dataOut, int * pDataOutLen)
 {
     if(NULL == masterOrSlaveId) return FALSE;
     if(sizeof(w1_master_id) != idLen && sizeof(w1_slave_rn) != idLen) return FALSE;
 
     if(NULL == dataIn) return FALSE;
-    if(NULL == pDataOut) return FALSE;
+    if(NULL == dataOut) return FALSE;
     if(NULL == pDataOutLen) return FALSE;
 
     if(W1_CMD_READ != w1CmdType &&
@@ -854,7 +862,10 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
     {
         w1cmdRecv = (struct w1_netlink_cmd *) (w1msgRecv->data);
 
-        *pDataOut = w1cmdRecv->data;
+        print_w1cmd(w1cmdRecv);
+
+        memcpy(dataOut, w1cmdRecv->data, w1cmdRecv->len);
+        //*pDataOut = w1cmdRecv->data; //TODO: Copy out???
         *pDataOutLen = w1cmdRecv->len;
     }
 
@@ -862,6 +873,8 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
 
     return succeed;
 }
+
+
 
 
 BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)

@@ -19,14 +19,15 @@
 
 #include <hardware/hardware.h>
 
-#include "../inc/sh_types.h"
-#include "../inc/sh_error.h"
-#include "../inc/sh_util.h"
-#include "../inc/sh_thread.h"
-#include "../inc/kernel_connector.h"
-#include "../inc/w1_netlink_userspace.h"
-#include "../inc/w1_netlink_util.h"
-#include "../inc/w1_netlink_userservice.h"
+
+#include "sh_types.h"
+#include "sh_error.h"
+#include "sh_util.h"
+#include "sh_thread.h"
+#include "kernel_connector.h"
+#include "w1_netlink_userspace.h"
+#include "w1_netlink_util.h"
+#include "w1_netlink_userservice.h"
 
 
 #include "w1_hal.h" //<hardware/w1_hal.h>
@@ -44,7 +45,8 @@ static BOOL w1hal_int_search_slaves(w1_master_id masterId, BOOL isSearchAlarm,
 
 static BOOL w1hal_int_master_reset(w1_master_id masterId);
 
-static BOOL w1hal_int_slave_touch(BYTE * slaveId, int idLen,
+/*
+static BOOL w1hal_int_touch(BYTE * slaveId, int idLen,
                     void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
 
 static BOOL w1hal_int_slave_read(BYTE * slaveId, int idLen,
@@ -52,9 +54,15 @@ static BOOL w1hal_int_slave_read(BYTE * slaveId, int idLen,
 
 static BOOL w1hal_int_slave_write(BYTE * slaveId, int idLen,
                     void * dataIn, int dataInLen);
+*/
 
+static BOOL w1hal_int_touch_data(w1_master_id masterId,
+                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
 
+static BOOL w1hal_int_read_data(w1_master_id masterId,
+                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
 
+static BOOL w1hal_int_write_data(w1_master_id masterId, BYTE * dataIn, int dataInLen);
 
 
 
@@ -68,9 +76,9 @@ static const w1hal_interface sW1HalInterface =
     w1hal_int_list_masters,
     w1hal_int_search_slaves,
     w1hal_int_master_reset,
-    w1hal_int_slave_touch,
-    w1hal_int_slave_read,
-    w1hal_int_slave_write
+    w1hal_int_touch_data,
+    w1hal_int_read_data,
+    w1hal_int_write_data
 };
 
 
@@ -104,24 +112,29 @@ static BOOL w1hal_int_master_reset(w1_master_id masterId)
     return w1_master_reset(masterId);
 }
 
-static BOOL w1hal_int_slave_touch(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+
+static BOOL w1hal_int_touch_data(w1_master_id masterId,
+                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen)
 {
-    return w1_process_cmd(slaveId, idLen, W1_CMD_TOUCH, dataIn, dataInLen, pDataOut, pDataOutLen);
+    return w1_process_cmd((BYTE *)&masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                          dataIn, dataInLen, dataOut, pDataOutLen);
 }
 
-static BOOL w1hal_int_slave_read(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen)
+static BOOL w1hal_int_read_data(w1_master_id masterId,
+                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen)
 {
-    return w1_process_cmd(slaveId, idLen, W1_CMD_READ, dataIn, dataInLen, pDataOut, pDataOutLen);
+    return w1_process_cmd((BYTE *)&masterId, sizeof(w1_master_id), W1_CMD_READ,
+                          dataIn, dataInLen, dataOut, pDataOutLen);
 }
 
-static BOOL w1hal_int_slave_write(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen)
+static BOOL w1hal_int_write_data(w1_master_id masterId, BYTE * dataIn, int dataInLen)
 {
-    void * dataOut = NULL;
     int dataOutLen = 0;
-    return w1_process_cmd(slaveId, idLen, W1_CMD_WRITE, dataIn, dataInLen, &dataOut, &dataOutLen);
+    BYTE dataOut[128];
+    memset(dataOut, 0, sizeof(BYTE) * 128);
+
+    return w1_process_cmd((BYTE *)&masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+                          dataIn, dataInLen, dataOut, &dataOutLen);
 }
 
 

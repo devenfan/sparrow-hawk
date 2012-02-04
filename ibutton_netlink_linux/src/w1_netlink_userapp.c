@@ -183,7 +183,10 @@ static void initialize()
 }
 
 
-static BOOL Test1()
+
+
+
+static BOOL Test_ListMasters()
 {
     BOOL succeed;
 
@@ -207,7 +210,7 @@ static BOOL Test1()
     return succeed;
 }
 
-static BOOL Test2()
+static BOOL Test_SearchSlaves()
 {
     BOOL succeed;
 
@@ -241,14 +244,199 @@ static BOOL Test2()
     return succeed;
 }
 
-static BOOL Test3()
+static BOOL Test_ResetMaster()
 {
     BOOL succeed;
 
     succeed = w1_master_reset(m_masterId);
 
+    if(succeed)
+    {
+        Debug("w1_master_reset Succeed!\n");
+    }
+    else
+    {
+        Debug("w1_master_reset Failed!\n");
+    }
     return succeed;
 }
+
+/*useless...
+static BOOL Test_ReadRom()
+{
+    BOOL succeed;
+
+    int dataSendLen = 1;
+    BYTE dataSend[dataSendLen];
+
+    int dataRecvLen = 0;
+    BYTE * dataRecv = NULL;
+
+    int dataReadLen = 8;
+    BYTE dataRead[dataReadLen];
+
+    dataSend[0] = 0x33;
+
+    succeed = w1_process_cmd(&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+    //succeed = w1_process_cmd(m_slaveIDs + m_slaveCurrentIndex, sizeof(w1_slave_rn), W1_CMD_WRITE,
+                            dataSend, dataSendLen, &dataRecv, &dataRecvLen);
+
+    if(succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE] Succeed!\n");
+
+        print_bytes(dataRecv, 0, dataRecvLen);
+
+        memset(dataRead, 0, sizeof(BYTE) * dataReadLen);
+
+        succeed = w1_process_cmd(&m_masterId, sizeof(w1_master_id), W1_CMD_READ,
+        //succeed = w1_process_cmd(m_slaveIDs + m_slaveCurrentIndex, sizeof(w1_slave_rn), W1_CMD_READ,
+                            dataRead, dataReadLen, &dataRecv, &dataRecvLen);
+
+        if(succeed)
+        {
+            Debug("w1_process_cmd[W1_CMD_READ] Succeed!\n");
+
+            print_bytes(dataRecv, 0, dataRecvLen);
+        }
+        else
+        {
+            Debug("w1_process_cmd[W1_CMD_READ] Failed!\n");
+        }
+    }
+    else
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE] Failed!\n");
+    }
+
+    return succeed;
+}
+*/
+
+//It works...
+static BOOL Test_1904ReadRTC()
+{
+    BOOL succeed;
+
+    int dataSendLen1 = 9;
+    BYTE dataSend1[9] = { 0x55, 0x24, 0x94, 0x01, 0x37, 0x00, 0x00, 0x00, 0x75};
+
+    int dataSendLen2 = 1;
+    BYTE dataSend2[1] = { 0x66};
+
+    int dataSendLen3 = 5;
+    BYTE dataSend3[5] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+    int dataRecvLen = 0;
+    BYTE dataRecv[128];
+    memset(dataRecv, 0, sizeof(BYTE) * 128);
+
+    //0. reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+
+    //1.
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+                            dataSend1, dataSendLen1, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE]-1 Failed!\n");
+        return FALSE;
+    }
+
+    Debug("w1_process_cmd[W1_CMD_WRITE]-1 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    //2.
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+                            dataSend2, dataSendLen2, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE]-2 Failed!\n");
+        return FALSE;
+    }
+
+    Debug("w1_process_cmd[W1_CMD_WRITE]-2 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    //3.
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_READ,
+                        dataSend3, dataSendLen3, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_READ]-3 Failed!\n");
+        return FALSE;
+    }
+
+    Debug("w1_process_cmd[W1_CMD_READ]-3 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    return TRUE;
+}
+
+
+
+static BOOL Test_1904WriteRTC()
+{
+    BOOL succeed;
+
+    int dataSendLen1 = 9;
+    BYTE dataSend1[9] = { 0x55, 0x24, 0x94, 0x01, 0x37, 0x00, 0x00, 0x00, 0x75};
+
+    int dataSendLen2 = 6;
+    //BYTE dataSend2[6] = { 0x99, 0x5C, 0x33, 0xF1, 0x2C, 0x4F};
+    BYTE dataSend2[6] = { 0x99, 0x5C, 0xA0, 0xF2, 0x2D, 0x4F};
+
+    int dataRecvLen = 0;
+    BYTE dataRecv[128];
+    memset(dataRecv, 0, sizeof(BYTE) * 128);
+
+    //0. reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+
+    //1.
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+                           dataSend1, dataSendLen1, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE]-1 Failed!\n");
+        return FALSE;
+    }
+
+    Debug("w1_process_cmd[W1_CMD_WRITE]-1 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    //2.
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                            dataSend2, dataSendLen2, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_TOUCH]-2 Failed!\n");
+        return FALSE;
+    }
+
+    Debug("w1_process_cmd[W1_CMD_TOUCH]-2 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    return TRUE;
+}
+
+
+
+
+
+
+
+
 
 int main(void)
 {
@@ -256,16 +444,7 @@ int main(void)
 
     char useless[50];
 
-
-
-
-    BOOL succeed = FALSE;
-
     initialize();
-
-    Debug("sizeof cnmsg: %d \n", sizeof(struct cn_msg));
-    Debug("sizeof w1msg: %d \n", sizeof(struct w1_netlink_msg));
-    Debug("sizeof w1cmd: %d \n", sizeof(struct w1_netlink_cmd));
 
     Debug("======================================================\n");
 
@@ -276,31 +455,40 @@ int main(void)
 	}
 
     Debug("======================================================\n");
-    //sleep a while...
-    sleep(sleepSecond);
-    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
 
-    succeed = Test1();
+    sleep(sleepSecond);
+
+    Test_ListMasters();
 
     Debug("======================================================\n");
-    //sleep a while...
-    sleep(sleepSecond);
-    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
 
-	Test3();
+    sleep(sleepSecond);
+
+	Test_ResetMaster();
+
+    Test_SearchSlaves();
 
     Debug("======================================================\n");
-    //sleep a while...
-    sleep(sleepSecond);
-    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
 
-    Test2();
+    sleep(sleepSecond);
+
+    Test_1904ReadRTC();
 
     Debug("======================================================\n");
-    //sleep a while...
-    sleep(sleepSecond);
-    //Debug("Main thread wake up after %d seconds...\n", sleepSecond);
 
+    sleep(sleepSecond);
+
+    Test_1904WriteRTC();
+
+    Debug("======================================================\n");
+
+    sleep(sleepSecond);
+
+    Test_1904ReadRTC();
+
+    Debug("======================================================\n");
+
+    sleep(sleepSecond);
 
     Debug("Type something to quit: \n");
     scanf("%s", useless);

@@ -63,19 +63,16 @@ typedef struct w1hal_device_operations {
     /** Reset the Master */
     BOOL (*master_reset)(w1_master_id masterId);
 
-    /* Process Commands By Master or slave: W1_CMD_TOUCH, W1_CMD_READ or W1_CMD_WRITE
-    BOOL (*process_cmd)(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
-    */
+    /** Rouch data on the Master */
+    BOOL (*touch_data)(w1_master_id masterId,
+                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
 
-    BOOL (*slave_touch)(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
+    /** Read data from the Master */
+    BOOL (*read_data)(w1_master_id masterId,
+                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
 
-    BOOL (*slave_read)(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
-
-    BOOL (*slave_write)(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen);
+    /** Write data to the Master */
+    BOOL (*write_data)(w1_master_id masterId, BYTE * dataIn, int dataInLen);
 
 }w1hal_interface;
 
