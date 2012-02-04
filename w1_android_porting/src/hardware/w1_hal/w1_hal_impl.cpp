@@ -130,8 +130,8 @@ static BOOL w1hal_int_read_data(w1_master_id masterId,
 static BOOL w1hal_int_write_data(w1_master_id masterId, BYTE * dataIn, int dataInLen)
 {
     int dataOutLen = 0;
-    BYTE dataOut[128];
-    memset(dataOut, 0, sizeof(BYTE) * 128);
+    BYTE dataOut[dataInLen];    
+    memset(dataOut, 0xFF, sizeof(BYTE) * dataInLen);
 
     return w1_process_cmd((BYTE *)&masterId, sizeof(w1_master_id), W1_CMD_WRITE,
                           dataIn, dataInLen, dataOut, &dataOutLen);

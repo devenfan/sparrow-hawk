@@ -431,7 +431,58 @@ static BOOL Test_1904WriteRTC()
 }
 
 
+static BOOL Test_1972Read(int startAddress, int length)
+{
+    BOOL succeed;
 
+    int dataSendLen1 = 9;
+    BYTE dataSend1[9] = { 0x55, 0x2D, 0x04, 0x74, 0xE1, 0x02, 0x00, 0x00, 0xF0};
+
+    int dataSendLen2 = 3 + length;
+    BYTE dataSend2[dataSendLen2];
+    dataSend2[0] = 0xF0;
+    dataSend2[1] = (BYTE)(startAddress & 0x000000FF);
+    dataSend2[2] = (BYTE)((startAddress & 0x0000FF00) >> 8);
+    memset(dataSend2 + 3, 0xFF, sizeof(BYTE) * length);
+
+    int dataRecvLen = 0;
+    BYTE dataRecv[256];
+    memset(dataRecv, 0, sizeof(BYTE) * 256);
+
+    //0. reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+
+    //1.
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+                           dataSend1, dataSendLen1, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE]-1 Failed!\n");
+        return FALSE;
+    }
+
+    Debug("w1_process_cmd[W1_CMD_WRITE]-1 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    //2.
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                            dataSend2, dataSendLen2, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_TOUCH]-2 Failed!\n");
+        return FALSE;
+    }
+
+    Debug("w1_process_cmd[W1_CMD_TOUCH]-2 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    return TRUE;
+}
 
 
 
@@ -469,7 +520,7 @@ int main(void)
     Test_SearchSlaves();
 
     Debug("======================================================\n");
-
+    /*
     sleep(sleepSecond);
 
     Test_1904ReadRTC();
@@ -485,6 +536,13 @@ int main(void)
     sleep(sleepSecond);
 
     Test_1904ReadRTC();
+
+    Debug("======================================================\n");
+    */
+
+    sleep(sleepSecond);
+
+    Test_1972Read(0, 128);
 
     Debug("======================================================\n");
 

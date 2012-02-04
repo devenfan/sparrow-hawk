@@ -325,6 +325,7 @@ public class OneWireContainer2D
    {
       byte[] rd_byte = new byte[1];
 
+      //Deven: I think below line should be replaced by readPage
       register.read(page,false,rd_byte,0,1);
 
       return (rd_byte[0] == WRITEONCE_FLAG);
@@ -346,6 +347,7 @@ public class OneWireContainer2D
 
       wr_byte[0] = WRITEONCE_FLAG;
 
+      //Deven: I think below line should be replaced by writePage
       register.write(page, wr_byte, 0, 1);
 
       // read back to verify

@@ -718,7 +718,7 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     *ppRecvMsg = (struct w1_netlink_msg *)malloc(g_ackMsg->len);
     if(NULL == *ppRecvMsg)
     {
-        Debug("Out of memory!\n");
+        Debug("Out of memory!\n"); //It will sometimes occur...
         succeed = FALSE;
         goto End;
     }
@@ -866,7 +866,7 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
 
         memcpy(dataOut, w1cmdRecv->data, w1cmdRecv->len);
         //*pDataOut = w1cmdRecv->data; //TODO: Copy out???
-        *pDataOutLen = w1cmdRecv->len;
+        *pDataOutLen = w1cmdRecv->len; //Actually, the number of in & out are exactly the same
     }
 
     if(!w1msgRecv) free(w1msgRecv);

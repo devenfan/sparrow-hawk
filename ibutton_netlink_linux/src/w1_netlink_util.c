@@ -212,11 +212,11 @@ void print_w1msg(const struct w1_netlink_msg * w1msg)
 void print_w1cmd(const struct w1_netlink_cmd * w1cmd)
 {
 	char cmdTypeStr[32];
-	char cmdDataStr[96];
+	char cmdDataStr[w1cmd->len + 1];   //too large will get OutOfMemory error
 	int cmdDataStrLen = 0;
 
     memset(cmdTypeStr, 0, 32);
-    memset(cmdDataStr, 0, 96);
+    memset(cmdDataStr, 0, w1cmd->len + 1);
 
     describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
 
