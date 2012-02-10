@@ -431,7 +431,7 @@ static BOOL Test_1904WriteRTC()
 }
 
 
-static BOOL Test_1972Read(int startAddress, int length)
+static BOOL Test_1972ReadMemory(int startAddress, int length)
 {
     BOOL succeed;
 
@@ -457,31 +457,171 @@ static BOOL Test_1972Read(int startAddress, int length)
         return FALSE;
     }
 
-    //1.
+    //1. MatchROM
     succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
                            dataSend1, dataSendLen1, (void *)dataRecv, &dataRecvLen);
     if(!succeed)
     {
-        Debug("w1_process_cmd[W1_CMD_WRITE]-1 Failed!\n");
+        Debug("w1_process_cmd[MatchROM] Failed!\n");
         return FALSE;
     }
 
-    Debug("w1_process_cmd[W1_CMD_WRITE]-1 Succeed!\n");
+    Debug("w1_process_cmd[MatchROM] Succeed!\n");
     print_bytes(dataRecv, 0, dataRecvLen);
 
-    //2.
+    //2. ReadMemory
     succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
                             dataSend2, dataSendLen2, (void *)dataRecv, &dataRecvLen);
     if(!succeed)
     {
-        Debug("w1_process_cmd[W1_CMD_TOUCH]-2 Failed!\n");
+        Debug("w1_process_cmd[ReadMemory] Failed!\n");
         return FALSE;
     }
 
-    Debug("w1_process_cmd[W1_CMD_TOUCH]-2 Succeed!\n");
+    Debug("w1_process_cmd[ReadMemory] Succeed!\n");
     print_bytes(dataRecv, 0, dataRecvLen);
 
     return TRUE;
+}
+
+
+static BOOL Test_1972WriteAndCopyScratchpad(int startAddress, BYTE * inputBytes, int offset, int length)
+{
+    BOOL succeed;
+
+    if(0 != (startAddress % 8) || NULL == inputBytes || 0 != (length % 8))
+        return FALSE;
+
+    int dataSendLen1 = 9; //Match ROM
+    BYTE dataSend1[9] = { 0x55, 0x2D, 0x04, 0x74, 0xE1, 0x02, 0x00, 0x00, 0xF0};
+
+    int dataSendLen2 = 1 + 2 + 8 + 2;
+    BYTE dataSend2[dataSendLen2];
+    dataSend2[0] = 0x0F; //Write Scratchpad
+    dataSend2[1] = (BYTE)(startAddress & 0x000000FF);
+    dataSend2[2] = (BYTE)((startAddress & 0x0000FF00) >> 8);
+    memcpy(dataSend2 + 3, inputBytes, 8);
+    memset(dataSend2 + 3 + 8, 0xFF, 2); //copy CRC16 out...
+
+    int dataSendLen3 = 3 + 1;
+    BYTE dataSend3[dataSendLen3];
+    dataSend3[0] = 0x55; //Copy Scratchpad
+    dataSend3[1] = (BYTE)(startAddress & 0x000000FF);
+    dataSend3[2] = (BYTE)((startAddress & 0x0000FF00) >> 8);
+    dataSend3[3] = 0x07; //ES
+    //dataSend3[4] = 0xFF; //useless
+
+    int dataSendLen4 = 1 + 3 + 8 + 2;
+    BYTE dataSend4[dataSendLen4];
+    memset(dataSend4, 0xFF, dataSendLen4);
+    dataSend4[0] = 0xAA; //Read Scratchpad
+
+    int dataRecvLen = 0;
+    BYTE dataRecv[256];
+    memset(dataRecv, 0, sizeof(BYTE) * 256);
+
+    //-----------------------------------------------------------
+    //0. Reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+    //1. MatchROM
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                           dataSend1, dataSendLen1, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[MatchROM]-1 Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_process_cmd[MatchROM]-1 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+    //2. WriteScratchpad
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                            dataSend2, dataSendLen2, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[WriteScratchpad] Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_process_cmd[WriteScratchpad] Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    //-----------------------------------------------------------
+    //0. Reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+    //1. MatchROM
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                           dataSend1, dataSendLen1, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[MatchROM]-2 Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_process_cmd[MatchROM]-2 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+    //2. ReadScratchpad
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                            dataSend4, dataSendLen4, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[ReadScratchpad]-1 Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_process_cmd[ReadScratchpad]-1 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    //-----------------------------------------------------------
+    //0. Reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+    //1. MatchROM
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+                           dataSend1, dataSendLen1, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[MatchROM]-3 Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_process_cmd[MatchROM]-3 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+    //2. CopyScratchpad
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                            dataSend3, dataSendLen3, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[CopyScratchpad] Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_process_cmd[CopyScratchpad] Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+
+    //2. Read Result
+    //Wait tPROGMAX for the copy function to complete
+    sleep(10);
+
+    succeed = w1_master_read(m_masterId, 1, dataRecv);
+    if(!succeed)
+    {
+        Debug("w1_master_read Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_master_read Succeed!\n");
+    print_bytes(dataRecv, 0, 1);
+
+    return (0xAA == dataRecv[0]) ? TRUE : FALSE;
 }
 
 
@@ -513,6 +653,7 @@ int main(void)
 
     Debug("======================================================\n");
 
+    /*
     sleep(sleepSecond);
 
 	Test_ResetMaster();
@@ -520,7 +661,7 @@ int main(void)
     Test_SearchSlaves();
 
     Debug("======================================================\n");
-    /*
+
     sleep(sleepSecond);
 
     Test_1904ReadRTC();
@@ -536,13 +677,32 @@ int main(void)
     sleep(sleepSecond);
 
     Test_1904ReadRTC();
-
-    Debug("======================================================\n");
     */
+
+    /*
+    Debug("======================================================\n");
+    Debug("===============  Test_1972ReadMemory =================\n");
+    Debug("======================================================\n");
+
+    Test_1972ReadMemory(0x80, 8);
 
     sleep(sleepSecond);
 
-    Test_1972Read(0, 128);
+    Test_1972ReadMemory(0x20, 8);
+    */
+    Debug("======================================================\n");
+    Debug("==========  Test_1972WriteAndCopyScratchpad ==========\n");
+    Debug("======================================================\n");
+
+    BYTE eightBytes[8] = {0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11};
+
+    Test_1972WriteAndCopyScratchpad(0x20, eightBytes, 0, 8);
+
+    Debug("======================================================\n");
+    Debug("===============  Test_1972ReadMemory =================\n");
+    Debug("======================================================\n");
+
+    Test_1972ReadMemory(0x20, 8);
 
     Debug("======================================================\n");
 

@@ -321,3 +321,72 @@ BOOL request_to_search_w1_slaves(BOOL alarmSearch)
 	return ret;
 }
 */
+
+
+
+struct cn_msg * malloc_w1_netlinkmsg(void)
+{
+	void * buffer = NULL;
+	struct cn_msg * cnmsg = NULL;
+	//struct w1_netlink_msg * w1msg = NULL;
+
+	buffer = malloc(MAX_CNMSG_SIZE);
+
+	if(NULL == buffer) return NULL;
+
+	cnmsg = (struct cn_msg *) buffer;
+
+    //struct cb_id w1_id = {.idx = CN_W1_IDX, .val = CN_W1_VAL};
+
+	memset(cnmsg, 0, MAX_CNMSG_SIZE);
+
+    cnmsg->id.idx = CN_W1_IDX;
+    cnmsg->id.val = CN_W1_VAL;
+    cnmsg->seq = generate_w1_global_sequence();
+
+	//we cannot take "__u8	data[0]" as "void *", because former one don't take any mem.
+	//Debug("sizeof(struct w1_netlink_msg): %d bytes\n", sizeof(struct w1_netlink_msg));
+
+	return cnmsg;
+}
+
+
+void free_w1_netlinkmsg(struct cn_msg * cnmsg)
+{
+	/*
+	struct w1_netlink_msg * w1msg = (struct w1_netlink_msg *)(cnmsg->data);
+	struct w1_netlink_cmd * w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
+
+	free(w1cmd->data);
+	free(w1cmd);
+	free(w1msg);
+	*/
+
+	free(cnmsg);
+}
+
+static BOOL request_to_list_w1_masters(void)
+{
+    BOOL ret = FALSE;
+    struct cn_msg * cnmsg = NULL;
+    struct w1_netlink_msg * w1msg = NULL;
+
+	cnmsg = malloc_w1_netlinkmsg();
+	w1msg = (struct w1_netlink_msg *) (cnmsg + 1);
+
+    w1msg->len = 0;
+	w1msg->type = W1_LIST_MASTERS;
+
+	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
+
+	ret = send_w1_netlinkmsg(cnmsg);
+
+	free_w1_netlinkmsg(cnmsg);
+
+	return ret;
+}
+
+
+
+
+
