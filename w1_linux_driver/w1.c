@@ -45,7 +45,10 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
 MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
 
-static int w1_timeout = 1;      //search every 1 second
+//Deven # 2012-02-10: Add macro to disable the search thread...
+//#define ENABLE_SEARCH_THREAD
+
+static int w1_timeout = 3;      //search every 3 second
 int w1_max_slave_count = 10;
 int w1_max_slave_ttl = 10;
 
@@ -242,8 +245,9 @@ static ssize_t w1_master_attribute_store_search(struct device * dev,
 	mutex_lock(&md->mutex);
 	md->search_count = tmp;
 	mutex_unlock(&md->mutex);
+#ifdef ENABLE_SEARCH_THREAD
 	wake_up_process(md->thread);
-
+#endif
 	return count;
 }
 
@@ -274,8 +278,9 @@ static ssize_t w1_master_attribute_store_pullup(struct device *dev,
 	mutex_lock(&md->mutex);
 	md->enable_pullup = tmp;
 	mutex_unlock(&md->mutex);
+#ifdef ENABLE_SEARCH_THREAD
 	wake_up_process(md->thread);
-
+#endif
 	return count;
 }
 
@@ -957,6 +962,7 @@ void w1_search_process(struct w1_master *dev, u8 search_type)
 		dev->search_count--;
 }
 
+//Deven: This method is only to search the slaves every a few seconds(w1_timeout)
 int w1_process(void *data)
 {
 	struct w1_master *dev = (struct w1_master *) data;

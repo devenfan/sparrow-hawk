@@ -5,22 +5,22 @@
 		<Cursor position="12175" topLine="453" />
 	</File>
 	<File name="masters\ds2490.c" open="0" top="0" tabpos="0">
-		<Cursor position="19381" topLine="766" />
+		<Cursor position="15170" topLine="516" />
 	</File>
 	<File name="masters\w1-gpio.c" open="0" top="0" tabpos="0">
-		<Cursor position="1697" topLine="43" />
+		<Cursor position="1271" topLine="88" />
 	</File>
-	<File name="w1.c" open="0" top="0" tabpos="3">
-		<Cursor position="24507" topLine="889" />
+	<File name="w1.c" open="1" top="0" tabpos="1">
+		<Cursor position="7300" topLine="269" />
 	</File>
-	<File name="w1.h" open="0" top="0" tabpos="2">
-		<Cursor position="5758" topLine="203" />
+	<File name="w1.h" open="1" top="0" tabpos="3">
+		<Cursor position="6526" topLine="229" />
 	</File>
 	<File name="w1_family.c" open="0" top="0" tabpos="5">
 		<Cursor position="3209" topLine="123" />
 	</File>
-	<File name="w1_int.c" open="0" top="0" tabpos="2">
-		<Cursor position="4968" topLine="163" />
+	<File name="w1_int.c" open="1" top="1" tabpos="2">
+		<Cursor position="5678" topLine="195" />
 	</File>
 	<File name="w1_io.c" open="0" top="0" tabpos="2">
 		<Cursor position="7924" topLine="267" />
@@ -32,6 +32,6 @@
 		<Cursor position="9780" topLine="330" />
 	</File>
 	<File name="w1_netlink.h" open="0" top="0" tabpos="0">
-		<Cursor position="1091" topLine="59" />
+		<Cursor position="1531" topLine="64" />
 	</File>
 </CodeBlocks_layout_file>

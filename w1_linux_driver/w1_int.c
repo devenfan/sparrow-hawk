@@ -157,6 +157,8 @@ int w1_add_master_device(struct w1_bus_master *master)
 
 	dev->initialized = 1;
 
+//Deven # 2012-02-10: Let the up later handle itself...
+#ifdef ENABLE_SEARCH_THREAD
 	dev->thread = kthread_run(&w1_process, dev, "%s", dev->name);
 	if (IS_ERR(dev->thread)) {
 		retval = PTR_ERR(dev->thread);
@@ -166,6 +168,9 @@ int w1_add_master_device(struct w1_bus_master *master)
 		mutex_unlock(&w1_mlock);
 		goto err_out_rm_attr;
 	}
+#else
+    dev->thread = NULL;
+#endif
 
 	list_add(&dev->w1_master_entry, &w1_masters);
 	mutex_unlock(&w1_mlock);
@@ -194,7 +199,9 @@ void __w1_remove_master_device(struct w1_master *dev)
 	struct w1_netlink_msg msg;
 	struct w1_slave *sl, *sln;
 
-	kthread_stop(dev->thread);
+    //Deven # 2012-02-10: Add condition here to support no threading here...
+    if(dev->thread)
+        kthread_stop(dev->thread);
 
 	mutex_lock(&w1_mlock);
 	list_del(&dev->w1_master_entry);
