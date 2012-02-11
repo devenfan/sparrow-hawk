@@ -111,6 +111,30 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
 
 
 
+/**
+ * Synchronized method
+ *
+ * Input Parameters: masterId, readLen
+ * Output Parameters: dataOut
+ */
+BOOL w1_master_read(w1_master_id masterId, int readLen, void * dataOut);
+
+/**
+ * Synchronized method
+ *
+ * Input Parameters: masterId, writeLen
+ * Output Parameters: dataIn
+ */
+BOOL w1_master_write(w1_master_id masterId, int writeLen, void * dataIn);
+
+/**
+ * Synchronized method
+ *
+ * Input Parameters: masterId, dataIn, dataInLen
+ * Output Parameters: dataOut, pDataOutLen
+ */
+BOOL w1_master_touch(w1_master_id masterId, void * dataIn, int dataInLen, void * dataOut, int * pDataOutLen);
+
 
 
 /**

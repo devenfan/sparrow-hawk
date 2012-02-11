@@ -607,7 +607,6 @@ static BOOL Test_1972WriteAndCopyScratchpad(int startAddress, BYTE * inputBytes,
     Debug("w1_process_cmd[CopyScratchpad] Succeed!\n");
     print_bytes(dataRecv, 0, dataRecvLen);
 
-
     //2. Read Result
     //Wait tPROGMAX for the copy function to complete
     sleep(10);
@@ -622,6 +621,8 @@ static BOOL Test_1972WriteAndCopyScratchpad(int startAddress, BYTE * inputBytes,
     print_bytes(dataRecv, 0, 1);
 
     return (0xAA == dataRecv[0]) ? TRUE : FALSE;
+
+    //return (0xAA == dataRecv[4]) ? TRUE : FALSE;
 }
 
 
@@ -645,14 +646,17 @@ int main(void)
 	    goto GameOver;
 	}
 
-    Debug("======================================================\n");
-
     sleep(sleepSecond);
 
-    Test_ListMasters();
+    Debug("======================================================\n");
+
+    Test_ListMasters(); //Must be the first...
+
+	Test_ResetMaster();
 
     Debug("======================================================\n");
 
+    Test_SearchSlaves();
     /*
     sleep(sleepSecond);
 
@@ -694,10 +698,11 @@ int main(void)
     Debug("==========  Test_1972WriteAndCopyScratchpad ==========\n");
     Debug("======================================================\n");
 
-    BYTE eightBytes[8] = {0x18, 0x17, 0x16, 0x15, 0x14, 0x13, 0x12, 0x11};
+    BYTE eightBytes[8] = {0x28, 0x27, 0x26, 0x25, 0x24, 0x23, 0x22, 0x21};
 
     Test_1972WriteAndCopyScratchpad(0x20, eightBytes, 0, 8);
 
+    /*
     Debug("======================================================\n");
     Debug("===============  Test_1972ReadMemory =================\n");
     Debug("======================================================\n");
@@ -705,8 +710,8 @@ int main(void)
     Test_1972ReadMemory(0x20, 8);
 
     Debug("======================================================\n");
-
-    sleep(sleepSecond);
+    */
+    //sleep(sleepSecond);
 
     Debug("Type something to quit: \n");
     scanf("%s", useless);
