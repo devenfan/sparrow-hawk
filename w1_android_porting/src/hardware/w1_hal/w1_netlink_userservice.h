@@ -22,18 +22,15 @@
 #define __W1_NETLINK_USERSERVICE_H
 
 
-//#include "w1_netlink_userspace.h"
-
-
 
 typedef void w1_master_added(w1_master_id master_id);
 
 typedef void w1_master_removed(w1_master_id master_id);
 
+
 typedef void w1_slave_added(w1_slave_rn salve_rn);
 
 typedef void w1_slave_removed(w1_slave_rn salve_rn);
-
 
 
 
@@ -65,6 +62,29 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks);
 BOOL w1_netlink_userservice_stop(void);
 
 
+
+/**
+ * DONOT invoke this method unless userspace service is started...
+ */
+w1_master_id get_w1_master_id(void);
+
+
+/**
+ * DONOT invoke this method unless userspace service is started...
+ */
+void get_w1_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount);
+
+
+/**
+ * Pause w1 searching thread
+ */
+void pause_w1_searching_thread();
+
+
+/**
+ * Wakeup w1 searching thread
+ */
+void wakeup_w1_searching_thread();
 
 
 /*
@@ -111,6 +131,8 @@ BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
 
 
 
+
+
 /**
  * Synchronized method
  *
@@ -134,6 +156,7 @@ BOOL w1_master_write(w1_master_id masterId, int writeLen, void * dataIn);
  * Output Parameters: dataOut, pDataOutLen
  */
 BOOL w1_master_touch(w1_master_id masterId, void * dataIn, int dataInLen, void * dataOut, int * pDataOutLen);
+
 
 
 

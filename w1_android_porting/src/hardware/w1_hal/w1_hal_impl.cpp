@@ -54,7 +54,6 @@ static BOOL w1hal_int_slave_read(BYTE * slaveId, int idLen,
 
 static BOOL w1hal_int_slave_write(BYTE * slaveId, int idLen,
                     void * dataIn, int dataInLen);
-*/
 
 static BOOL w1hal_int_touch_data(w1_master_id masterId,
                     BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
@@ -64,6 +63,15 @@ static BOOL w1hal_int_read_data(w1_master_id masterId,
 
 static BOOL w1hal_int_write_data(w1_master_id masterId, BYTE * dataIn, int dataInLen);
 
+*/
+
+
+static BOOL w1hal_int_master_touch(w1_master_id masterId,
+                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
+
+static BOOL w1hal_int_master_read(w1_master_id masterId, int readLen, BYTE * dataReadOut);
+
+static BOOL w1hal_int_master_write(w1_master_id masterId, int writeLen, BYTE * dataWriteIn);
 
 
 
@@ -76,9 +84,9 @@ static const w1hal_interface sW1HalInterface =
     w1hal_int_list_masters,
     w1hal_int_search_slaves,
     w1hal_int_master_reset,
-    w1hal_int_touch_data,
-    w1hal_int_read_data,
-    w1hal_int_write_data
+    w1hal_int_master_touch,
+    w1hal_int_master_read,
+    w1hal_int_master_write
 };
 
 
@@ -91,10 +99,14 @@ static BOOL w1hal_int_start(w1_user_callbacks * w1UserCallbacks)
     return w1_netlink_userservice_start(w1UserCallbacks);
 }
 
+
+
 static BOOL w1hal_int_stop(void)
 {
     return w1_netlink_userservice_stop();
 }
+
+
 
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount)
 {
@@ -113,28 +125,20 @@ static BOOL w1hal_int_master_reset(w1_master_id masterId)
 }
 
 
-static BOOL w1hal_int_touch_data(w1_master_id masterId,
+static BOOL w1hal_int_master_touch(w1_master_id masterId,
                     BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen)
 {
-    return w1_process_cmd((BYTE *)&masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
-                          dataIn, dataInLen, dataOut, pDataOutLen);
+    return w1_master_touch(masterId, dataIn, dataInLen, dataOut, pDataOutLen);
 }
 
-static BOOL w1hal_int_read_data(w1_master_id masterId,
-                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen)
+static BOOL w1hal_int_master_read(w1_master_id masterId, int readLen, BYTE * dataReadOut)
 {
-    return w1_process_cmd((BYTE *)&masterId, sizeof(w1_master_id), W1_CMD_READ,
-                          dataIn, dataInLen, dataOut, pDataOutLen);
+    return w1_master_read(masterId, readLen, dataReadOut);
 }
 
-static BOOL w1hal_int_write_data(w1_master_id masterId, BYTE * dataIn, int dataInLen)
+static BOOL w1hal_int_master_write(w1_master_id masterId, int writeLen, BYTE * dataWriteIn)
 {
-    int dataOutLen = 0;
-    BYTE dataOut[dataInLen];    
-    memset(dataOut, 0xFF, sizeof(BYTE) * dataInLen);
-
-    return w1_process_cmd((BYTE *)&masterId, sizeof(w1_master_id), W1_CMD_WRITE,
-                          dataIn, dataInLen, dataOut, &dataOutLen);
+    return w1_master_write(masterId, writeLen, dataWriteIn);
 }
 
 

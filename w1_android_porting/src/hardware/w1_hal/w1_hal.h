@@ -64,15 +64,14 @@ typedef struct w1hal_device_operations {
     BOOL (*master_reset)(w1_master_id masterId);
 
     /** Rouch data on the Master */
-    BOOL (*touch_data)(w1_master_id masterId,
+    BOOL (*master_touch)(w1_master_id masterId,
                     BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
 
     /** Read data from the Master */
-    BOOL (*read_data)(w1_master_id masterId,
-                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
+    BOOL (*master_read)(w1_master_id masterId, int readLen, BYTE * dataReadOut);
 
     /** Write data to the Master */
-    BOOL (*write_data)(w1_master_id masterId, BYTE * dataIn, int dataInLen);
+    BOOL (*master_write)(w1_master_id masterId, int writeLen, BYTE * dataWriteIn);
 
 }w1hal_interface;
 

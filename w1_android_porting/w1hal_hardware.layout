@@ -2,12 +2,12 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
 	<File name="src\hardware\w1_hal\w1_hal.c" open="0" top="0" tabpos="0">
-		<Cursor position="2670" topLine="15" />
+		<Cursor position="1102" topLine="69" />
 	</File>
 	<File name="src\hardware\w1_hal\w1_hal.h" open="0" top="0" tabpos="1">
-		<Cursor position="1666" topLine="64" />
+		<Cursor position="2102" topLine="38" />
 	</File>
 	<File name="src\hardware\w1_hal\w1_hal_impl.cpp" open="0" top="0" tabpos="2">
-		<Cursor position="3633" topLine="120" />
+		<Cursor position="2705" topLine="88" />
 	</File>
 </CodeBlocks_layout_file>
