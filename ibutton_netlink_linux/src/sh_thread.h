@@ -35,9 +35,15 @@ typedef struct sh_signal_ctrl {
 
 int sh_signal_init(sh_signal_ctrl * signal);
 
+
 int sh_signal_destroy(sh_signal_ctrl * signal);
 
+
 int sh_signal_wait(sh_signal_ctrl * signal);
+
+
+int sh_signal_timedwait(sh_signal_ctrl * signal, int milliseconds);
+
 
 int sh_signal_notify(sh_signal_ctrl * signal);
 

@@ -21,10 +21,16 @@
 
 
 #include <pthread.h>
+#include <linux/time.h>
 
 #include "sh_thread.h"
 #include "sh_error.h"
 
+
+/**
+ * Please refer to below link:
+ * http://www.ibm.com/developerworks/cn/linux/l-cn-mthreadps/
+ */
 
 
 int sh_signal_init(sh_signal_ctrl * signal)
@@ -77,14 +83,36 @@ int sh_signal_wait(sh_signal_ctrl * signal)
     int result;
 
     pthread_mutex_lock(&(signal->mutex));
-
     signal->cond_counter++;
-
-	//OK will get 0
 	result = pthread_cond_wait(&(signal->cond), &(signal->mutex));
-
+    signal->cond_counter--;
     pthread_mutex_unlock(&(signal->mutex));
 
+	/* OK will get 0 */
+    return result;
+}
+
+
+int sh_signal_timedwait(sh_signal_ctrl * signal, int milliseconds)
+{
+    int result;
+    struct timespec abstime;    //秒和纳秒
+    struct timeval now;         //秒和微秒
+
+    /* get the current time */
+    gettimeofday(&now, NULL);
+
+    /* add the offset to get timeout value */
+    abstime.tv_sec = now.tv_sec + milliseconds / 1000;
+    abstime.tv_nsec = now.tv_usec * 1000 + (milliseconds % 1000) * 1000000;
+
+    pthread_mutex_lock(&(signal->mutex));
+    signal->cond_counter++;
+	result = pthread_cond_timedwait(&(signal->cond), &(signal->mutex), &abstime);
+    signal->cond_counter--;
+    pthread_mutex_unlock(&(signal->mutex));
+
+	/* OK will get 0 */
     return result;
 }
 
@@ -101,9 +129,12 @@ int sh_signal_notify(sh_signal_ctrl * signal)
         {
             //it will notify the first thread waiting for this signal
             //pthread_cond_signal(&signal->cond);
+            //signal->cond_counter--;
 
             //it will notify all the threads waiting for this signal
             result = pthread_cond_broadcast(&(signal->cond));
+            //signal->cond_counter = 0;
+
             pthread_mutex_unlock(&(signal->mutex));
             break;
         }
@@ -111,7 +142,7 @@ int sh_signal_notify(sh_signal_ctrl * signal)
         pthread_mutex_unlock(&(signal->mutex));
     }
 
-	//OK will return 0
+	/* OK will get 0 */
     return result;
 }
 
