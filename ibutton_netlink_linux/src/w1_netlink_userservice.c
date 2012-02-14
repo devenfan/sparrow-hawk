@@ -49,27 +49,22 @@
 #include "w1_netlink_util.h"
 #include "w1_netlink_userservice.h"
 
-/* ====================================================================== */
-/* ============================ Constants =============================== */
-/* ====================================================================== */
-
-#define MAX_MSG_SIZE    256
-#define MAX_CNMSG_SIZE  192
-
 
 /* ====================================================================== */
 /* ========================= static variables =========================== */
 /* ====================================================================== */
-
 
 static const int g_group = W1_GROUP;
 
 static int g_globalSeq = 1;
 static pthread_mutex_t g_globalLocker;
 
-static int w1Socket;					//SOCKET
+static int g_w1NetlinkSocket;				//SOCKET
 static struct sockaddr_nl g_bindAddr;		//socket bind address
 static struct sockaddr_nl g_dataAddr;		//socket data address
+
+#define MAX_MSG_SIZE    256
+#define MAX_CNMSG_SIZE  192
 
 static struct msghdr socketMsgSend;			//socket message header, for sending
 static struct msghdr socketMsgRecv;			//socket message header, for receiving
@@ -80,23 +75,31 @@ static struct nlmsghdr * nlMsgRecv = NULL;	//netlink message header, for receivi
 
 static w1_user_callbacks * g_userCallbacks = NULL;
 
-static pthread_t receivingThread;
-static int receivingThreadStopFlag = 0;
-static sh_signal_ctrl recevingThreadStopSignal;
+static pthread_t        g_socketReceivingThread;
+static int              g_socketReceivingThreadStopFlag = 0;
+static sh_signal_ctrl   g_socketReceivingThreadStopSignal;
 
 //static struct cn_msg * cnmsgSendBuf = NULL;		//it's a buffer, only for sending purpose
 //static struct cn_msg * cnmsgRecvBuf = NULL;     //it's a buffer, only for receiving purpose
 
-static BYTE g_currentW1MsgType;
-static BYTE g_currentW1CmdType;
+static BOOL g_isProcessing;                 //indicate if it's processing now
+static sh_signal_ctrl g_waitAckMsgSignal;   //the ack signal
+static struct cn_msg * g_ackMsg;            //the ack message
+static struct cn_msg * g_outMsg;            //the out message
 
-static BOOL g_isWaitingAckMsg;             //indicate if it's waiting ack from w1 kernel now
-static sh_signal_ctrl g_waitAckMsgSignal;  //the ack signal
-static struct cn_msg * g_ackMsg;           //the ack message
-//static BYTE g_ackStatus;                   //the ack status: OK, FAILED, TIMEOUT
-static struct cn_msg * g_outMsg;           //the out message
+#define ACK_TIMEOUT    5000     //TIMEOUT for waiting ACK, by milliSeconds...
 
-#define ACK_TIMEOUT    10       //TIMEOUT for waiting ACK, by seconds
+#define MAX_SLAVE_COUNT   10
+
+static w1_master_id g_masterId;    //current master id
+static w1_slave_rn g_slavesIDs[MAX_SLAVE_COUNT];
+static int g_slavesCount;
+
+static pthread_t        g_w1SearchingThread;
+static int              g_w1SearchingThreadStopFlag = 0;
+static int              g_w1SearchingThreadPauseFalg = 0;
+static sh_signal_ctrl   g_w1SearchingThreadStopSignal;
+static int              g_w1SearchingInterval = 1000; //by millisecond
 
 /* ====================================================================== */
 /* ============================ log ralated ============================= */
@@ -168,7 +171,6 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     describe_w1_msg_type(w1msg->type, msgTypeStr);
 
     /*
-
     //Attention: DO NOT mistake any of %d, %s... Or, you will get "Segmentation fault".
 	Debug("RECV: cnmsg seq[%d], ack[%d], dataLen[%d]\n",
         cnmsg->seq, cnmsg->ack, cnmsg->len);
@@ -177,9 +179,9 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         msgTypeStr, w1msg->len, w1msg->status);
     */
 
-    Debug("Print RecvMsg below >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n");
-    print_cnmsg(cnmsg);
-    print_w1msg(w1msg);
+    //Debug("Print RecvMsg below >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n");
+    //print_cnmsg(cnmsg);
+    //print_w1msg(w1msg);
 
     if(W1_SLAVE_ADD == w1msg->type || W1_SLAVE_REMOVE == w1msg->type)
     {
@@ -191,15 +193,19 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         if(W1_SLAVE_ADD == w1msg->type)
         {
-            Debug("w1(1-wire) slave[%s] added\n", idDescribe);
+            Debug("w1(1-wire) slave[%s] added from kernel... warnning!!!\n", idDescribe);
+            /*
             if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
                 g_userCallbacks->slave_added_callback(*slave_rn);
+            */
         }
         else
         {
-            Debug("w1(1-wire) slave[%s] removed\n", idDescribe);
+            Debug("w1(1-wire) slave[%s] removed from kernel... warnning!!!\n", idDescribe);
+            /*
             if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
                 g_userCallbacks->slave_removed_callback(*slave_rn);
+            */
         }
         return;
     }
@@ -211,13 +217,25 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         if(W1_MASTER_ADD == w1msg->type)
         {
-            Debug("w1(1-wire) master[%d] added\n", master_id);
+            Debug("w1(1-wire) master[%d] added from kernel... Good!!!\n", master_id);
+
+            if(g_masterId == 0)
+            {
+                g_masterId = master_id;
+            }
+
             if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
                 g_userCallbacks->master_added_callback(master_id);
         }
         else
         {
-            Debug("w1(1-wire) master[%d] removed\n", master_id);
+            Debug("w1(1-wire) master[%d] removed from kernel... Good!!!\n", master_id);
+
+            if(g_masterId == master_id)
+            {
+                g_masterId = 0;
+            }
+
             if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
                 g_userCallbacks->master_removed_callback(master_id);
         }
@@ -225,7 +243,7 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     }
     else if(W1_LIST_MASTERS == w1msg->type)
     {
-        if(g_isWaitingAckMsg)
+        if(g_isProcessing)
         {
             memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
@@ -242,26 +260,9 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         //    2. w1_process_command_master OR w1_process_command_slave
         w1cmd = (struct w1_netlink_cmd *)(w1msg->data);
 
-        print_w1cmd(w1cmd);
+        //print_w1cmd(w1cmd);
 
-        /*
-        describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
-        Debug("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
-
-        if(W1_CMD_SEARCH == w1cmd->cmd || W1_CMD_ALARM_SEARCH == w1cmd->cmd)
-        {
-            slave_count = w1cmd->len / sizeof(w1_slave_rn);
-
-			slave_rn = (w1_slave_rn *) w1cmd->data;
-
-			for(slave_index = 0; slave_index < slave_count; slave_index++)
-			{
-			    describe_w1_reg_num(slave_rn + slave_index, idDescribe);
-				Debug("w1(1-wire) salve[%d] searched: %s \n", slave_index, idDescribe);
-			}
-        }
-        */
-        if(g_isWaitingAckMsg)
+        if(g_isProcessing)
         {
             memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
@@ -280,9 +281,9 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
         //describe_w1_cmd_type(w1cmd->cmd, cmdTypeStr);
         //Debug("RECV: w1cmd type[%s], dataLen[%d]\n", cmdTypeStr,  w1cmd->len);
-        print_w1cmd(w1cmd);
+        //print_w1cmd(w1cmd);
 
-        if(g_isWaitingAckMsg)
+        if(g_isProcessing)
         {
             memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
             memcpy(g_ackMsg, cnmsg, sizeof(struct cn_msg) + cnmsg->len);
@@ -325,7 +326,7 @@ static int retrieve_socket_msg(void)
 	//The receive calls normally return any data available, up to the requested amount,
 	//rather than waiting for receipt of the full amount requested.
 
-	int ret = recvmsg(w1Socket, &socketMsgRecv, 0);
+	int ret = recvmsg(g_w1NetlinkSocket, &socketMsgRecv, 0);
 	if(0 == ret)
 		return E_SOCKET_PEER_GONE;
 	else if(-1 == ret)
@@ -339,9 +340,9 @@ static void * socketmsg_receiving_loop(void * param)
 {
 	int ret;
 
-	Debug("w1 socketmsg receiving thread started!\n");
+	Debug("w1(1-wire) socket receiving thread started!\n");
 
-	while(!receivingThreadStopFlag)
+	while(!g_socketReceivingThreadStopFlag)
 	{
 		ret = retrieve_socket_msg();
 
@@ -355,15 +356,14 @@ static void * socketmsg_receiving_loop(void * param)
 		}
 		else
 		{
-			Debug("RECV: socketmsg received, which size is %d ........................\n", ret);
-			//base on the ret size...
+			Debug(">>>>>>>>>> RECV: socketmsg received, which size is %d \n", ret);
 			on_w1_netlinkmsg_received((struct cn_msg *)NLMSG_DATA(nlMsgRecv));
 		}
 	}
 
-	Debug("w1 socketmsg receiving thread stopped!\n");
+	Debug("w1(1-wire) socket receiving thread stopped!\n");
 
-	sh_signal_notify(&recevingThreadStopSignal);
+	sh_signal_notify(&g_socketReceivingThreadStopSignal);
 
 	return 0;
 }
@@ -371,9 +371,9 @@ static void * socketmsg_receiving_loop(void * param)
 
 static void start_receiving_thread(void)
 {
-	receivingThreadStopFlag = 0;
+	g_socketReceivingThreadStopFlag = 0;
 
-	sh_signal_init(&recevingThreadStopSignal);
+	sh_signal_init(&g_socketReceivingThreadStopSignal);
 
     {
         pthread_attr_t attr;
@@ -381,17 +381,17 @@ static void start_receiving_thread(void)
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
         //Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
-        pthread_create(&receivingThread, &attr, socketmsg_receiving_loop, NULL);
+        pthread_create(&g_socketReceivingThread, &attr, socketmsg_receiving_loop, NULL);
     }
 
-    g_isWaitingAckMsg = FALSE;
+    g_isProcessing = FALSE;
 	sh_signal_init(&g_waitAckMsgSignal);
 }
 
 
 static void stop_receiving_thread(void)
 {
-	int ret = 0;
+	//int ret = 0;
 
     struct cn_msg * cnmsg = NULL;
     struct w1_netlink_msg * w1msg = NULL;
@@ -405,18 +405,229 @@ static void stop_receiving_thread(void)
 	w1msg->type = W1_LIST_MASTERS;
 	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
 
-	receivingThreadStopFlag = 1;
+	g_socketReceivingThreadStopFlag = 1;
 
 	send_w1_netlinkmsg(cnmsg); //send something to activate the receiving thread
 	//free_w1_netlinkmsg(cnmsg);
 
 	{
-		ret = sh_signal_wait(&recevingThreadStopSignal);
+		//ret = sh_signal_wait(&g_socketReceivingThreadStopSignal);
+		sh_signal_timedwait(&g_socketReceivingThreadStopSignal, 5000);
 	}
 
-	sh_signal_destroy(&recevingThreadStopSignal);
+	sh_signal_destroy(&g_socketReceivingThreadStopSignal);
 
 	sh_signal_destroy(&g_waitAckMsgSignal);
+}
+
+
+
+/* ====================================================================== */
+/* ======================== w1 searching thread ========================= */
+/* ====================================================================== */
+
+static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
+                              w1_slave_rn * slavesNew, int slavesNewCount,
+                              w1_slave_rn * slavesAdded, int * slavesAddedCount,
+                              w1_slave_rn * slavesRemoved, int * slavesRemovedCount,
+                              w1_slave_rn * slavesKept, int * slavesKeptCount)
+{
+    //we suspect all input parameters are legal, no NULL input...
+    int i, j, added, removed, kept;
+
+    //all empty...
+    if((0 == slavesOldCount && 0 == slavesNewCount))
+    {
+        *slavesAddedCount = 0;
+        *slavesRemovedCount = 0;
+        return;
+    }
+
+    //only old empty
+    if(slavesOldCount == 0)
+    {
+        *slavesAddedCount = slavesNewCount;
+        for(i = 0; i < slavesNewCount; i++)
+        {
+            slavesAdded[i] = slavesNew[i];
+        }
+        return;
+    }
+
+    //only new empty
+    if(slavesNewCount == 0)
+    {
+        *slavesRemovedCount = slavesOldCount;
+        for(i = 0; i < slavesOldCount; i++)
+        {
+            slavesRemoved[i] = slavesOld[i];
+        }
+        return;
+    }
+
+    //compare both
+    added = 0;
+    removed = 0;
+    kept = 0;
+
+    for(i = 0; i < slavesNewCount; i++)
+    {
+        for(j = 0; j < slavesOldCount; j++)
+        {
+            if(are_w1_slave_rn_equal(slavesNew[i], slavesOld[j]))
+            {
+                slavesKept[kept++] = slavesNew[i];
+                break;
+            }
+        }
+
+        if(j == slavesOldCount)
+        {
+            //not found in slavesOld, means slavesNew[i] is newly added
+            slavesAdded[added++] = slavesNew[i];
+        }
+    }
+
+    if(slavesOldCount > kept)
+    {
+        for(i = 0; i < slavesOldCount; i++)
+        {
+            for(j = 0; j < kept; j++)
+            {
+                if(are_w1_slave_rn_equal(slavesOld[i], slavesKept[j]))
+                {
+                    break;
+                }
+            }
+
+            if(j == kept)
+            {
+                //not found in slavesSame, means slavesOld[i] is removed
+                slavesRemoved[removed++] = slavesOld[i];
+            }
+        }
+    }
+
+    *slavesAddedCount = added;
+    *slavesRemovedCount = removed;
+    *slavesKeptCount = kept;
+}
+
+
+static void * w1slaves_searching_loop(void * param)
+{
+
+	w1_slave_rn slavesSearched[MAX_SLAVE_COUNT];
+	w1_slave_rn slavesAdded[MAX_SLAVE_COUNT];
+	w1_slave_rn slavesRemoved[MAX_SLAVE_COUNT];
+	w1_slave_rn slavesKept[MAX_SLAVE_COUNT];
+
+	int slavesSearchedCount = 0;
+	int slavesAddedCount = 0;
+	int slavesRemovedCount = 0;
+	int slavesKeptCount = 0;
+
+	int i, j;
+
+	char idString[20];
+    memset(idString, 0, 20);
+
+	Debug("w1(1-wire) slaves searching thread started!\n");
+
+	while(!g_w1SearchingThreadStopFlag)
+	{
+        if(!g_w1SearchingThreadPauseFalg)
+        {
+            if(g_masterId > 0)
+            {
+                slavesSearchedCount = 0;
+                slavesAddedCount = 0;
+                slavesRemovedCount = 0;
+                slavesKeptCount = 0;
+
+                if(w1_master_search(g_masterId, FALSE, slavesSearched, &slavesSearchedCount))
+                {
+                    pthread_mutex_lock(&g_globalLocker);
+
+                    w1_compare_slaves(g_slavesIDs, g_slavesCount, slavesSearched, slavesSearchedCount,
+                                      slavesAdded, &slavesAddedCount, slavesRemoved, &slavesRemovedCount,
+                                      slavesKept, &slavesKeptCount);
+
+                    g_slavesCount = slavesKeptCount + slavesAddedCount;
+                    memcpy(g_slavesIDs, slavesKept, sizeof(w1_slave_rn) * slavesKeptCount);
+                    memcpy(g_slavesIDs + slavesKeptCount, slavesAdded, sizeof(w1_slave_rn) * slavesAddedCount);
+
+                    pthread_mutex_unlock(&g_globalLocker);
+
+                    if(slavesAddedCount > 0)
+                    {
+                        for(i = 0; i < slavesAddedCount; i++)
+                        {
+                            describe_w1_reg_num(slavesAdded + i, idString);
+                            Debug("w1(1-wire) slave[%s] added during searching...\n", idString);
+
+                            if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
+                                g_userCallbacks->slave_added_callback(slavesAdded[i]);
+                        }
+                    }
+                    if(slavesRemovedCount > 0)
+                    {
+                        for(j = 0; j < slavesRemovedCount; j++)
+                        {
+                            describe_w1_reg_num(slavesRemoved + j, idString);
+                            Debug("w1(1-wire) slave[%s] removed during searching...\n", idString);
+
+                            if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
+                                g_userCallbacks->slave_removed_callback(slavesRemoved[j]);
+                        }
+                    }
+                }
+                else
+                {
+                    Debug("w1 slaves searching failed on master[%d]...\n", g_masterId);
+                }
+            }
+        }
+
+        usleep(g_w1SearchingInterval * 1000);   //by microsecond
+	}
+
+	Debug("w1(1-wire) slaves searching thread stopped!\n");
+
+	sh_signal_notify(&g_w1SearchingThreadStopSignal);
+
+	return 0;
+}
+
+
+static void start_searching_thread(void)
+{
+    g_w1SearchingThreadStopFlag = 0;
+    g_w1SearchingThreadPauseFalg = 0;
+
+	sh_signal_init(&g_w1SearchingThreadStopSignal);
+
+    {
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+        //Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
+        pthread_create(&g_w1SearchingThread, &attr, w1slaves_searching_loop, NULL);
+    }
+}
+
+
+static void stop_searching_thread(void)
+{
+    g_w1SearchingThreadStopFlag = 1;
+    g_w1SearchingThreadPauseFalg = 1;
+
+	{
+		sh_signal_timedwait(&g_w1SearchingThreadStopSignal, 5000);
+	}
+
+	sh_signal_destroy(&g_w1SearchingThreadStopSignal);
 }
 
 
@@ -432,8 +643,8 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	pthread_mutex_init(&g_globalLocker, NULL);
 
 	//open socket
-	w1Socket = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
-	if(-1 == w1Socket)
+	g_w1NetlinkSocket = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
+	if(-1 == g_w1NetlinkSocket)
 	{
         perror("socket open");
         return FALSE;
@@ -448,17 +659,17 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	g_dataAddr.nl_pid = 0;
 
 	//bind socket
-	if (bind(w1Socket, (struct sockaddr *)&g_bindAddr, sizeof(struct sockaddr_nl)) == -1)
+	if (bind(g_w1NetlinkSocket, (struct sockaddr *)&g_bindAddr, sizeof(struct sockaddr_nl)) == -1)
 	{
 		perror("socket bind");
 
 		//close socket
-		close(w1Socket);
+		close(g_w1NetlinkSocket);
         return FALSE;
 	}
 
 	//Add membership to W1 Group. Or, you cannot send any message.
-	if (setsockopt(w1Socket, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP, &g_group, sizeof(g_group)) < 0)
+	if (setsockopt(g_w1NetlinkSocket, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP, &g_group, sizeof(g_group)) < 0)
 	{
 		perror("socket setsockopt");
         return FALSE;
@@ -493,12 +704,26 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	}
 	memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
 
-
 	g_userCallbacks = w1UserCallbacks;
 
 	start_receiving_thread();
 
-	Debug("w1 netlink userspace service started!\n");
+	//List Masters...
+    w1_master_id mastersListed[3];   //usually 1
+    int mastersListedCount = 0;
+
+    w1_list_masters(mastersListed, &mastersListedCount);
+    if(mastersListedCount > 0)
+    {
+        g_masterId = mastersListed[0];
+
+        //Search Slaves...
+        w1_master_search(g_masterId, FALSE, g_slavesIDs, &g_slavesCount);
+    }
+
+    start_searching_thread();
+
+	Debug("w1(1-wire) netlink userspace service started!\n");
 
 	return TRUE;
 }
@@ -506,18 +731,18 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 
 BOOL w1_netlink_userservice_stop(void)
 {
-    //Attesntion:
-    //if the thread is blocked inside [recvmsg], then this method will be blocked here forever!!!
-    //TODO: We should send something initiatively, so that we can get ack later...
-    //request_to_list_w1_masters();
 
+    stop_searching_thread();
+
+    //Attesntion:
+    //if the thread is blocked inside [recvmsg], this method will be blocked here forever!!!
 	stop_receiving_thread();
 
 	//Remove membership when you don't want to use netlink
-	setsockopt(w1Socket, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP, &g_group, sizeof(g_group));
+	setsockopt(g_w1NetlinkSocket, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP, &g_group, sizeof(g_group));
 
 	//close socket
-	close(w1Socket);
+	close(g_w1NetlinkSocket);
 
 	free(nlMsgSend);
 	free(nlMsgRecv);
@@ -527,11 +752,35 @@ BOOL w1_netlink_userservice_stop(void)
 
 	pthread_mutex_destroy(&g_globalLocker);
 
-	Debug("w1 netlink userspace service stopped!\n");
+	Debug("w1(1-wire) netlink userspace service stopped!\n");
 
 	return TRUE;
 }
 
+
+w1_master_id get_w1_master_id(void)
+{
+    return g_masterId;  //needs locker???
+}
+
+
+void get_w1_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount)
+{
+    memcpy(slaveIDs, g_slavesIDs, sizeof(w1_slave_rn) * g_slavesCount);
+    *slaveCount = g_slavesCount;
+}
+
+
+void pause_w1_searching_thread()
+{
+    g_w1SearchingThreadPauseFalg = 1;   //needs locker???
+}
+
+
+void wakeup_w1_searching_thread()
+{
+    g_w1SearchingThreadPauseFalg = 0;   //needs locker???
+}
 
 
 /* ====================================================================== */
@@ -594,7 +843,7 @@ BOOL send_w1_netlinkmsg(struct cn_msg * cnmsg)
 
 	//On success, this call return the number of characters sent.
 	//On error, -1 is returned, and errno is set appropriately.
-	ret = sendmsg(w1Socket, &socketMsgSend, 0);
+	ret = sendmsg(g_w1NetlinkSocket, &socketMsgSend, 0);
 
 	if(ret != -1)
 	{
@@ -626,10 +875,10 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //check busy or not
     BOOL isBusy = FALSE;
     pthread_mutex_lock(&g_globalLocker);
-    if(g_isWaitingAckMsg)
+    if(g_isProcessing)
         isBusy = TRUE;              //already busy
     else
-        g_isWaitingAckMsg = TRUE;   //mark busy
+        g_isProcessing = TRUE;   //mark busy
     pthread_mutex_unlock(&g_globalLocker);
     if(isBusy) return FALSE;        //busy
 
@@ -647,7 +896,6 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     w1cmd = (struct w1_netlink_cmd *)(w1msg + 1);
 
     //assemble w1cmd
-    g_currentW1CmdType = w1CmdType;
     w1cmd->cmd = w1CmdType;
     if(dataInLen > 0)
     {
@@ -656,7 +904,6 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     w1cmd->len = dataInLen;
 
     //assemble w1msg
-    g_currentW1MsgType = w1MsgType;
     w1msg->type = w1MsgType;
     if(idLen > 0)
     {
@@ -667,10 +914,12 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //assemble cnmsg
 	cnmsg->len = sizeof(struct w1_netlink_msg) + w1msg->len;
 
+    /*
     Debug("Print SendMsg below >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n");
     print_cnmsg(cnmsg);
     print_w1msg(w1msg);
     print_w1cmd(w1cmd);
+    */
 
     //send the message
 	succeed = send_w1_netlinkmsg(cnmsg);
@@ -680,9 +929,9 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
 	//Debug("Before sh_signal_wait...\n");
 
     //waiting for the ack message
-    if(sh_signal_wait(&g_waitAckMsgSignal) != 0)
+    if(sh_signal_timedwait(&g_waitAckMsgSignal, ACK_TIMEOUT) != 0)
     {
-        //Debug("After sh_signal_wait... Failed\n");
+        Debug("Cannot wait signal during %d ms! This command is failed!", ACK_TIMEOUT);
         succeed = FALSE;
         goto End;
     }
@@ -715,7 +964,7 @@ BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //print_w1msg(*ppRecvMsg);
 
 End:
-    g_isWaitingAckMsg = FALSE;
+    g_isProcessing = FALSE;
     //free message
     //free_w1_netlinkmsg(cnmsg);
     return succeed;

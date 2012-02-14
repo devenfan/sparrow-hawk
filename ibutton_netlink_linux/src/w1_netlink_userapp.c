@@ -26,7 +26,7 @@ static w1_master_id m_masterId;    //current master id
 
 static w1_slave_rn m_slaveIDs[SLAVE_MAX_COUNT];
 static int m_slaveCount;
-static int m_slaveCurrentIndex;
+//static int m_slaveCurrentIndex;
 
 static w1_user_callbacks m_userCallbacks;
 
@@ -74,7 +74,7 @@ static void print_all_slaves(void)
 
 static void on_master_added(w1_master_id master_id)
 {
-    Debug("on_master_added");
+    Debug("on_master_added\n");
 
     m_masterId = master_id;
 
@@ -83,7 +83,7 @@ static void on_master_added(w1_master_id master_id)
 
 static void on_master_removed(w1_master_id master_id)
 {
-    Debug("on_master_removed");
+    Debug("on_master_removed\n");
 
     if(m_masterId == master_id)
         m_masterId = 0;
@@ -97,7 +97,7 @@ static void on_slave_added(w1_slave_rn slave_id)
     int index = 0;
     BOOL found = FALSE;
 
-    Debug("on_slave_added");
+    Debug("on_slave_added\n");
 
     if(!is_w1_slave_rn_empty(slave_id))
     {
@@ -115,7 +115,7 @@ static void on_slave_added(w1_slave_rn slave_id)
         {
             m_slaveIDs[m_slaveCount] = slave_id;
             m_slaveCount++;
-            m_slaveCurrentIndex = 0;
+            //m_slaveCurrentIndex = 0;
         }
     }
 
@@ -127,7 +127,7 @@ static void on_slave_removed(w1_slave_rn slave_id)
     int index = 0;
     BOOL found = FALSE;
 
-    Debug("on_slave_removed");
+    Debug("on_slave_removed\n");
 
     if(!is_w1_slave_rn_empty(slave_id))
     {
@@ -146,7 +146,7 @@ static void on_slave_removed(w1_slave_rn slave_id)
             //m_slaveIDs[m_slaveCount - 1] = W1_EMPTY_REG_NUM;
             memset(&m_slaveIDs[m_slaveCount - 1], 0, sizeof(w1_slave_rn));
             m_slaveCount--;
-            m_slaveCurrentIndex = (m_slaveCount > 0) ? 0 : -1;
+            //m_slaveCurrentIndex = (m_slaveCount > 0) ? 0 : -1;
         }
     }
 
@@ -172,14 +172,12 @@ static void initialize()
 
     memset( m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT );
     m_slaveCount = 0;
-    m_slaveCurrentIndex = -1;
+    //m_slaveCurrentIndex = -1;
 
     m_userCallbacks.master_added_callback = on_master_added;
     m_userCallbacks.master_removed_callback = on_master_removed;
-    //m_userCallbacks.master_listed_callback = on_master_listed;
     m_userCallbacks.slave_added_callback = on_slave_added;
     m_userCallbacks.slave_removed_callback = on_slave_removed;
-    //m_userCallbacks.slave_found_callback = on_salve_found;
 }
 
 
@@ -226,7 +224,7 @@ static BOOL Test_SearchSlaves()
         Debug("w1_master_search Succeed!\n");
 
         m_slaveCount = slaveCount;
-        m_slaveCurrentIndex = (slaveCount > 0) ? 0 : -1;
+        //m_slaveCurrentIndex = (slaveCount > 0) ? 0 : -1;
 
         memset(m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
         for(index = 0; index < slaveCount; index++)
@@ -609,7 +607,7 @@ static BOOL Test_1972WriteAndCopyScratchpad(int startAddress, BYTE * inputBytes,
 
     //2. Read Result
     //Wait tPROGMAX for the copy function to complete
-    sleep(10);
+    sleep(1); //tPROGMAX = 10ms, here we use 1s instead...
 
     succeed = w1_master_read(m_masterId, 1, dataRecv);
     if(!succeed)
@@ -627,12 +625,97 @@ static BOOL Test_1972WriteAndCopyScratchpad(int startAddress, BYTE * inputBytes,
 
 
 
+static BOOL Test_1920Temperature()
+{
+    BOOL succeed;
+
+    //Match ROM
+    int dataSendLen1 = 9;
+    BYTE dataSend1[9] = { 0x55, 0x10, 0x55, 0x69, 0x82, 0x00, 0x08, 0x00, 0x74};
+
+    //Convert Temperature
+    int dataSendLen2 = 1;
+    BYTE dataSend2[1] = { 0x44 };
+
+    //Read Scratchpad
+    int dataSendLen3 = 1 + 9;
+    BYTE dataSend3[dataSendLen3];
+    memset(dataSend3, 0xFF, dataSendLen3);
+    dataSend3[0] = 0xBE;
+
+    int dataRecvLen = 0;
+    BYTE dataRecv[256];
+    memset(dataRecv, 0xFF, 256);
+
+    //-----------------------------------------------------------
+    //0. Reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+    //1. MatchROM
+    succeed = w1_master_write(m_masterId, dataSendLen1, dataSend1);
+    if(!succeed)
+    {
+        Debug("w1_master_write[MatchROM]-1 Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_master_write[MatchROM]-1 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+    //2. ConvertTemperature
+    pause_w1_searching_thread();
+    succeed = w1_master_write(m_masterId, dataSendLen2, dataSend2);
+    if(!succeed)
+    {
+        Debug("w1_master_write[ConvertTemperature] Failed!\n");
+        return FALSE;
+    }
+    sleep(1); //Data line is held high for at least 0.75 seconds by bus
+              //master to allow conversion to complete. Here use 1s instead.
+    Debug("w1_master_write[ConvertTemperature] Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+    wakeup_w1_searching_thread();
+    //-----------------------------------------------------------
+    //0. Reset
+    succeed = w1_master_reset(m_masterId);
+    if(!succeed)
+    {
+        Debug("w1_master_reset Failed!\n");
+        return FALSE;
+    }
+    //1. MatchROM
+    succeed = w1_master_write(m_masterId, dataSendLen1, dataSend1);
+    if(!succeed)
+    {
+        Debug("w1_master_write[MatchROM]-2 Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_master_write[MatchROM]-2 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+    //2. ReadScratchpad
+    succeed = w1_process_cmd((BYTE *)&m_masterId, sizeof(w1_master_id), W1_CMD_TOUCH,
+                            dataSend3, dataSendLen3, (void *)dataRecv, &dataRecvLen);
+    if(!succeed)
+    {
+        Debug("w1_process_cmd[ReadScratchpad]-1 Failed!\n");
+        return FALSE;
+    }
+    Debug("w1_process_cmd[ReadScratchpad]-1 Succeed!\n");
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    return succeed;
+}
+
 
 
 
 int main(void)
 {
 	int sleepSecond = 3;
+
+	int i, j;
 
     char useless[50];
 
@@ -646,18 +729,29 @@ int main(void)
 	    goto GameOver;
 	}
 
-    sleep(sleepSecond);
+    Debug("======================================================\n");
+
+    m_masterId = get_w1_master_id();
+
+    print_master();
 
     Debug("======================================================\n");
 
-    Test_ListMasters(); //Must be the first...
+    get_w1_slave_ids(m_slaveIDs, &m_slaveCount);
 
-	Test_ResetMaster();
+    print_all_slaves();
 
     Debug("======================================================\n");
 
-    Test_SearchSlaves();
+    //Test_ListMasters(); //Must be the first...
+
+    for(i = 0; i < 10; i++)
+        Test_ResetMaster();
+
+    Debug("======================================================\n");
     /*
+    Test_SearchSlaves();
+
     sleep(sleepSecond);
 
 	Test_ResetMaster();
@@ -694,6 +788,8 @@ int main(void)
 
     Test_1972ReadMemory(0x20, 8);
     */
+
+    /*
     Debug("======================================================\n");
     Debug("==========  Test_1972WriteAndCopyScratchpad ==========\n");
     Debug("======================================================\n");
@@ -701,6 +797,7 @@ int main(void)
     BYTE eightBytes[8] = {0x28, 0x27, 0x26, 0x25, 0x24, 0x23, 0x22, 0x21};
 
     Test_1972WriteAndCopyScratchpad(0x20, eightBytes, 0, 8);
+    */
 
     /*
     Debug("======================================================\n");
@@ -711,7 +808,18 @@ int main(void)
 
     Debug("======================================================\n");
     */
-    //sleep(sleepSecond);
+
+    /**/
+    Debug("======================================================\n");
+    Debug("===============  Test_1920Temperature ================\n");
+    Debug("======================================================\n");
+
+    for(j = 0; j < 10; j++)
+        Test_1920Temperature();
+
+    Debug("======================================================\n");
+
+    sleep(sleepSecond);
 
     Debug("Type something to quit: \n");
     scanf("%s", useless);

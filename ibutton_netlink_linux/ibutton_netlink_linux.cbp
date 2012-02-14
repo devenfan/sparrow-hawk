@@ -71,6 +71,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\kernel_connector.h" />
+		<Unit filename="src\sh_array.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\sh_array.h" />
 		<Unit filename="src\sh_error.h" />
 		<Unit filename="src\sh_list.c">
 			<Option compilerVar="CC" />

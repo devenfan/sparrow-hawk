@@ -77,12 +77,13 @@
 
 1324974900 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_queue.h
 
-1325300627 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_thread.c
+1329104130 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_thread.c
 	<pthread.h>
+	<linux/time.h>
 	"sh_thread.h"
 	"sh_error.h"
 
-1325300280 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_thread.h
+1329104643 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_thread.h
 
 1322755312 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_error.h
 
@@ -137,7 +138,7 @@
 	<stdio.h>
 	<stdlib.h>
 
-1328844771 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.c
+1329146743 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.c
 	<stdio.h>
 	<stdlib.h>
 	<sys/cdefs.h>
