@@ -30,7 +30,7 @@
 #include "w1_netlink_userservice.h"
 
 
-#include <hardware/w1_hal.h>
+#include "w1_hal.h"
 
 
 

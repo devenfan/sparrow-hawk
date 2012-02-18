@@ -80,7 +80,6 @@
 		<Unit filename="src\hardware\w1_hal\w1_hal.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\hardware\w1_hal\w1_hal.h" />
 		<Unit filename="src\hardware\w1_hal\w1_hal_impl.cpp" />
 		<Extensions>
 			<code_completion />

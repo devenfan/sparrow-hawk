@@ -8,7 +8,7 @@
 		<Cursor position="1525" topLine="47" />
 	</File>
 	<File name="src\ibutton_netlink_linux.c" open="0" top="0" tabpos="1">
-		<Cursor position="385" topLine="1" />
+		<Cursor position="361" topLine="0" />
 	</File>
 	<File name="src\kernel_connector.h" open="0" top="0" tabpos="2">
 		<Cursor position="1644" topLine="75" />
@@ -55,11 +55,11 @@
 	<File name="src\sh_util.h" open="0" top="0" tabpos="5">
 		<Cursor position="873" topLine="13" />
 	</File>
-	<File name="src\w1_netlink_userapp.c" open="0" top="0" tabpos="2">
-		<Cursor position="20502" topLine="659" />
+	<File name="src\w1_netlink_userapp.c" open="1" top="0" tabpos="1">
+		<Cursor position="20395" topLine="626" />
 	</File>
 	<File name="src\w1_netlink_userservice.c" open="0" top="0" tabpos="3">
-		<Cursor position="23584" topLine="746" />
+		<Cursor position="23732" topLine="11" />
 	</File>
 	<File name="src\w1_netlink_userservice.h" open="0" top="0" tabpos="7">
 		<Cursor position="1921" topLine="63" />

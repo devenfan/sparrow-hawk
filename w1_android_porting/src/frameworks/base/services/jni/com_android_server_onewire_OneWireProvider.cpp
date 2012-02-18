@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "OneWireProvider"
-
-#define LOG_NDEBUG 0
-
 #include "JNIHelp.h"
 #include "jni.h"
 
 #include "hardware/hardware.h"
 #include "hardware_legacy/power.h"
 
+#define  LOG_NDEBUG 0
 #define  LOG_TAG 	"OneWireProviderJNI"
 #include "utils/Log.h"
 #include "utils/misc.h"

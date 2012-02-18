@@ -26,6 +26,7 @@
 #include <cutils/log.h>
 #include <cutils/atomic.h>
 
+#include "w1_hal.h"
 
 /*****************************************************************************/
 
