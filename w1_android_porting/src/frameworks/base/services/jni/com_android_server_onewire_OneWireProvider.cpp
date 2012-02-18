@@ -43,7 +43,7 @@ static jmethodID method_slaveRemoved;
 static const w1hal_interface * sOneWireInterface = NULL;
 
 
-//#define WAKE_LOCK_NAME  "OneWire"
+//#define WAKE_LOCK_NAME  "OneWireWakeLock"
 
 #define MAX_SLAVE_COUNT  10
 #define MAX_MASTER_COUNT  3
@@ -291,14 +291,14 @@ static void android_onewire_OneWireProvider_class_init_native(JNIEnv* env, jclas
 	*/
 
     //err = hw_get_module(GPS_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
-	err = hw_get_module(W1HAL_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
+	err = hw_get_module(ONEWIRE_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
 
     if (err == 0)
     {
         LOGI("w1 Stub found.");
 
         hw_device_t* device;
-        err = module->methods->open(module, W1HAL_HARDWARE_MODULE_ID, &device);
+        err = module->methods->open(module, ONEWIRE_HARDWARE_MODULE_ID, &device);
         if (err == 0)
         {
 			struct w1hal_device_t * onewire_device = (struct w1hal_device_t *)device;

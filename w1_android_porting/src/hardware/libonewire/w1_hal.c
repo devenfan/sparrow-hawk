@@ -26,7 +26,7 @@
 #include <cutils/log.h>
 #include <cutils/atomic.h>
 
-#include "w1_hal.h"
+#include <hardware/w1_hal.h>
 
 /*****************************************************************************/
 
@@ -96,7 +96,7 @@ static struct hw_module_methods_t s_w1hal_module_methods = {
 
 
 /*
- * The moust important part of HAL_MODULE_INFO_SYM
+ * The moust important part of HAL_MODULE_INFO_SYM, cannot be changed to XXX_MODULE_INFO_SYM
  *
  * tag:     Must be HARDWARE_MODULE_TAG
  * id:      Must be the module ID of HAL Stub
@@ -108,8 +108,8 @@ const struct w1hal_module_t HAL_MODULE_INFO_SYM = {
         tag: HARDWARE_MODULE_TAG,
         version_major: 1,
         version_minor: 0,
-        id: W1HAL_HARDWARE_MODULE_ID,
-        name: "W1 HAL Stub",
+        id: ONEWIRE_HARDWARE_MODULE_ID,
+        name: "OneWire Stub",
         author: "Deven Fan",
         methods: &s_w1hal_module_methods,
     }

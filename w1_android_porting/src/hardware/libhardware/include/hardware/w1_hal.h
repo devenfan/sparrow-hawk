@@ -112,5 +112,5 @@ struct w1hal_device_t {
 /***************************************************************************/
 
 /* Module ID must be claimed. */
-#define W1HAL_HARDWARE_MODULE_ID "w1hal"
-
+//#define W1HAL_HARDWARE_MODULE_ID "w1hal"
+#define ONEWIRE_HARDWARE_MODULE_ID "OneWire"
