@@ -24,9 +24,13 @@
 
 #include <asm/types.h>
 
-typedef __u8  BYTE;
+//typedef __u8  BYTE;
 
-typedef __s8  BOOL;
+typedef uint8_t BYTE;
+
+//typedef __s8  BOOL;
+
+typedef uint8_t BOOL;
 
 #ifndef TRUE
 #define TRUE   1

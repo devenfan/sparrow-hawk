@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
+	<File name="Kconfig" open="0" top="0" tabpos="0">
+		<Cursor position="344" topLine="0" />
+	</File>
+	<File name="Makefile" open="0" top="0" tabpos="0">
+		<Cursor position="173" topLine="0" />
+	</File>
 	<File name="masters\ds1wm.c" open="0" top="0" tabpos="0">
 		<Cursor position="12175" topLine="453" />
 	</File>
 	<File name="masters\ds2490.c" open="0" top="0" tabpos="0">
-		<Cursor position="15170" topLine="516" />
+		<Cursor position="1484" topLine="43" />
 	</File>
 	<File name="masters\w1-gpio.c" open="0" top="0" tabpos="0">
 		<Cursor position="1271" topLine="88" />
 	</File>
-	<File name="w1.c" open="1" top="0" tabpos="1">
-		<Cursor position="7300" topLine="269" />
+	<File name="slaves\w1_ds2431.c" open="0" top="0" tabpos="4">
+		<Cursor position="5021" topLine="192" />
 	</File>
-	<File name="w1.h" open="1" top="0" tabpos="3">
-		<Cursor position="6526" topLine="229" />
+	<File name="w1.c" open="0" top="0" tabpos="2">
+		<Cursor position="1649" topLine="41" />
+	</File>
+	<File name="w1.h" open="0" top="0" tabpos="2">
+		<Cursor position="1071" topLine="21" />
 	</File>
 	<File name="w1_family.c" open="0" top="0" tabpos="5">
 		<Cursor position="3209" topLine="123" />
 	</File>
-	<File name="w1_int.c" open="1" top="1" tabpos="2">
-		<Cursor position="5678" topLine="195" />
+	<File name="w1_int.c" open="0" top="0" tabpos="6">
+		<Cursor position="5481" topLine="191" />
 	</File>
-	<File name="w1_io.c" open="0" top="0" tabpos="2">
-		<Cursor position="7924" topLine="267" />
+	<File name="w1_int.h" open="0" top="0" tabpos="0">
+		<Cursor position="0" topLine="17" />
+	</File>
+	<File name="w1_io.c" open="0" top="0" tabpos="1">
+		<Cursor position="7924" topLine="266" />
 	</File>
 	<File name="w1_log.h" open="0" top="0" tabpos="0">
 		<Cursor position="864" topLine="15" />
 	</File>
-	<File name="w1_netlink.c" open="0" top="0" tabpos="1">
-		<Cursor position="9780" topLine="330" />
+	<File name="w1_netlink.c" open="0" top="0" tabpos="3">
+		<Cursor position="8841" topLine="331" />
 	</File>
 	<File name="w1_netlink.h" open="0" top="0" tabpos="0">
 		<Cursor position="1531" topLine="64" />

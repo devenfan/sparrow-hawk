@@ -318,7 +318,7 @@ static void w1_cn_callback(void *data)
 	struct w1_master *dev;
 	int err = 0;
 
-	w1debug("w1_cn_callback got data...");
+	//w1debug("w1_cn_callback got data...");
 
 	while (msg->len && !err) {
 		struct w1_reg_num id;
