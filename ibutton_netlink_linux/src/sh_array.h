@@ -34,6 +34,12 @@ typedef struct sh_array {
 } sh_array;
 
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 void sh_array_init(sh_array * myArray, void * itemArray, int itemSize, int itemCount);
 
 void sh_add_to_array(sh_array * myArray, sh_array_node * mynode);
@@ -43,6 +49,12 @@ void sh_remove_from_array(sh_array * myArray, sh_array_node * mynode);
 BOOL sh_array_is_empty(sh_array * myArray);
 
 int sh_array_get_length(sh_array * myArray);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 #endif // SH_ARRAY_H_INCLUDED

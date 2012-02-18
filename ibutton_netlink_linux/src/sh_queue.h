@@ -32,6 +32,13 @@ typedef struct sh_queue {
 	sh_queue_node * tail;
 } sh_queue;
 
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 void sh_queue_init(sh_queue * myqueue);
 
 void sh_enqueue(sh_queue * myqueue, sh_queue_node * mynode);
@@ -41,5 +48,12 @@ sh_queue_node * sh_dequeue(sh_queue * myqueue);
 BOOL sh_queue_is_empty(sh_queue * myqueue);
 
 int sh_queue_get_length(sh_queue * myqueue);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 #endif /* __SH_QUEUE_H */

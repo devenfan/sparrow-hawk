@@ -14,9 +14,17 @@
 
 #endif
 
+
+
 #ifdef ANDROID_PLATFORM
 
 #endif
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 void sh_debug(const char * TAG, const char * log);
 
@@ -25,6 +33,12 @@ void sh_info(const char * TAG, const char * log);
 void sh_warn(const char * TAG, const char * log);
 
 void sh_error(const char * TAG, const char * log);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 #endif // SH_LOG_H_INCLUDED

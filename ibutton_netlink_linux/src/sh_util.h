@@ -24,6 +24,12 @@
 
 //#include "sh_types.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 BOOL is_hexstr(char * str, int length);
 
 BOOL convert_bytes_to_hexstr(BYTE * bytesIn, int bytesOffset, int bytesLen, char * hexstrOut, int * hexstrLen);
@@ -31,6 +37,13 @@ BOOL convert_bytes_to_hexstr(BYTE * bytesIn, int bytesOffset, int bytesLen, char
 BOOL convert_hexstr_to_bytes(char * hexstrIn, int hexstrLen, BYTE * bytesOut, int * bytesLen);
 
 void print_bytes(BYTE * bytesIn, int bytesOffset, int bytesLen);
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 #endif // __SH_UTIL_H

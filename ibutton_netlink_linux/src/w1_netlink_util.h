@@ -2,6 +2,13 @@
 #define W1_NETLINK_UTIL_H_INCLUDED
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+
 /**
 * OK return TRUE, Error return FALSE.
 * The input-output parameter "outputStr" must be at least 20.
@@ -31,5 +38,13 @@ void print_w1msg(const struct w1_netlink_msg * w1msg);
 
 
 void print_w1cmd(const struct w1_netlink_cmd * w1cmd);
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 #endif // W1_NETLINK_UTIL_H_INCLUDED

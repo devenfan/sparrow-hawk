@@ -117,11 +117,20 @@ typedef struct w1_reg_num
 #define W1_EMPTY_REG_NUM     {.family = 0, .id = 0, .crc = 0}
 
 
+
+typedef __u32 w1_master_id;
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
 #define is_w1_slave_rn_empty(rn)        ( (0 == (__u64)rn) ? TRUE : FALSE )
 
 #define are_w1_slave_rn_equal(rn1, rn2) ( ((__u64)rn1 == (__u64)rn2) ? TRUE : FALSE )
 */
+
 
 BOOL is_w1_slave_rn_empty(w1_slave_rn rn);
 
@@ -129,7 +138,13 @@ BOOL is_w1_slave_rn_empty(w1_slave_rn rn);
 BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2);
 
 
-typedef __u32 w1_master_id;
+#ifdef __cplusplus
+}
+#endif
+
+
+
+
 
 
 #endif /* __W1_NETLINK_USERSPACE_H */

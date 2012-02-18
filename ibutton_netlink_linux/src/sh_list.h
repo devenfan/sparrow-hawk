@@ -31,6 +31,12 @@ typedef struct sh_list {
 	sh_list_node * head;
 } sh_list;
 
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void sh_list_init(sh_list * mylist);
 
 void sh_add_to_list(sh_list * mylist, sh_list_node * mynode);
@@ -40,5 +46,12 @@ void sh_remove_from_list(sh_list * mylist, sh_list_node * mynode);
 BOOL sh_list_is_empty(sh_list * mylist);
 
 int sh_list_get_length(sh_list * mylist);
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // SH_LIST_H_INCLUDED

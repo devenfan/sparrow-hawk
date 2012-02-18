@@ -33,6 +33,12 @@ typedef struct sh_signal_ctrl {
 } sh_signal_ctrl;
 
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 int sh_signal_init(sh_signal_ctrl * signal);
 
 
@@ -46,6 +52,13 @@ int sh_signal_timedwait(sh_signal_ctrl * signal, int milliseconds);
 
 
 int sh_signal_notify(sh_signal_ctrl * signal);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 
 #endif /* __SH_THREAD_H */

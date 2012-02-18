@@ -23,6 +23,12 @@
 
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
 typedef void w1_master_added(w1_master_id master_id);
 
 typedef void w1_master_removed(w1_master_id master_id);
@@ -181,6 +187,11 @@ BOOL request_to_list_w1_masters(void);
 BOOL request_to_search_w1_slaves(BOOL alarmSearch);
  */
 
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* __W1_NETLINK_USERSERVICE_H */
