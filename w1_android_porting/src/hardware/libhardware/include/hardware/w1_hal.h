@@ -18,13 +18,18 @@
 
 
 /* The most important header */
-//#include <hardware/hardware.h>
+#include <hardware/hardware.h>
 
 //#include <fcntl.h>
 //#include <errno.h>
 
 //#include <cutils/log.h>
 //#include <cutils/atomic.h>
+
+#include "sh_types.h"
+
+#include "w1_netlink_userspace.h"
+#include "w1_netlink_userservice.h"
 
 
 /***************************************************************************/
@@ -52,6 +57,18 @@ typedef struct w1hal_device_operations {
     BOOL (*start)(w1_user_callbacks * w1UserCallbacks);
 
     BOOL (*stop)(void);
+
+    /** Get current master. */
+    w1_master_id (*get_master_id)(void);
+
+    /** Get current slaves. */
+    void (*get_slave_ids)(w1_slave_rn * slaveIDs, int * slaveCount);
+
+    /** Begin exclusive action. */
+    void (*begin_exclusive)(void);
+
+    /** End exclusive action. */
+    void (*end_exclusive)(void);
 
     /** List all the Masters */
     BOOL (*list_masters)(w1_master_id * masters, int * pMasterCount);

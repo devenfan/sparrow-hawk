@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1328356310 source:f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_hal_impl.cpp
+1329494356 source:f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_hal_impl.cpp
 	<stdio.h>
 	<stdlib.h>
 	<unistd.h>
@@ -21,7 +21,7 @@
 	"w1_netlink_userspace.h"
 	"w1_netlink_util.h"
 	"w1_netlink_userservice.h"
-	"w1_hal.h"
+	<hardware/w1_hal.h>
 
 1322755312 f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\sh_types.h
 	<asm/types.h>
@@ -40,9 +40,9 @@
 
 1325673602 f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_netlink_util.h
 
-1328882583 f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_netlink_userservice.h
+1329230504 f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_netlink_userservice.h
 
-1329105151 f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_hal.h
+1329317066 f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_hal.h
 
 1328355238 source:f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\w1_hal\w1_hal.c
 	<hardware/hardware.h>
@@ -54,4 +54,25 @@
 	"w1_netlink_userspace.h"
 	"w1_netlink_userservice.h"
 	"w1_hal.h"
+
+1329493486 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_types.h
+	<asm/types.h>
+
+1322755312 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_error.h
+
+1325257235 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_util.h
+
+1329104643 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_thread.h
+
+1322755312 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\kernel_connector.h
+	<asm/types.h>
+
+1325672885 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userspace.h
+	<asm/byteorder.h>
+
+1325673602 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_util.h
+
+1329230504 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.h
+
+1329317066 f:\arm_board_android\workspace\android-ibutton-git\w1_android_porting\src\hardware\libhardware\include\hardware\w1_hal.h
 

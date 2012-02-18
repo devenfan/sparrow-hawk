@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
+	<File name="src\frameworks\base\services\java\com\android\server\onewire\OneWireProvider.java" open="0" top="0" tabpos="0">
+		<Cursor position="3181" topLine="70" />
+	</File>
+	<File name="src\frameworks\base\services\jni\com_android_server_onewire_OneWireProvider.cpp" open="0" top="0" tabpos="0">
+		<Cursor position="733" topLine="2" />
+	</File>
 	<File name="src\hardware\w1_hal\w1_hal.c" open="0" top="0" tabpos="0">
-		<Cursor position="1102" topLine="69" />
+		<Cursor position="817" topLine="7" />
 	</File>
 	<File name="src\hardware\w1_hal\w1_hal.h" open="0" top="0" tabpos="1">
-		<Cursor position="2102" topLine="38" />
+		<Cursor position="1270" topLine="42" />
 	</File>
-	<File name="src\hardware\w1_hal\w1_hal_impl.cpp" open="0" top="0" tabpos="2">
-		<Cursor position="2705" topLine="88" />
+	<File name="src\hardware\w1_hal\w1_hal_impl.cpp" open="0" top="0" tabpos="4">
+		<Cursor position="607" topLine="8" />
 	</File>
 </CodeBlocks_layout_file>

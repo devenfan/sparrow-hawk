@@ -30,7 +30,7 @@
 #include "w1_netlink_userservice.h"
 
 
-#include "w1_hal.h" //<hardware/w1_hal.h>
+#include <hardware/w1_hal.h>
 
 
 
@@ -38,32 +38,22 @@ static BOOL w1hal_int_start(w1_user_callbacks * w1UserCallbacks);
 
 static BOOL w1hal_int_stop(void);
 
+
+static w1_master_id w1hal_int_get_master_id(void);
+
+static void w1hal_int_get_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount);
+
+static void w1hal_int_begin_exclusive_action(void);
+
+static void w1hal_int_end_exclusive_action(void);
+
+
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount);
 
 static BOOL w1hal_int_search_slaves(w1_master_id masterId, BOOL isSearchAlarm,
                       w1_slave_rn * slaves, int * pSlaveCount);
 
 static BOOL w1hal_int_master_reset(w1_master_id masterId);
-
-/*
-static BOOL w1hal_int_touch(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
-
-static BOOL w1hal_int_slave_read(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen, void ** pDataOut, int * pDataOutLen);
-
-static BOOL w1hal_int_slave_write(BYTE * slaveId, int idLen,
-                    void * dataIn, int dataInLen);
-
-static BOOL w1hal_int_touch_data(w1_master_id masterId,
-                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
-
-static BOOL w1hal_int_read_data(w1_master_id masterId,
-                    BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen);
-
-static BOOL w1hal_int_write_data(w1_master_id masterId, BYTE * dataIn, int dataInLen);
-
-*/
 
 
 static BOOL w1hal_int_master_touch(w1_master_id masterId,
@@ -81,9 +71,16 @@ static const w1hal_interface sW1HalInterface =
     sizeof(w1hal_interface),
     w1hal_int_start,
     w1hal_int_stop,
+
+	w1hal_int_get_master_id,
+	w1hal_int_get_slave_ids,
+	w1hal_int_begin_exclusive_action,
+	w1hal_int_end_exclusive_action,
+
     w1hal_int_list_masters,
     w1hal_int_search_slaves,
     w1hal_int_master_reset,
+
     w1hal_int_master_touch,
     w1hal_int_master_read,
     w1hal_int_master_write
@@ -99,11 +96,29 @@ static BOOL w1hal_int_start(w1_user_callbacks * w1UserCallbacks)
     return w1_netlink_userservice_start(w1UserCallbacks);
 }
 
-
-
 static BOOL w1hal_int_stop(void)
 {
     return w1_netlink_userservice_stop();
+}
+
+static w1_master_id w1hal_int_get_master_id(void)
+{
+    return get_w1_master_id();
+}
+
+static void w1hal_int_get_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount)
+{
+	get_w1_slave_ids(slaveIDs, slaveCount);
+}
+
+static void w1hal_int_begin_exclusive_action(void)
+{
+	pause_w1_searching_thread();
+}
+
+static void w1hal_int_end_exclusive_action(void)
+{
+	wakeup_w1_searching_thread();
 }
 
 
@@ -123,6 +138,7 @@ static BOOL w1hal_int_master_reset(w1_master_id masterId)
 {
     return w1_master_reset(masterId);
 }
+
 
 
 static BOOL w1hal_int_master_touch(w1_master_id masterId,
@@ -150,11 +166,11 @@ const w1hal_interface* w1_get_hardware_interface()
 {
     char propBuf[PROPERTY_VALUE_MAX];
 
-    // check to see if GPS should be disabled
-    property_get("w1.disable", propBuf, "");
+    // check to see if OneWire should be disabled
+    property_get("onewire.disable", propBuf, "");
     if (propBuf[0] == '1')
     {
-        LOGD("w1_get_interface returning NULL because w1.disable=1\n");
+        LOGD("w1_get_interface returning NULL because onewire.disable=1\n");
         return NULL;
     }
 

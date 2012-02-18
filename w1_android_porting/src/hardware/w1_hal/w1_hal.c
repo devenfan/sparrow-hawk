@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "W1HALStub"
 
 #include <hardware/hardware.h>
 
@@ -23,15 +22,10 @@
 #include <fcntl.h>
 #include <errno.h>
 
-//#include <cutils/log.h>
+#define  LOG_TAG    "W1HALStub"
+#include <cutils/log.h>
 #include <cutils/atomic.h>
 
-#include "sh_types.h"
-
-#include "w1_netlink_userspace.h"
-#include "w1_netlink_userservice.h"
-
-#include "w1_hal.h" //<hardware/w1_hal.h>
 
 /*****************************************************************************/
 

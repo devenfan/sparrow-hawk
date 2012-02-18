@@ -22,6 +22,8 @@
 					<Add option="-funwind-tables" />
 					<Add option="-fstack-protector" />
 					<Add option="-fno-short-enums" />
+					<Add directory="..\ibutton_netlink_linux\src" />
+					<Add directory="src\hardware\libhardware\include" />
 				</Compiler>
 				<Linker>
 					<Add option="-nostdlib -Bdynamic" />
@@ -45,13 +47,15 @@
 				<Option createStaticLib="1" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-Wall" />
 					<Add option="-include AndroidConfig.h" />
 					<Add option="-fpic" />
 					<Add option="-ffunction-sections" />
 					<Add option="-funwind-tables" />
 					<Add option="-fstack-protector" />
 					<Add option="-fno-short-enums" />
-					<Add option="-Wall" />
+					<Add directory="..\ibutton_netlink_linux\src" />
+					<Add directory="src\hardware\libhardware\include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -71,6 +75,8 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="src\frameworks\base\services\java\com\android\server\onewire\OneWireProvider.java" />
+		<Unit filename="src\frameworks\base\services\jni\com_android_server_onewire_OneWireProvider.cpp" />
 		<Unit filename="src\hardware\w1_hal\w1_hal.c">
 			<Option compilerVar="CC" />
 		</Unit>
