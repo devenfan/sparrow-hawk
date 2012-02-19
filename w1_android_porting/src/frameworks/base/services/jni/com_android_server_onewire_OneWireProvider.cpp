@@ -343,7 +343,7 @@ static jboolean android_onewire_OneWireProvider_start(JNIEnv* env, jobject obj)
 	if(!sOneWireInterface)
 		return JNI_FALSE;
 
-	return (sOneWireInterface->start(sW1UserCallbacks));
+	return (sOneWireInterface->start(&sW1UserCallbacks));
 }
 
 /**
