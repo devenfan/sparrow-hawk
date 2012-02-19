@@ -8,7 +8,7 @@ LOCAL_SRC_FILES:= \
     com_android_server_KeyInputQueue.cpp \
     com_android_server_SensorService.cpp \
     com_android_server_SystemServer.cpp \
-	com_android_server_onewire_OneWireProvider.cpp \
+	com_android_server_onewire_OneWireNativeService.cpp \
     onload.cpp
 
 LOCAL_C_INCLUDES += \

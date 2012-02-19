@@ -11,7 +11,7 @@ int register_android_server_HardwareService(JNIEnv* env);
 int register_android_server_SensorService(JNIEnv* env);
 int register_android_server_SystemServer(JNIEnv* env);
 
-int register_android_server_onewire_OneWireProvider(JNIEnv* env);
+int register_android_server_onewire_OneWireNativeService(JNIEnv* env);
 };
 
 using namespace android;
@@ -34,7 +34,7 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
     register_android_server_SensorService(env);
     register_android_server_SystemServer(env);
 	
-	register_android_server_onewire_OneWireProvider(env);
+	register_android_server_onewire_OneWireNativeService(env);
     
 	return JNI_VERSION_1_4;
 }

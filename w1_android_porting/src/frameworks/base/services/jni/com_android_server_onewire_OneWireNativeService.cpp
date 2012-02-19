@@ -21,7 +21,7 @@
 #include "hardware_legacy/power.h"
 
 #define  LOG_NDEBUG 0
-#define  LOG_TAG 	"OneWireProviderJNI"
+#define  LOG_TAG 	"OneWireNativeServiceJNI"
 #include "utils/Log.h"
 #include "utils/misc.h"
 #include "android_runtime/AndroidRuntime.h" //libandroid_runtime.so
@@ -276,7 +276,7 @@ AGpsRilCallbacks sAGpsRilCallbacks = {
 */
 
 
-static void android_onewire_OneWireProvider_class_init_native(JNIEnv* env, jclass clazz) {
+static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, jclass clazz) {
     int err;
     hw_module_t* module;
 
@@ -321,20 +321,20 @@ static void android_onewire_OneWireProvider_class_init_native(JNIEnv* env, jclas
 
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	is_supported
 */
-static jboolean android_onewire_OneWireProvider_is_supported(JNIEnv* env, jclass clazz) {
+static jboolean android_onewire_OneWireNativeService_is_supported(JNIEnv* env, jclass clazz) {
 	return (sOneWireInterface != NULL);
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	start
 */
-static jboolean android_onewire_OneWireProvider_start(JNIEnv* env, jobject obj)
+static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject obj)
 {
     // this must be set before calling into the HAL library
     if (!mCallbacksObj)
@@ -347,22 +347,22 @@ static jboolean android_onewire_OneWireProvider_start(JNIEnv* env, jobject obj)
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	stop
 */
-static void android_onewire_OneWireProvider_stop(JNIEnv* env, jobject obj)
+static void android_onewire_OneWireNativeService_stop(JNIEnv* env, jobject obj)
 {
 	if(sOneWireInterface)
 		sOneWireInterface->stop();
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	get_current_master
 */
-static jint android_onewire_OneWireProvider_get_current_master(JNIEnv* env, jobject obj)
+static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env, jobject obj)
 {
 	if(sOneWireInterface)
 		return sOneWireInterface->get_master_id();
@@ -371,11 +371,11 @@ static jint android_onewire_OneWireProvider_get_current_master(JNIEnv* env, jobj
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	get_current_slaves
 */
-static jint android_onewire_OneWireProvider_get_current_slaves(JNIEnv* env, jobject obj, jlongArray slaveRNs)
+static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env, jobject obj, jlongArray slaveRNs)
 {
 	jint slaveCount = 0;
 	w1_slave_rn slaves[MAX_SLAVE_COUNT];
@@ -400,33 +400,33 @@ static jint android_onewire_OneWireProvider_get_current_slaves(JNIEnv* env, jobj
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	begin_exclusive
 */
-static void android_onewire_OneWireProvider_begin_exclusive(JNIEnv* env, jobject obj)
+static void android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jobject obj)
 {
 	if(sOneWireInterface)
 		sOneWireInterface->begin_exclusive();
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	end_exclusive
 */
-static void android_onewire_OneWireProvider_end_exclusive(JNIEnv* env, jobject obj)
+static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobject obj)
 {
 	if(sOneWireInterface)
 		sOneWireInterface->end_exclusive();
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	list_masters
 */
-static jint android_onewire_OneWireProvider_list_masters(JNIEnv* env, jobject obj, jintArray masterIDs)
+static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobject obj, jintArray masterIDs)
 {
 	jint masterCount = 0;
 	w1_master_id masters[MAX_MASTER_COUNT];
@@ -453,11 +453,11 @@ static jint android_onewire_OneWireProvider_list_masters(JNIEnv* env, jobject ob
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	search_slaves
 */
-static jint android_onewire_OneWireProvider_search_slaves(JNIEnv* env, jobject obj,
+static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobject obj,
                 jint masterId, jboolean isSearchAlarm, jlongArray slaveRNs)
 {
 	jint slaveCount = 0;
@@ -485,11 +485,11 @@ static jint android_onewire_OneWireProvider_search_slaves(JNIEnv* env, jobject o
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	master_reset
 */
-static jboolean android_onewire_OneWireProvider_master_reset(JNIEnv* env, jobject obj, jint masterId)
+static jboolean android_onewire_OneWireNativeService_master_reset(JNIEnv* env, jobject obj, jint masterId)
 {
 	jboolean result = JNI_FALSE;
 	if(sOneWireInterface)
@@ -500,11 +500,11 @@ static jboolean android_onewire_OneWireProvider_master_reset(JNIEnv* env, jobjec
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	master_touch
 */
-static jboolean android_onewire_OneWireProvider_master_touch(JNIEnv* env, jobject obj,
+static jboolean android_onewire_OneWireNativeService_master_touch(JNIEnv* env, jobject obj,
                 jint masterId, jbyteArray dataIn, jint dataInLen, jbyteArray dataOut)
 {
     jboolean result = JNI_FALSE;
@@ -528,11 +528,11 @@ static jboolean android_onewire_OneWireProvider_master_touch(JNIEnv* env, jobjec
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	master_read
 */
-static jboolean android_onewire_OneWireProvider_master_read(JNIEnv* env, jobject obj,
+static jboolean android_onewire_OneWireNativeService_master_read(JNIEnv* env, jobject obj,
                 jint masterId, jint readLen, jbyteArray dataReadOut)
 {
     jboolean result = JNI_FALSE;
@@ -548,11 +548,11 @@ static jboolean android_onewire_OneWireProvider_master_read(JNIEnv* env, jobject
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireProvider()
- * Class Name: 		OneWireProvider
+ * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
+ * Class Name: 		OneWireNativeService
  * Method Name:  	master_write
 */
-static jboolean android_onewire_OneWireProvider_master_write(JNIEnv* env, jobject obj,
+static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, jobject obj,
                 jint masterId, jint writeLen, jbyteArray dataWriteIn)
 {
     jboolean result = JNI_FALSE;
@@ -832,28 +832,28 @@ static void android_location_GpsLocationProvider_update_network_state(JNIEnv* en
 
 static JNINativeMethod sMethods[] = {
      /* name, 						signature, 				funcPtr */
-    {"class_init_native", 			"()V", 					(void*)android_onewire_OneWireProvider_class_init_native},
-    {"native_is_supported", 		"()Z", 					(void*)android_onewire_OneWireProvider_is_supported},
-    {"native_start", 				"()Z", 					(void*)android_onewire_OneWireProvider_start},
-    {"native_stop", 				"()V", 					(void*)android_onewire_OneWireProvider_stop},
+    {"class_init_native", 			"()V", 					(void*)android_onewire_OneWireNativeService_class_init_native},
+    {"native_is_supported", 		"()Z", 					(void*)android_onewire_OneWireNativeService_is_supported},
+    {"native_start", 				"()Z", 					(void*)android_onewire_OneWireNativeService_start},
+    {"native_stop", 				"()V", 					(void*)android_onewire_OneWireNativeService_stop},
 
-    {"native_get_current_master", 	"()I", 					(void*)android_onewire_OneWireProvider_get_current_master},
-    {"native_get_current_slaves", 	"([J)I", 				(void*)android_onewire_OneWireProvider_get_current_slaves},
-    {"native_begin_exclusive", 		"()V", 					(void*)android_onewire_OneWireProvider_begin_exclusive},
-    {"native_end_exclusive", 		"()V", 					(void*)android_onewire_OneWireProvider_end_exclusive},
+    {"native_get_current_master", 	"()I", 					(void*)android_onewire_OneWireNativeService_get_current_master},
+    {"native_get_current_slaves", 	"([J)I", 				(void*)android_onewire_OneWireNativeService_get_current_slaves},
+    {"native_begin_exclusive", 		"()V", 					(void*)android_onewire_OneWireNativeService_begin_exclusive},
+    {"native_end_exclusive", 		"()V", 					(void*)android_onewire_OneWireNativeService_end_exclusive},
 
-    {"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireProvider_list_masters},
-    {"native_search_slaves", 		"(IZ[J)I", 				(void*)android_onewire_OneWireProvider_search_slaves},
-    {"native_master_reset", 		"(I)Z", 				(void*)android_onewire_OneWireProvider_master_reset},
-    {"native_master_touch", 		"(I[BI[B)Z", 			(void*)android_onewire_OneWireProvider_master_touch},
-    {"native_master_read", 			"(II[B)Z", 				(void*)android_onewire_OneWireProvider_master_read},
-    {"native_master_write", 		"(II[B)Z", 				(void*)android_onewire_OneWireProvider_master_write},
+    {"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireNativeService_list_masters},
+    {"native_search_slaves", 		"(IZ[J)I", 				(void*)android_onewire_OneWireNativeService_search_slaves},
+    {"native_master_reset", 		"(I)Z", 				(void*)android_onewire_OneWireNativeService_master_reset},
+    {"native_master_touch", 		"(I[BI[B)Z", 			(void*)android_onewire_OneWireNativeService_master_touch},
+    {"native_master_read", 			"(II[B)Z", 				(void*)android_onewire_OneWireNativeService_master_read},
+    {"native_master_write", 		"(II[B)Z", 				(void*)android_onewire_OneWireNativeService_master_write},
 
 };
 
-int register_android_server_onewire_OneWireProvider(JNIEnv* env)
+int register_android_server_onewire_OneWireNativeService(JNIEnv* env)
 {
-    return jniRegisterNativeMethods(env, "com/android/server/onewire/OneWireProvider", sMethods, NELEM(sMethods));
+    return jniRegisterNativeMethods(env, "com/android/server/onewire/OneWireNativeService", sMethods, NELEM(sMethods));
 }
 
 

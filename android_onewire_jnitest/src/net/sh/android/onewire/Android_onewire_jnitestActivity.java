@@ -1,6 +1,6 @@
 package net.sh.android.onewire;
 
-import com.android.server.onewire.OneWireProvider;
+import com.android.server.onewire.OneWireNativeService;
 
 import android.app.Activity;
 import android.onewire.OneWireListener;
@@ -19,7 +19,7 @@ public class Android_onewire_jnitestActivity extends Activity {
 	Button _btnStart;
 	Button _btnStop;
 	
-	OneWireProvider _oneWireProvider;
+	OneWireNativeService _OneWireNativeService;
 	
     /** Called when the activity is first created. */
     @Override
@@ -27,8 +27,8 @@ public class Android_onewire_jnitestActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        _oneWireProvider = OneWireProvider.getInstance();
-        _oneWireProvider.setListener(new OneWireListener() {
+        _OneWireNativeService = OneWireNativeService.getInstance();
+        _OneWireNativeService.setListener(new OneWireListener() {
 			
 			@Override
 			public void oneWireSlaveRemoved(OneWireSlaveID slave) {
@@ -64,15 +64,15 @@ public class Android_onewire_jnitestActivity extends Activity {
     
         _btnStart.setOnClickListener(new View.OnClickListener() {  
             public void onClick(View v) {  
-            	_oneWireProvider.start();
-            	_txtStatus.setText(_oneWireProvider.isStarted() ? "OneWire Started" : "OneWire Stopped");
+            	_OneWireNativeService.start();
+            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
             }  
          }); 
         
         _btnStop.setOnClickListener(new View.OnClickListener() {  
             public void onClick(View v) {  
-            	_oneWireProvider.stop();
-            	_txtStatus.setText(_oneWireProvider.isStarted() ? "OneWire Started" : "OneWire Stopped");
+            	_OneWireNativeService.stop();
+            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
             }  
             
          }); 
