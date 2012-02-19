@@ -15,6 +15,7 @@ LOCAL_C_INCLUDES += \
 	$(JNI_H_INCLUDE)
 
 LOCAL_SHARED_LIBRARIES := \
+    libandroid_runtime \
 	libcutils \
 	libhardware \
 	libhardware_legacy \
