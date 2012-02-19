@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
+
 package com.android.server.onewire;
 
 /*
 import android.location.Criteria;
 import android.location.Location;
 import android.net.NetworkInfo;
+
+import android.os.WorkSource;
 */
 
 import android.os.Bundle;
-import android.os.WorkSource;
 
 /**
  * OneWire Manager's interface for OneWire providers.

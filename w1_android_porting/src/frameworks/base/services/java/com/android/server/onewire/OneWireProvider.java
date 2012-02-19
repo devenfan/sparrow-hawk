@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+
 package com.android.server.onewire;
 
+/*
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -61,15 +63,13 @@ import com.android.internal.location.GpsNetInitiatedHandler;
 import com.android.internal.location.GpsNetInitiatedHandler.GpsNiNotification;
 import com.android.internal.telephony.Phone;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringBufferInputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
+*/
+
+import android.onewire.OneWireListener;
+import android.onewire.OneWireMasterID;
+import android.onewire.OneWireSlaveID;
+import android.util.Log;
+
 
 /**
  * The implementation of OneWireProvider used by OneWireManager.
@@ -83,94 +83,142 @@ public class OneWireProvider {
     private static final boolean DEBUG = false;
     private static final boolean VERBOSE = false;
 
+    private static OneWireProvider s_instance = new OneWireProvider();
+    
+    private boolean _isStarted;
+    
+    private OneWireListener _listener;
 
     static { 
+    	//System.loadLibrary("onewire");
+    	//System.loadLibrary("android_servers");
     	class_init_native(); 
     }
     
+    private OneWireProvider(){
+    	
+    }
     
+    // public --------------------------------------------------------------
     
-    //Callbacks (Invoked by JNI native codes...) ---------------------------------
+    public static OneWireProvider getInstance() {
+    	return s_instance;
+    }
+    
+    public static boolean isSupported(){
+    	return native_is_supported();
+    }
+    
+    public void setListener(OneWireListener listener){
+    	_listener = listener;
+    }
+
+    public boolean isStarted(){
+    	return _isStarted;
+    }
+    
+    public boolean start(){
+    	if(!_isStarted){
+    		_isStarted = native_start();
+    		Log.i(TAG, "started!");
+    	}
+    	return _isStarted;
+    } 
+    
+    public void stop() {
+    	if(_isStarted) {
+    		native_stop();
+    		Log.i(TAG, "stopped!");
+    		_isStarted = false;
+    	}
+    }
+    
+    // Callbacks (Invoked by JNI native codes...) --------------------------
     
     
     /**
      * masterId: 4 bytes
      * */
     private void masterAdded(int masterId){
-    	//TODO
+    	OneWireMasterID ID = new OneWireMasterID(masterId);
+    	Log.i(TAG, "masterAdded: " + ID);
+    	if(_listener != null){
+    		_listener.oneWireMasterAdded(ID);
+    	}
     }
 
     /**
      * masterId: 4 bytes
      * */
-    private native void masterRemoved(int masterId){
-    	//TODO
+    private void masterRemoved(int masterId){
+    	OneWireMasterID ID = new OneWireMasterID(masterId);
+    	Log.i(TAG, "masterRemoved: " + ID);
+    	if(_listener != null){
+    		_listener.oneWireMasterRemoved(ID);
+    	}
     }
 
     /**
      * slaveRN: 8 bytes
      * */
-    private native void slaveAdded(long slaveRN){
-    	//TODO
+    private void slaveAdded(long slaveRN){
+    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
+    	Log.i(TAG, "slaveAdded: " + ID);
+    	if(_listener != null){
+    		_listener.oneWireSlaveAdded(ID);
+    	}
     }
 
     /**
      * slaveRN: 8 bytes
      * */
-    private native void slaveRemoved(long slaveRN){
-    	//TODO
-    }
-    
-    private OneWireMasterID getMasterIDFromInt(int masterId){
-    	return new OneWireMasterID(masterId);
-    }
-    
-    private OneWireSlaveID getSlaveIDFromLong(long slaveRN){
-    	//TODO slaveRN.
-    	return new OneWireSlaveID();
+    private void slaveRemoved(long slaveRN){
+    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
+    	Log.i(TAG, "slaveRemoved: " + ID);
+    	if(_listener != null){
+    		_listener.oneWireSlaveRemoved(ID);
+    	}
     }
     
 
-    //native (JNI mapped functions) ----------------------------------------
+    // native (JNI mapped functions) -------------------------------------
 	
     private static native void class_init_native();
     
     private static native boolean native_is_supported();
     
+    private native boolean native_start();
     
-    
-    private static boolean native_start();
-    
-    private static void native_stop();
+    private native void native_stop();
     
     //return masterId by integer...
-    private static int native_get_current_master(); 
+    private native int native_get_current_master(); 
     
     //return the slave count...
-    private static int native_get_current_slaves(long[] slaveRNs);
+    private native int native_get_current_slaves(long[] slaveRNs);
     
     //TODO return status...
-    private static void native_begin_exclusive(); 
+    private native void native_begin_exclusive(); 
     
     //TODO return status...
-    private static void native_end_exclusive();
+    private native void native_end_exclusive();
     
     //return the master count...
-    private static int native_list_masters(int[] masterIDs);
+    private native int native_list_masters(int[] masterIDs);
     
     //return the slave count...
-    private static int native_search_slaves(
+    private native int native_search_slaves(
             int masterId, boolean isSearchAlarm, long[] slaveRNs);
     
-    private static boolean native_master_reset(int masterId);
+    private native boolean native_master_reset(int masterId);
     
-    private static boolean native_master_touch(
+    private native boolean native_master_touch(
             int masterId, byte[] dataIn, int dataInLen, byte[] dataOut);
     
-    private static boolean native_master_read(
+    private native boolean native_master_read(
             int masterId, int readLen, byte[] dataReadOut);
     
-    private static boolean native_master_write(
+    private native boolean native_master_write(
             int masterId, int writeLen, byte[] dataWriteIn);
     
 }

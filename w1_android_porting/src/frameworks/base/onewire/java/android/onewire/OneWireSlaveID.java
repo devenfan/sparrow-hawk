@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
+
 package android.onewire;
 
+import net.sh.android.onewire.ConvertCodec;
 
 public class OneWireSlaveID {
 
 	public static final int SIZE = 8;
 
-	private boolean m_IsLittleEndian; //is little endian or big endian
-	private byte[] m_SlaveRN; //8 bytes;
+	private boolean _isLittleEndian; //is little endian or big endian
+	private byte[] _slaveRN; //8 bytes;
 	
 	/*
 	private byte m_Family;
@@ -30,40 +32,45 @@ public class OneWireSlaveID {
 	private byte m_CRC;
 	*/
 	
-	public OneWireMasterID() { }
+	public OneWireSlaveID() { }
 	
-	public OneWireMasterID(byte[] slaveRN, boolean isLittleEndian) {
+	public OneWireSlaveID(long slaveRN) {
+		byte[] bytes = new byte[8];
+		for(int i = 0; i < bytes.length; i++){
+			bytes[i] = (byte) (slaveRN >>> (8 * (bytes.length - i - 1)));
+		}
+		setSlaveRN(bytes, true);
+	}
+	
+	public OneWireSlaveID(byte[] slaveRN, boolean isLittleEndian) {
 		setSlaveRN(slaveRN, isLittleEndian);	
 	}
 	
-	public byte getFamily(){
-		if(m_IsLittleEndian)
-		{
-			return m_SlaveRN[0];
-		}
-		else
-		{
-			return m_SlaveRN[SIZE - 1];
+	public byte getFamily() {
+		if (_isLittleEndian) {
+			return _slaveRN[0];
+		} else {
+			return _slaveRN[SIZE - 1];
 		}
 	}
 	
-	public byte getSN(){
-		return ConvertCodec.byteArrayToHexString(m_SlaveRN, 1, 6);
+	public String getSN(){
+		return ConvertCodec.bytesToHexString(_slaveRN, 1, 6);
 	}
 	
 	public void setSlaveRN(byte[] slaveRN, boolean isLittleEndian) {
 		//TODO Check slaveRN...
+		
 		//Copy into the memory... 
-		m_SlaveRN = new byte[SIZE];
-		for(int i = 0; i < SIZE; i++)
-		{
-			m_SlaveRN[i] = slaveRN[i];
+		_slaveRN = new byte[SIZE];
+		for (int i = 0; i < SIZE; i++) {
+			_slaveRN[i] = slaveRN[i];
 		}
-		m_IsLittleEndian = isLittleEndian;
+		_isLittleEndian = isLittleEndian;
 	}
 	
 	public String toString(){
-		return ConvertCodec.byteArrayToHexString(m_SlaveRN);
+		return ConvertCodec.bytesToHexString(_slaveRN);
 	}
 	
 
