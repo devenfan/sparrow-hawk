@@ -26,6 +26,11 @@
 #include <cutils/log.h>
 #include <cutils/atomic.h>
 
+#include "sh_types.h"
+
+#include "w1_netlink_userspace.h"
+#include "w1_netlink_userservice.h"
+
 #include <hardware/w1_hal.h>
 
 /*****************************************************************************/

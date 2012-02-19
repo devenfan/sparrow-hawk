@@ -10,13 +10,12 @@ ln -s
 ------------------------------------------------------------------------------
 Execute every time:
 
-cp      w1_android_porting/src/hardware/libhardware/include/hardware/w1_hal.h  ~/workspace-s3c6410/android6410-android2.1_v2.0/hardware/libhardware/include/hardware/
+cp      w1_android_porting/src/hardware/libhardware/include/hardware/w1_hal.h  ~/workspace-s3c6410/android6410-android2.1_v2.0/hardware/libhardware/include/hardware/w1_hal.h
 
 cp -R   w1_android_porting/src/hardware/libonewire/                            ~/workspace-s3c6410/android6410-android2.1_v2.0/hardware/
 
 cp      w1_android_porting/src/frameworks/base/services/jni/com_android_server_onewire_OneWireProvider.cpp      ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/
-
-cp      w1_android_porting/src/frameworks/base/services/jni/Android.mk     ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/
+cp      w1_android_porting/src/frameworks/base/services/jni/Android.mk     										~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/
 
 cp      ibutton_netlink_linux/src/*.h           ~/workspace-s3c6410/android6410-android2.1_v2.0/hardware/libonewire/
 cp      ibutton_netlink_linux/src/*.c           ~/workspace-s3c6410/android6410-android2.1_v2.0/hardware/libonewire/

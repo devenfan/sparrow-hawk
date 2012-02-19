@@ -75,12 +75,20 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="src\frameworks\base\onewire\java\android\onewire\OneWireMasterID.java" />
+		<Unit filename="src\frameworks\base\onewire\java\android\onewire\OneWireSlaveID.java" />
 		<Unit filename="src\frameworks\base\services\java\com\android\server\onewire\OneWireProvider.java" />
+		<Unit filename="src\frameworks\base\services\java\com\android\server\onewire\OneWireProviderInterface.java" />
+		<Unit filename="src\frameworks\base\services\jni\Android.mk" />
 		<Unit filename="src\frameworks\base\services\jni\com_android_server_onewire_OneWireProvider.cpp" />
-		<Unit filename="src\hardware\w1_hal\w1_hal.c">
+		<Unit filename="src\hardware\libhardware\include\hardware\hardware.h" />
+		<Unit filename="src\hardware\libhardware\include\hardware\w1_hal.h" />
+		<Unit filename="src\hardware\libonewire\Android.mk" />
+		<Unit filename="src\hardware\libonewire\w1_hal.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\hardware\w1_hal\w1_hal_impl.cpp" />
+		<Unit filename="src\hardware\libonewire\w1_hal_impl.cpp" />
+		<Unit filename="src\script.txt" />
 		<Extensions>
 			<code_completion />
 			<debugger />
