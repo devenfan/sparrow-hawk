@@ -21,7 +21,8 @@ LOCAL_SHARED_LIBRARIES := \
 	libnativehelper \
     libsystem_server \
 	libutils \
-	libui
+	libui \
+	libonewire
 
 ifeq ($(TARGET_SIMULATOR),true)
 ifeq ($(TARGET_OS),linux)
@@ -38,4 +39,4 @@ endif
 LOCAL_MODULE:= libandroid_servers
 
 include $(BUILD_SHARED_LIBRARY)
-    
+

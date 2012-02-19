@@ -29,6 +29,15 @@
 #include <string.h>
 #include <pthread.h>
 
+#include "sh_types.h"
+#include "sh_error.h"
+#include "sh_util.h"
+#include "sh_thread.h"
+#include "kernel_connector.h"
+#include "w1_netlink_userspace.h"
+#include "w1_netlink_util.h"
+#include "w1_netlink_userservice.h"
+
 #include "hardware/w1_hal.h"
 
 static jobject mCallbacksObj = NULL;
