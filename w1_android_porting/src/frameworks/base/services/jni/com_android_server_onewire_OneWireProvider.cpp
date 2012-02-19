@@ -388,11 +388,11 @@ static jint android_onewire_OneWireProvider_get_current_slaves(JNIEnv* env, jobj
 			if(slaveCount > MAX_SLAVE_COUNT)
 				slaveCount = MAX_SLAVE_COUNT;
 
-			jlong* l = env->GetLongArrayElements(env, slaveRNs, NULL);
+			jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
 
 			memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
 
-			env->ReleaseLongArrayElements(env, slaveRNs, l, 0);
+			env->ReleaseLongArrayElements(slaveRNs, l, 0);
 		}
     }
 
@@ -440,11 +440,11 @@ static jint android_onewire_OneWireProvider_list_masters(JNIEnv* env, jobject ob
 				if(masterCount > MAX_MASTER_COUNT)
 					masterCount = MAX_MASTER_COUNT;
 
-				jint* i = env->GetIntArrayElements(env, masterIDs, NULL);
+				jint* i = env->GetIntArrayElements(masterIDs, NULL);
 
 				memcpy(i, masters, sizeof(w1_master_id) * masterCount);
 
-				env->ReleaseIntArrayElements(env, masterIDs, i, 0);
+				env->ReleaseIntArrayElements(masterIDs, i, 0);
 			}
 		}
 	}
@@ -465,18 +465,18 @@ static jint android_onewire_OneWireProvider_search_slaves(JNIEnv* env, jobject o
 
     if(sOneWireInterface)
     {
-    	if(search_slaves(*((w1_master_id*)&masterId), (BOOL)isSearchAlarm, slaves, &slaveCount))
+    	if(sOneWireInterface->search_slaves(*((w1_master_id*)&masterId), (BOOL)isSearchAlarm, slaves, &slaveCount))
     	{
     		if(slaveCount > 0)
 			{
 				if(slaveCount > MAX_SLAVE_COUNT)
 					slaveCount = MAX_SLAVE_COUNT;
 
-				jlong* l = env->GetLongArrayElements(env, slaveRNs, NULL);
+				jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
 
 				memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
 
-				env->ReleaseLongArrayElements(env, slaveRNs, l, 0);
+				env->ReleaseLongArrayElements(slaveRNs, l, 0);
 			}
     	}
     }
@@ -512,14 +512,14 @@ static jboolean android_onewire_OneWireProvider_master_touch(JNIEnv* env, jobjec
 
     if(sOneWireInterface)
     {
-    	jbyte* b1 = env->GetByteArrayElements(env, dataIn, NULL);
-    	jbyte* b2 = env->GetByteArrayElements(env, dataOut, NULL);
+    	jbyte* b1 = env->GetByteArrayElements(dataIn, NULL);
+    	jbyte* b2 = env->GetByteArrayElements(dataOut, NULL);
 
     	result = sOneWireInterface->master_touch(*((w1_master_id*)&masterId),
                         (BYTE *)b1, dataInLen, (BYTE *)b2, &dataOutLen);
 
-		env->ReleaseByteArrayElements(env, dataIn, b1, 0);
-		env->ReleaseByteArrayElements(env, dataOut, b2, 0);
+		env->ReleaseByteArrayElements(dataIn, b1, 0);
+		env->ReleaseByteArrayElements(dataOut, b2, 0);
 
     	if(result && dataInLen == dataOutLen)
     		result = JNI_TRUE; //how many in, how many out...
@@ -538,11 +538,11 @@ static jboolean android_onewire_OneWireProvider_master_read(JNIEnv* env, jobject
     jboolean result = JNI_FALSE;
     if(sOneWireInterface)
     {
-    	jbyte* b = env->GetByteArrayElements(env, dataReadOut, NULL);
+    	jbyte* b = env->GetByteArrayElements(dataReadOut, NULL);
 
 		result = sOneWireInterface->master_read(*((w1_master_id*)&masterId), readLen, (BYTE *)b);
 
-		env->ReleaseByteArrayElements(env, dataReadOut, b, 0);
+		env->ReleaseByteArrayElements(dataReadOut, b, 0);
     }
     return result;
 }
@@ -558,11 +558,11 @@ static jboolean android_onewire_OneWireProvider_master_write(JNIEnv* env, jobjec
     jboolean result = JNI_FALSE;
     if(sOneWireInterface)
     {
-    	jbyte* b = env->GetByteArrayElements(env, dataWriteIn, NULL);
+    	jbyte* b = env->GetByteArrayElements(dataWriteIn, NULL);
 
 		result = sOneWireInterface->master_write(*((w1_master_id*)&masterId), writeLen, (BYTE *)b);
 
-		env->ReleaseByteArrayElements(env, dataReadOut, b, 0);
+		env->ReleaseByteArrayElements(dataWriteIn, b, 0);
     }
     return result;
 }
