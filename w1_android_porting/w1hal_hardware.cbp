@@ -79,6 +79,7 @@
 		<Unit filename="src\frameworks\base\onewire\java\android\onewire\OneWireSlaveID.java" />
 		<Unit filename="src\frameworks\base\services\java\com\android\server\onewire\OneWireProvider.java" />
 		<Unit filename="src\frameworks\base\services\java\com\android\server\onewire\OneWireProviderInterface.java" />
+		<Unit filename="src\frameworks\base\services\java\com\android\server\onewire\OneWireService.java" />
 		<Unit filename="src\frameworks\base\services\jni\Android.mk" />
 		<Unit filename="src\frameworks\base\services\jni\com_android_server_onewire_OneWireProvider.cpp" />
 		<Unit filename="src\hardware\libhardware\include\hardware\hardware.h" />
