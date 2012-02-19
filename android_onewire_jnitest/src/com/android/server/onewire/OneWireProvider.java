@@ -91,6 +91,8 @@ public class OneWireProvider {
     private OneWireListener _listener;
 
     static { 
+    	//System.loadLibrary("onewire");
+    	//System.loadLibrary("android_servers");
     	class_init_native(); 
     }
     
