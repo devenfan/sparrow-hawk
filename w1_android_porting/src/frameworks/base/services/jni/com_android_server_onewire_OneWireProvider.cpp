@@ -63,7 +63,7 @@ namespace android {
 static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName) {
     if (env->ExceptionCheck()) {
         LOGE("An exception was thrown by callback '%s'.", methodName);
-        LOGE_EX(env);
+        //LOGE_EX(env);
         env->ExceptionClear();
     }
 }
@@ -73,28 +73,28 @@ static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodNa
 static void master_added_callback(w1_master_id masterId)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-	env->CallVoidMethod(mCallbacksObj, method_masterAdded, (jint)masterId);
+	env->CallVoidMethod(mCallbacksObj, method_masterAdded, *((jint*)&masterId));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void master_removed_callback(w1_master_id masterId)
 {
 	JNIEnv* env = AndroidRuntime::getJNIEnv();
-	env->CallVoidMethod(mCallbacksObj, method_masterRemoved, (jint)masterId);
+	env->CallVoidMethod(mCallbacksObj, method_masterRemoved, *((jint*)&masterId));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void slave_added_callback(w1_slave_rn slaveRN)
 {
 	JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_slaveAdded, (jlong)slaveRN);
+    env->CallVoidMethod(mCallbacksObj, method_slaveAdded, *((jlong*)&slaveRN));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void slave_removed_callback(w1_slave_rn slaveRN)
 {
 	JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, (jlong)slaveRN);
+    env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, *((jlong*)&slaveRN));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
