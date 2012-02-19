@@ -24,7 +24,7 @@
 #define  LOG_TAG 	"OneWireProviderJNI"
 #include "utils/Log.h"
 #include "utils/misc.h"
-#include "android_runtime/AndroidRuntime.h"
+#include "android_runtime/AndroidRuntime.h" //libandroid_runtime.so
 
 #include <string.h>
 #include <pthread.h>
