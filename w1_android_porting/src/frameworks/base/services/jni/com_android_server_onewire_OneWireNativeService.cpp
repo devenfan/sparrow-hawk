@@ -853,7 +853,8 @@ static JNINativeMethod sMethods[] = {
 
 int register_android_server_onewire_OneWireNativeService(JNIEnv* env)
 {
-    return jniRegisterNativeMethods(env, "com/android/server/onewire/OneWireNativeService", sMethods, NELEM(sMethods));
+    //return jniRegisterNativeMethods(env, "com/android/server/onewire/OneWireNativeService", sMethods, NELEM(sMethods));
+    return jniRegisterNativeMethods(env, "net/sh/android/onewire/legacy/OneWireNativeService", sMethods, NELEM(sMethods));
 }
 
 
