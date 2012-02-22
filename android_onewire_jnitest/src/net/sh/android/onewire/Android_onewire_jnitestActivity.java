@@ -1,11 +1,8 @@
 package net.sh.android.onewire;
 
-import com.android.server.onewire.OneWireNativeService;
 
+import net.sh.android.onewire.legacy.*;
 import android.app.Activity;
-import android.onewire.OneWireListener;
-import android.onewire.OneWireMasterID;
-import android.onewire.OneWireSlaveID;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
