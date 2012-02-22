@@ -66,13 +66,12 @@ public class OneWireNativeService {
     	return _isStarted;
     }
     
-    public boolean start(){
+    public void start(){
     	if(!_isStarted){
     		_isStarted = native_start();
     		Log.i(TAG, "started!");
     	}
-    	return _isStarted;
-    } 
+    }
     
     public void stop() {
     	if(_isStarted) {

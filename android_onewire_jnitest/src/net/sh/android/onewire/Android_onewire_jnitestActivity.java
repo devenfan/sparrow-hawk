@@ -27,24 +27,24 @@ public class Android_onewire_jnitestActivity extends Activity {
         _OneWireNativeService = OneWireNativeService.getInstance();
         _OneWireNativeService.setListener(new OneWireListener() {
 			
-			@Override
+			//@Override
 			public void oneWireSlaveRemoved(OneWireSlaveID slave) {
 				_txtLog.append("oneWireSlaveRemoved: " + slave + "\n");
 			}
 			
-			@Override
+			//@Override
 			public void oneWireSlaveAdded(OneWireSlaveID slave) {
 				_txtLog.append("oneWireSlaveAdded: " + slave + "\n");
 				
 			}
 			
-			@Override
+			//@Override
 			public void oneWireMasterRemoved(OneWireMasterID master) {
 				_txtLog.append("oneWireMasterRemoved: " + master + "\n");
 				
 			}
 			
-			@Override
+			//@Override
 			public void oneWireMasterAdded(OneWireMasterID master) {
 				_txtLog.append("oneWireMasterAdded: " + master + "\n");
 				

@@ -116,13 +116,13 @@ public class OneWireSlaveID implements Parcelable {
         }
     };
 
-	@Override
+	//@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	@Override
+	//@Override
 	public void writeToParcel(Parcel parcel, int flags) {
 		parcel.writeByteArray(_slaveRN);
 		parcel.writeInt(_isLittleEndian ? 1 : 0);
