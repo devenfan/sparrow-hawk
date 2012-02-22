@@ -42,7 +42,8 @@ Test as Legacy way
 rm -R ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/onewire/
 rm -R ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/java/com/android/server/onewire/
 
-mkdir   ~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest
+rm -R ~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest
+mkdir ~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest
 
 cp -R   android_onewire_jnitest/src   	~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/src
 cp -R   android_onewire_jnitest/res  	~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/res
