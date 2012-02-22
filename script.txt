@@ -19,7 +19,7 @@ cp      ibutton_netlink_linux/src/*.c           ~/workspace-s3c6410/android6410-
 cp      ibutton_netlink_linux/src/*.h           ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/
 
 
-cp      w1_android_porting/src/frameworks/base/services/jni/com_android_server_onewire_OneWireProvider.cpp      ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/com_android_server_onewire_OneWireProvider.cpp
+cp      w1_android_porting/src/frameworks/base/services/jni/com_android_server_onewire_OneWireProvider.cpp      ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/
 cp      w1_android_porting/src/frameworks/base/services/jni/onload.cpp      ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/onload.cpp
 cp      w1_android_porting/src/frameworks/base/services/jni/Android.mk     	~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/
 
@@ -44,9 +44,14 @@ rm -R ~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/j
 
 mkdir   ~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest
 
-cp -R   android_onewire_jnitest/src   	~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/
-cp -R   android_onewire_jnitest/res   	~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/
+cp -R   android_onewire_jnitest/src   	~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/src
+cp -R   android_onewire_jnitest/res  	~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/res
 cp -R   android_onewire_jnitest/*.xml   ~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/
+cp -R   android_onewire_jnitest/*.mk    ~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/
+
+ls -al  ~/workspace-s3c6410/android6410-android2.1_v2.0/packages/apps/android_onewire_jnitest/
+
+cp      w1_android_porting/src/frameworks/base/services/jni/*     	~/workspace-s3c6410/android6410-android2.1_v2.0/frameworks/base/services/jni/
 
 ------------------------------------------------------------------------------
 Compile every time:
