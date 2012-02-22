@@ -5,5 +5,6 @@
     <string name="app_name">Android_onewire_jnitest</string>
     <string name="strStart">Start</string>
     <string name="strStop">Stop</string>
+    <string name="strStatus">Service Status...</string>
 
 </resources>
