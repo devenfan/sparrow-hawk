@@ -45,12 +45,7 @@ LOCAL_PRELINK_MODULE := false
 LOCAL_COPY_HEADERS_TO := libonewire
 
 LOCAL_COPY_HEADERS := sh_types.h \
-    sh_error.h \
-    sh_log.h \
-    sh_thread.h \
-    sh_util.h  \
     w1_netlink_userspace.h \
-    w1_netlink_util.h \
     w1_netlink_userservice.h
 
 

@@ -21,12 +21,12 @@
 
 
 #include "libonewire/sh_types.h"
-#include "libonewire/sh_error.h"
-#include "libonewire/sh_util.h"
-#include "libonewire/sh_thread.h"
-#include "libonewire/kernel_connector.h"
+//#include "libonewire/sh_error.h"
+//#include "libonewire/sh_util.h"
+//#include "libonewire/sh_thread.h"
+//#include "libonewire/kernel_connector.h"
 #include "libonewire/w1_netlink_userspace.h"
-#include "libonewire/w1_netlink_util.h"
+//#include "libonewire/w1_netlink_util.h"
 #include "libonewire/w1_netlink_userservice.h"
 
 

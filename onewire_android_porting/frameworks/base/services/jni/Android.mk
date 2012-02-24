@@ -23,7 +23,8 @@ LOCAL_SHARED_LIBRARIES := \
     libsystem_server \
 	libutils \
 	libui \
-	libonewire
+	libonewire \
+	libonewire_hal
 
 ifeq ($(TARGET_SIMULATOR),true)
 ifeq ($(TARGET_OS),linux)
