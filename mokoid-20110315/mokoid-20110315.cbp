@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="mokoid-20110315" />
+		<Option pch_mode="2" />
+		<Option compiler="armelfgcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin\Debug\mokoid-20110315" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Debug\" />
+				<Option type="1" />
+				<Option compiler="armelfgcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin\Release\mokoid-20110315" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj\Release\" />
+				<Option type="1" />
+				<Option compiler="armelfgcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="Android.mk" />
+		<Unit filename="README.txt" />
+		<Unit filename="apps\Android.mk" />
+		<Unit filename="apps\LedClient\Android.mk" />
+		<Unit filename="apps\LedClient\AndroidManifest.xml" />
+		<Unit filename="apps\LedClient\src\com\mokoid\LedClient\LedClient.java" />
+		<Unit filename="apps\LedTest\Android.mk" />
+		<Unit filename="apps\LedTest\AndroidManifest.xml" />
+		<Unit filename="apps\LedTest\src\com\mokoid\LedTest\LedSystemServer.java" />
+		<Unit filename="apps\LedTest\src\com\mokoid\LedTest\LedTest.java" />
+		<Unit filename="dma6410xp\AndroidBoard.mk" />
+		<Unit filename="dma6410xp\AndroidProducts.mk" />
+		<Unit filename="dma6410xp\BoardConfig.mk" />
+		<Unit filename="dma6410xp\dma6410xp.mk" />
+		<Unit filename="dma6410xp\init.dma6410xp.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="dma6410xp\init.goldfish.sh" />
+		<Unit filename="dma6410xp\init.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="frameworks\Android.mk" />
+		<Unit filename="frameworks\base\Android.mk" />
+		<Unit filename="frameworks\base\core\java\mokoid\hardware\ILedService.aidl" />
+		<Unit filename="frameworks\base\core\java\mokoid\hardware\LedManager.java" />
+		<Unit filename="frameworks\base\service\Android.mk" />
+		<Unit filename="frameworks\base\service\com.mokoid.server.xml" />
+		<Unit filename="frameworks\base\service\java\com\mokoid\server\LedService.java" />
+		<Unit filename="frameworks\base\service\jni\Android.mk" />
+		<Unit filename="frameworks\base\service\jni\com_mokoid_server_LedService.cpp" />
+		<Unit filename="hardware\Android.mk" />
+		<Unit filename="hardware\libled\Android.mk" />
+		<Unit filename="hardware\libled\libled.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hardware\modules\Android.mk" />
+		<Unit filename="hardware\modules\include\mokoid\led.h" />
+		<Unit filename="hardware\modules\led\Android.mk" />
+		<Unit filename="hardware\modules\led\led.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="mokoid-20110315.layout" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
