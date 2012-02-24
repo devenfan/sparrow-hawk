@@ -18,7 +18,7 @@ public class OneWireNativeService {
     private OneWireListener _listener;
 
     static { 
-    	//System.loadLibrary("onewire");
+    	System.loadLibrary("android_onewire");
     	//System.loadLibrary("android_servers");
     	class_init_native(); 
     }
