@@ -31,17 +31,11 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="frameworks\base\onewire\Android.mk" />
-		<Unit filename="frameworks\base\onewire\java\android\onewire\OneWireListener.java" />
-		<Unit filename="frameworks\base\onewire\java\android\onewire\OneWireMasterID.java" />
-		<Unit filename="frameworks\base\onewire\java\android\onewire\OneWireSlaveID.java" />
-		<Unit filename="frameworks\base\services\java\com\android\server\onewire\OneWireNativeService.java" />
-		<Unit filename="frameworks\base\services\java\com\android\server\onewire\OneWireProvider.java" />
+		<Unit filename=".gitignore" />
 		<Unit filename="frameworks\base\services\jni\Android.mk" />
 		<Unit filename="frameworks\base\services\jni\com_android_server_onewire_OneWireNativeService.cpp" />
 		<Unit filename="frameworks\base\services\jni\onload.cpp" />
 		<Unit filename="hardware\libhardware\include\hardware\.gitignore" />
-		<Unit filename="hardware\libhardware\include\hardware\w1_hal.h" />
 		<Unit filename="hardware\libonewire\Android.mk" />
 		<Unit filename="hardware\libonewire\kernel_connector.h" />
 		<Unit filename="hardware\libonewire\sh_error.h" />
@@ -77,6 +71,7 @@
 		<Unit filename="hardware\libonewire_hal\w1_hal.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="hardware\libonewire_hal\w1_hal.h" />
 		<Unit filename="hardware\libonewire_hal\w1_hal_impl.cpp" />
 		<Extensions>
 			<code_completion />

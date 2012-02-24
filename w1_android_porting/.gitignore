@@ -4,3 +4,4 @@ lib
 obj
 *.save
 *.cbTemp
+*.layout

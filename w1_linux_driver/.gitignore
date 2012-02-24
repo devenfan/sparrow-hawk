@@ -1,5 +1,5 @@
 *.o
 *.cmd
 *.save
-
+*.layout
 *.cbTemp

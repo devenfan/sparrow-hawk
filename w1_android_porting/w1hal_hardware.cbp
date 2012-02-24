@@ -92,7 +92,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\hardware\libonewire\w1_hal_impl.cpp" />
-		<Unit filename="src\script.txt" />
 		<Extensions>
 			<code_completion />
 			<debugger />
