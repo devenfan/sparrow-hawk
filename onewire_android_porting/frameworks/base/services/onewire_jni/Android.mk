@@ -48,8 +48,10 @@ LOCAL_MODULE:= libandroid_onewire
 # Target install path.
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
 
-# Don't prelink this library.  For more efficient code, you may want
-# to add this library to the prelink map and set this to true.
+# Don't prelink this library. Or you will get this error:
+# "library 'libandroid_onewire.so' not in prelink map" .
+# For more efficient code, you may want to add this library to
+# the prelink map and set this to true.
 LOCAL_PRELINK_MODULE := false
 
 include $(BUILD_SHARED_LIBRARY)
