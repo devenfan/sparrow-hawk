@@ -26,12 +26,12 @@
 #include <cutils/log.h>
 #include <cutils/atomic.h>
 
-#include "sh_types.h"
+#include "libonewire/sh_types.h"
 
-#include "w1_netlink_userspace.h"
-#include "w1_netlink_userservice.h"
+#include "libonewire/w1_netlink_userspace.h"
+#include "libonewire/w1_netlink_userservice.h"
 
-#include <hardware/w1_hal.h>
+#include "libonewire_hal/w1_hal.h"
 
 /*****************************************************************************/
 

@@ -24,7 +24,7 @@ LOCAL_INCLUDES += $(LOCAL_PATH)
 LOCAL_SHARED_LIBRARIES := \
 	liblog 	\
 	libcutils
-	
+
 LOCAL_SRC_FILES := \
 	sh_log.c		\
 	sh_thread.c		\
@@ -38,6 +38,20 @@ LOCAL_MODULE := libonewire
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
 
 LOCAL_PRELINK_MODULE := false
+
+
+# The headers will be copied to :
+# out/target/product/XXXX/obj/include
+LOCAL_COPY_HEADERS_TO := libonewire
+
+LOCAL_COPY_HEADERS := sh_types.h \
+    sh_error.h \
+    sh_log.h \
+    sh_thread.h \
+    sh_util.h  \
+    w1_netlink_userspace.h \
+    w1_netlink_util.h \
+    w1_netlink_userservice.h
 
 
 include $(BUILD_SHARED_LIBRARY)

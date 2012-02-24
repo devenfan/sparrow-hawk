@@ -21,7 +21,7 @@ include $(CLEAR_VARS)
 
 #LOCAL_INCLUDES += $(LOCAL_PATH)
 
-#LOCAL_C_INCLUDES += $(LOCAL_PATH)/../libonewire
+#LOCAL_C_INCLUDES += vendor/sh/onewire
 
 #LOCAL_STATIC_LIBRARIES :=
 
@@ -40,5 +40,11 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
 
 LOCAL_PRELINK_MODULE := false
 
+
+# The headers will be copied to :
+# out/target/product/XXXX/obj/include
+LOCAL_COPY_HEADERS_TO := libonewire_hal
+
+LOCAL_COPY_HEADERS := w1_hal.h
 
 include $(BUILD_SHARED_LIBRARY)

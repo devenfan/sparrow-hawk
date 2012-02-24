@@ -20,17 +20,17 @@
 #include <hardware/hardware.h>
 
 
-#include "sh_types.h"
-#include "sh_error.h"
-#include "sh_util.h"
-#include "sh_thread.h"
-#include "kernel_connector.h"
-#include "w1_netlink_userspace.h"
-#include "w1_netlink_util.h"
-#include "w1_netlink_userservice.h"
+#include "libonewire/sh_types.h"
+#include "libonewire/sh_error.h"
+#include "libonewire/sh_util.h"
+#include "libonewire/sh_thread.h"
+#include "libonewire/kernel_connector.h"
+#include "libonewire/w1_netlink_userspace.h"
+#include "libonewire/w1_netlink_util.h"
+#include "libonewire/w1_netlink_userservice.h"
 
 
-#include <hardware/w1_hal.h>
+#include "libonewire_hal/w1_hal.h"
 
 
 
