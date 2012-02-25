@@ -20,7 +20,7 @@
 #include "hardware/hardware.h"
 #include "hardware_legacy/power.h"
 
-#define  LOG_NDEBUG 0
+//#define  LOG_NDEBUG 
 #define  LOG_TAG 	"OneWireNativeServiceJNI"
 #include "utils/Log.h"
 #include "utils/misc.h"
@@ -138,7 +138,7 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
         }
         else
         {
-            LOGE("Cannot open w1 device!!! Error[%d]", err");
+            LOGE("Cannot open w1 device!!! Error[%d]", err);
         }
     }
     else

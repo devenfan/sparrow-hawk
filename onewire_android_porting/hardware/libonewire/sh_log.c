@@ -9,6 +9,7 @@ void sh_debug(const char * TAG, const char * log)
 #ifdef ANDROID_NDK
     __android_log_print(ANDROID_LOG_DEBUG, TAG, log);
 #endif
+
     printf("[%s]: \t%s\n", TAG, log);
 }
 

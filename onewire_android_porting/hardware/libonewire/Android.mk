@@ -44,7 +44,9 @@ LOCAL_PRELINK_MODULE := false
 # out/target/product/XXXX/obj/include
 LOCAL_COPY_HEADERS_TO := libonewire
 
-LOCAL_COPY_HEADERS := sh_types.h \
+LOCAL_COPY_HEADERS := \
+    sh_types.h \
+    sh_log.h \
     w1_netlink_userspace.h \
     w1_netlink_userservice.h
 

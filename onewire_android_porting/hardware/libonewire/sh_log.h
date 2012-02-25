@@ -1,15 +1,18 @@
 #ifndef SH_LOG_H_INCLUDED
 #define SH_LOG_H_INCLUDED
 
+
+
+
 #ifdef ANDROID_NDK
 
 #include <android/log.h>    //android ndk log support
 
-#define android_debug(LOG_TAG, format, args...)                         \
-{                                                                       \
-    __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, format, ##args);    \
-    printf("[%s]: \t", LOG_TAG);                                        \
-    printf(format, ##args);                                             \
+#define android_debug(logTag, format, args...)                         \
+{                                                                      \
+    __android_log_print(ANDROID_LOG_DEBUG, logTag, format, ##args);    \
+    printf("[%s]: \t", logTag);                                        \
+    printf(format, ##args);                                            \
 }
 
 #endif
@@ -17,6 +20,18 @@
 
 
 #ifdef ANDROID_PLATFORM
+
+//#define  LOG_NDEBUG 0
+//#define  LOG_TAG 	"OneWireNativeServiceJNI"
+#include "utils/Log.h"   //LOG_TAG Defined inside...
+#include "utils/misc.h"
+
+#define android_debug(logTag, format, args...)                          \
+{                                                                       \
+    LOGD(format, ##args);                                               \
+    printf("[%s]: \t", logTag);                                        \
+    printf(format, ##args);                                             \
+}
 
 #endif
 
