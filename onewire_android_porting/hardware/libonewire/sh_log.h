@@ -4,7 +4,7 @@
 
 //#define ANDROID_NDK
 
-#define  LOG_NDEBUG
+#define LOG_NDEBUG 0
 
 #ifndef LOG_TAG
 #define LOG_TAG "unknown"
@@ -25,7 +25,6 @@
 #else  //#ifdef ANDROID_PLATFORM
 
 #include "utils/Log.h"   //LOG_TAG Defined inside...
-#include "utils/misc.h"
 
 #define android_debug(format, args...)                                  \
 {                                                                       \

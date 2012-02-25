@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#define  LOG_NDEBUG 0
 #define  LOG_TAG    "W1HALStub"
 #include <cutils/log.h>
 #include <cutils/atomic.h>

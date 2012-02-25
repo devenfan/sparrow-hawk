@@ -21,7 +21,7 @@
 #include "hardware/hardware.h"
 #include "hardware_legacy/power.h"
 
-//#define  LOG_NDEBUG
+#define  LOG_NDEBUG 0
 #define  LOG_TAG 	"OneWireNativeServiceJNI"
 #include "utils/Log.h"
 #include "utils/misc.h"

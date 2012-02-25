@@ -13,7 +13,8 @@
 #include <cutils/sched_policy.h>
 #include <utils/SystemClock.h>
 
-#define LOG_TAG "lib_w1hal"
+#define  LOG_NDEBUG 0
+#define  LOG_TAG "lib_w1hal"
 #include <utils/Log.h>
 
 
