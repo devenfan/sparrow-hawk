@@ -41,6 +41,7 @@
 
 #include "libonewire_hal/w1_hal.h"
 
+#define ONEWIRE_LEGACY_MODE
 
 static jobject mCallbacksObj = NULL;
 
@@ -113,7 +114,6 @@ w1_user_callbacks sW1UserCallbacks = {
 
 
 
-#define ONEWIRE_LEGACY_MODE
 
 static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, jclass clazz) {
     int err;
@@ -157,6 +157,11 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
     }
 
 #endif
+
+	if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
+	}
 
 }
 

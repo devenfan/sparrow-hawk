@@ -24,7 +24,7 @@ public class Android_onewire_jnitestActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        _OneWireNativeService = OneWireNativeService.getInstance();
+        _OneWireNativeService = new OneWireNativeService();
         _OneWireNativeService.setListener(new OneWireListener() {
 			
 			//@Override
@@ -61,8 +61,16 @@ public class Android_onewire_jnitestActivity extends Activity {
     
         _btnStart.setOnClickListener(new View.OnClickListener() {  
             public void onClick(View v) {  
-            	_OneWireNativeService.start();
-            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
+            	
+            	if(_OneWireNativeService.isStarted())
+            	{
+	            	_OneWireNativeService.start();
+	            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
+            	}
+            	else
+            	{
+            		_txtStatus.setText("OneWire not supported...");
+            	}
             }  
          }); 
         
