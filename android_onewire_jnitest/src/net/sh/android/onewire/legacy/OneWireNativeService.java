@@ -22,6 +22,8 @@ public class OneWireNativeService {
     	//System.loadLibrary("android_servers");
     	
     	class_init_native(); 
+    	
+    	Log.i(TAG, "class_init_native... ");
     }
     
 //    private OneWireNativeService(){

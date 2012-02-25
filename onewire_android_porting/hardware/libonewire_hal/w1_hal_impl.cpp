@@ -188,6 +188,7 @@ extern "C" const w1hal_interface* get_w1hal_interface()
 /** ONEWIRE_LEGACY_MODE */
 const w1hal_interface* hw_get_w1_interface()
 {
+    LOGD("hw_get_w1_interface called!")
     return &sW1HalInterface;
 }
 

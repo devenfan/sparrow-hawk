@@ -158,7 +158,7 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
 
 #endif
 
-	if(!sOneWireInterface)
+	if(NULL == sOneWireInterface)
 	{
 	    LOGE("Error! w1 Stub operations not found!");
 	}
@@ -176,6 +176,12 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
  * Method Name:  	is_supported
 */
 static jboolean android_onewire_OneWireNativeService_is_supported(JNIEnv* env, jclass clazz) {
+
+    if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
+	}
+
 	return (sOneWireInterface != NULL);
 }
 

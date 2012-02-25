@@ -86,7 +86,8 @@ public class Android_onewire_jnitestActivity extends Activity {
         
         _btnTest.setOnClickListener(new View.OnClickListener() {  
             public void onClick(View v) {  
-            	_OneWireNativeService.init();
+            	_OneWireNativeService.start();
+            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
             }  
             
          }); 
