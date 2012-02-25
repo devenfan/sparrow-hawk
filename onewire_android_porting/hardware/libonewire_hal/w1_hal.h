@@ -109,6 +109,17 @@ struct w1hal_device_t {
 
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** ONEWIRE_LEGACY_MODE */
+const w1hal_interface* hw_get_w1_interface();
+
+#ifdef __cplusplus
+}
+#endif
+
 /***************************************************************************/
 
 /* Module ID must be claimed. */

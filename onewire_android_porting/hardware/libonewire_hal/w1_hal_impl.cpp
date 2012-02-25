@@ -177,15 +177,16 @@ const w1hal_interface* w1_get_hardware_interface()
     return &sW1HalInterface;
 }
 
-
-
-
-
-// for w1_hal.c
-extern "C" const w1hal_interface* get_w1_interface()
+/** for w1_hal.c */
+extern "C" const w1hal_interface* get_w1hal_interface()
 {
     return &sW1HalInterface;
 }
 
 
+/** ONEWIRE_LEGACY_MODE */
+const w1hal_interface* hw_get_w1_interface()
+{
+    return &sW1HalInterface;
+}
 

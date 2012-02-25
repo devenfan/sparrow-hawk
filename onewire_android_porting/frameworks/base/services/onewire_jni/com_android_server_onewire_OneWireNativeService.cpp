@@ -17,10 +17,11 @@
 #include "JNIHelp.h"
 #include "jni.h"
 
+
 #include "hardware/hardware.h"
 #include "hardware_legacy/power.h"
 
-//#define  LOG_NDEBUG 
+//#define  LOG_NDEBUG
 #define  LOG_TAG 	"OneWireNativeServiceJNI"
 #include "utils/Log.h"
 #include "utils/misc.h"
@@ -39,6 +40,7 @@
 #include "libonewire/w1_netlink_userservice.h"
 
 #include "libonewire_hal/w1_hal.h"
+
 
 static jobject mCallbacksObj = NULL;
 
@@ -111,6 +113,7 @@ w1_user_callbacks sW1UserCallbacks = {
 
 
 
+#define ONEWIRE_LEGACY_MODE
 
 static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, jclass clazz) {
     int err;
@@ -120,6 +123,13 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
     method_masterRemoved    = env->GetMethodID(clazz, "masterRemoved", "(I)V");
     method_slaveAdded       = env->GetMethodID(clazz, "slaveAdded", "(J)V");
     method_slaveRemoved     = env->GetMethodID(clazz, "slaveRemoved", "(J)V");
+
+
+#ifdef ONEWIRE_LEGACY_MODE
+
+    sOneWireInterface = hw_get_w1_interface();
+
+#else
 
 	err = hw_get_module(ONEWIRE_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
 
@@ -145,6 +155,8 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
     {
         LOGE("w1 Stub not found!!! Error[%d]", err);
     }
+
+#endif
 
 }
 

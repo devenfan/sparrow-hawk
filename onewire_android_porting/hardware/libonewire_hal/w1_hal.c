@@ -35,30 +35,12 @@
 
 /*****************************************************************************/
 
-extern const w1hal_interface* get_w1_interface();
+extern const w1hal_interface* get_w1hal_interface();
 
 const w1hal_interface* w1hal__get_w1_interface(struct w1hal_device_t* dev)
 {
-    return get_w1_interface();
+    return get_w1hal_interface();
 }
-
-
-/*
-int w1hal_start(struct w1hal_device_t *dev)
-{
-	return 0;
-}
-
-int w1hal_stop(struct w1hal_device_t *dev)
-{
-	return 0;
-}
-
-static struct w1hal_device_operations s_w1hal_device_operations = {
-    start: w1hal_start,
-    stop: w1hal_stop,
-};
-*/
 
 
 int w1hal_device_close(struct hw_device_t* device)
