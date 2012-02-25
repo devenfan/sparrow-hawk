@@ -41,7 +41,7 @@
 
 #include "libonewire_hal/w1_hal.h"
 
-#define ONEWIRE_LEGACY_MODE
+#define ONEWIRE_LEGACY_MODE 1
 
 static jobject mCallbacksObj = NULL;
 
@@ -125,7 +125,7 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
     method_slaveRemoved     = env->GetMethodID(clazz, "slaveRemoved", "(J)V");
 
 
-#ifdef ONEWIRE_LEGACY_MODE
+#if ONEWIRE_LEGACY_MODE
 
     sOneWireInterface = hw_get_w1_interface();
 
@@ -160,7 +160,11 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
 
 	if(!sOneWireInterface)
 	{
-	    LOGE("w1 Stub operations not exist!");
+	    LOGE("Error! w1 Stub operations not found!");
+	}
+	else
+	{
+	    LOGI("Good! w1 Stub operations found!");
 	}
 
 }
