@@ -34,13 +34,13 @@ static w1_user_callbacks m_userCallbacks;
 /* ============================ log ralated ============================= */
 /* ====================================================================== */
 
+
+//#define ANDROID_NDK
+
 #define LOG_TAG   "w1_netlink_userapp"
-
-#define ANDROID_NDK
-
 #include "sh_log.h"
 
-#define Debug(format, args...)    android_debug(LOG_TAG, format, ##args)
+#define Debug(format, args...)    android_debug(format, ##args)
 
 /* ====================================================================== */
 /* ============================== utilities ============================= */

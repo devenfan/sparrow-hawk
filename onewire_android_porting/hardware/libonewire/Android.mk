@@ -26,7 +26,6 @@ LOCAL_SHARED_LIBRARIES := \
 	libcutils
 
 LOCAL_SRC_FILES := \
-	sh_log.c		\
 	sh_thread.c		\
 	sh_util.c		\
 	w1_netlink_userspace.c	\

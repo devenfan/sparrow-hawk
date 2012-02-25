@@ -20,12 +20,13 @@ public class OneWireNativeService {
     static { 
     	System.loadLibrary("android_onewire");
     	//System.loadLibrary("android_servers");
+    	
     	class_init_native(); 
     }
     
-    private OneWireNativeService(){
-    	
-    }
+//    private OneWireNativeService(){
+//    	
+//    }
     
     // public --------------------------------------------------------------
     
@@ -59,6 +60,10 @@ public class OneWireNativeService {
     		Log.i(TAG, "stopped!");
     		_isStarted = false;
     	}
+    }
+    
+    public void init(){
+    	class_init_native(); 
     }
     
     // Callbacks (Invoked by JNI native codes...) --------------------------

@@ -105,13 +105,13 @@ static int              g_w1SearchingInterval = 1000; //by millisecond
 /* ============================ log ralated ============================= */
 /* ====================================================================== */
 
+
+//#define ANDROID_NDK
+
 #define LOG_TAG   "w1_netlink_userservice"
-
-#define ANDROID_NDK
-
 #include "sh_log.h"
 
-#define Debug(format, args...)    android_debug(LOG_TAG, format, ##args)
+#define Debug(format, args...)    android_debug(format, ##args)
 
 /* ====================================================================== */
 /* ========================== private methods =========================== */

@@ -6,5 +6,6 @@
     <string name="strStart">Start</string>
     <string name="strStop">Stop</string>
     <string name="strStatus">Service Status...</string>
+    <string name="strTest">Test</string>
 
 </resources>

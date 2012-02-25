@@ -16,6 +16,12 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.03"
         android:text="@string/strStatus" />
+
+    <Button
+        android:id="@+id/btnTest"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/strTest" />
 
     <Button
         android:id="@+id/btnStop"
