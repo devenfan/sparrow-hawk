@@ -108,7 +108,7 @@ static int              g_w1SearchingInterval = 1000; //by millisecond
 
 //#define ANDROID_NDK
 
-#define LOG_TAG   "w1_netlink_userservice"
+#define  LOG_TAG   "w1_netlink_userservice"
 #include "sh_log.h"
 
 #define Debug(format, args...)    android_debug(format, ##args)
@@ -640,6 +640,8 @@ static void stop_searching_thread(void)
 
 BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 {
+	Debug("w1(1-wire) netlink service starting...\n");
+	
 	pthread_mutex_init(&g_globalLocker, NULL);
 
 	//open socket
@@ -649,6 +651,8 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
         perror("socket open");
         return FALSE;
 	}
+	
+	Debug("w1(1-wire) netlink open socket OK!\n");
 
 	g_bindAddr.nl_family = AF_NETLINK;
 	g_bindAddr.nl_groups = g_group;
@@ -667,6 +671,8 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 		close(g_w1NetlinkSocket);
         return FALSE;
 	}
+	
+	Debug("w1(1-wire) netlink socket bind OK!\n");
 
 	//Add membership to W1 Group. Or, you cannot send any message.
 	if (setsockopt(g_w1NetlinkSocket, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP, &g_group, sizeof(g_group)) < 0)
@@ -674,6 +680,8 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 		perror("socket setsockopt");
         return FALSE;
 	}
+	
+	Debug("w1(1-wire) netlink socket setsockopt OK!\n");
 
 	//init socket messages
 	nlMsgSend = (struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_MSG_SIZE));

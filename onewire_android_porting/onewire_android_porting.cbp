@@ -38,12 +38,13 @@
 		<Unit filename="frameworks\base\services\onewire_jni\Android.mk" />
 		<Unit filename="frameworks\base\services\onewire_jni\com_android_server_onewire_OneWireNativeService.cpp" />
 		<Unit filename="frameworks\base\services\onewire_jni\onload.cpp" />
-		<Unit filename="hardware\libhardware\include\hardware\.gitignore" />
 		<Unit filename="hardware\libonewire\Android.mk" />
 		<Unit filename="hardware\libonewire\kernel_connector.h" />
 		<Unit filename="hardware\libonewire\sh_error.h" />
-		<Unit filename="hardware\libonewire\sh_log.c">
+		<Unit filename="hardware\libonewire\sh_log.c_bak">
 			<Option compilerVar="CC" />
+			<Option compile="1" />
+			<Option link="1" />
 		</Unit>
 		<Unit filename="hardware\libonewire\sh_log.h" />
 		<Unit filename="hardware\libonewire\sh_thread.c">
