@@ -13,7 +13,7 @@ public class OneWireNativeService {
 
     private static OneWireNativeService s_instance = new OneWireNativeService();
     
-    private boolean _isStarted;
+    private boolean _isStarted = false;
     
     private OneWireListener _listener;
 

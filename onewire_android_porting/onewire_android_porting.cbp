@@ -35,6 +35,9 @@
 		<Unit filename="frameworks\base\services\jni\Android.mk" />
 		<Unit filename="frameworks\base\services\jni\com_android_server_onewire_OneWireNativeService.cpp" />
 		<Unit filename="frameworks\base\services\jni\onload.cpp" />
+		<Unit filename="frameworks\base\services\onewire_jni\Android.mk" />
+		<Unit filename="frameworks\base\services\onewire_jni\com_android_server_onewire_OneWireNativeService.cpp" />
+		<Unit filename="frameworks\base\services\onewire_jni\onload.cpp" />
 		<Unit filename="hardware\libhardware\include\hardware\.gitignore" />
 		<Unit filename="hardware\libonewire\Android.mk" />
 		<Unit filename="hardware\libonewire\kernel_connector.h" />

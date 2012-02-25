@@ -109,171 +109,7 @@ w1_user_callbacks sW1UserCallbacks = {
 };
 
 
-/*
-static void slave_added_callback(w1_master_id masterId)
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_reportLocation,
-                        location->flags,
-            (jdouble)location->latitude, (jdouble)location->longitude,
-            (jdouble)location->altitude,
-            (jfloat)location->speed, (jfloat)location->bearing,
-            (jfloat)location->accuracy, (jlong)location->timestamp);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
 
-static void status_callback(GpsStatus* status)
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_reportStatus, status->status);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-static void sv_status_callback(GpsSvStatus* sv_status)
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    memcpy(&sGpsSvStatus, sv_status, sizeof(sGpsSvStatus));
-    env->CallVoidMethod(mCallbacksObj, method_reportSvStatus);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-static void nmea_callback(GpsUtcTime timestamp, const char* nmea, int length)
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    // The Java code will call back to read these values
-    // We do this to avoid creating unnecessary String objects
-    sNmeaString = nmea;
-    sNmeaStringLength = length;
-    env->CallVoidMethod(mCallbacksObj, method_reportNmea, timestamp);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-static void set_capabilities_callback(uint32_t capabilities)
-{
-    LOGD("set_capabilities_callback: %ld\n", capabilities);
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_setEngineCapabilities, capabilities);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-static void acquire_wakelock_callback()
-{
-    acquire_wake_lock(PARTIAL_WAKE_LOCK, WAKE_LOCK_NAME);
-}
-
-static void release_wakelock_callback()
-{
-    release_wake_lock(WAKE_LOCK_NAME);
-}
-
-static pthread_t create_thread_callback(const char* name, void (*start)(void *), void* arg)
-{
-    return (pthread_t)AndroidRuntime::createJavaThread(name, start, arg);
-}
-
-GpsCallbacks sGpsCallbacks = {
-    sizeof(GpsCallbacks),
-    location_callback,
-    status_callback,
-    sv_status_callback,
-    nmea_callback,
-    set_capabilities_callback,
-    acquire_wakelock_callback,
-    release_wakelock_callback,
-    create_thread_callback,
-};
-*/
-
-/*
-static void xtra_download_request_callback()
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_xtraDownloadRequest);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-GpsXtraCallbacks sGpsXtraCallbacks = {
-    xtra_download_request_callback,
-    create_thread_callback,
-};
-*/
-
-/*
-static void agps_status_callback(AGpsStatus* agps_status)
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-
-    uint32_t ipaddr;
-    // ipaddr field was not included in original AGpsStatus
-    if (agps_status->size >= sizeof(AGpsStatus))
-        ipaddr = agps_status->ipaddr;
-    else
-        ipaddr = 0xFFFFFFFF;
-    env->CallVoidMethod(mCallbacksObj, method_reportAGpsStatus,
-                        agps_status->type, agps_status->status, ipaddr);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-AGpsCallbacks sAGpsCallbacks = {
-    agps_status_callback,
-    create_thread_callback,
-};
-
-static void gps_ni_notify_callback(GpsNiNotification *notification)
-{
-    LOGD("gps_ni_notify_callback\n");
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    jstring requestor_id = env->NewStringUTF(notification->requestor_id);
-    jstring text = env->NewStringUTF(notification->text);
-    jstring extras = env->NewStringUTF(notification->extras);
-
-    if (requestor_id && text && extras) {
-        env->CallVoidMethod(mCallbacksObj, method_reportNiNotification,
-            notification->notification_id, notification->ni_type,
-            notification->notify_flags, notification->timeout,
-            notification->default_response, requestor_id, text,
-            notification->requestor_id_encoding,
-            notification->text_encoding, extras);
-    } else {
-        LOGE("out of memory in gps_ni_notify_callback\n");
-    }
-
-    if (requestor_id)
-        env->DeleteLocalRef(requestor_id);
-    if (text)
-        env->DeleteLocalRef(text);
-    if (extras)
-        env->DeleteLocalRef(extras);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-GpsNiCallbacks sGpsNiCallbacks = {
-    gps_ni_notify_callback,
-    create_thread_callback,
-};
-*/
-
-/*
-static void agps_request_set_id(uint32_t flags)
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_requestSetID, flags);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-static void agps_request_ref_location(uint32_t flags)
-{
-    JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_requestRefLocation, flags);
-    checkAndClearExceptionFromCallback(env, __FUNCTION__);
-}
-
-AGpsRilCallbacks sAGpsRilCallbacks = {
-    agps_request_set_id,
-    agps_request_ref_location,
-    create_thread_callback,
-};
-*/
 
 
 static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, jclass clazz) {
@@ -285,21 +121,6 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
     method_slaveAdded       = env->GetMethodID(clazz, "slaveAdded", "(J)V");
     method_slaveRemoved     = env->GetMethodID(clazz, "slaveRemoved", "(J)V");
 
-	/*
-    method_reportLocation = env->GetMethodID(clazz, "reportLocation", "(IDDDFFFJ)V");
-    method_reportStatus = env->GetMethodID(clazz, "reportStatus", "(I)V");
-    method_reportSvStatus = env->GetMethodID(clazz, "reportSvStatus", "()V");
-    method_reportAGpsStatus = env->GetMethodID(clazz, "reportAGpsStatus", "(III)V");
-    method_reportNmea = env->GetMethodID(clazz, "reportNmea", "(J)V");
-    method_setEngineCapabilities = env->GetMethodID(clazz, "setEngineCapabilities", "(I)V");
-    method_xtraDownloadRequest = env->GetMethodID(clazz, "xtraDownloadRequest", "()V");
-    method_reportNiNotification = env->GetMethodID(clazz, "reportNiNotification",
-            "(IIIIILjava/lang/String;Ljava/lang/String;IILjava/lang/String;)V");
-    method_requestRefLocation = env->GetMethodID(clazz,"requestRefLocation","(I)V");
-    method_requestSetID = env->GetMethodID(clazz,"requestSetID","(I)V");
-	*/
-
-    //err = hw_get_module(GPS_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
 	err = hw_get_module(ONEWIRE_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
 
     if (err == 0)
@@ -315,6 +136,14 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
 
             LOGI("Got w1 Stub operations.");
         }
+        else
+        {
+            LOGE("Cannot open w1 device!!! Error[%d]", err");
+        }
+    }
+    else
+    {
+        LOGE("w1 Stub not found!!! Error[%d]", err);
     }
 
 }
@@ -338,10 +167,15 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
 {
     // this must be set before calling into the HAL library
     if (!mCallbacksObj)
+    {
         mCallbacksObj = env->NewGlobalRef(obj);
+    }
 
 	if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
 		return JNI_FALSE;
+	}
 
 	return (sOneWireInterface->start(&sW1UserCallbacks));
 }
@@ -353,8 +187,13 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
 */
 static void android_onewire_OneWireNativeService_stop(JNIEnv* env, jobject obj)
 {
-	if(sOneWireInterface)
-		sOneWireInterface->stop();
+	if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
+		return;
+	}
+
+	sOneWireInterface->stop();
 }
 
 /**
@@ -364,10 +203,13 @@ static void android_onewire_OneWireNativeService_stop(JNIEnv* env, jobject obj)
 */
 static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env, jobject obj)
 {
-	if(sOneWireInterface)
-		return sOneWireInterface->get_master_id();
-	else
+	if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
 		return 0;
+	}
+
+    return sOneWireInterface->get_master_id();
 }
 
 /**
@@ -380,20 +222,23 @@ static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env,
 	jint slaveCount = 0;
 	w1_slave_rn slaves[MAX_SLAVE_COUNT];
 
-    if(sOneWireInterface)
+	if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
+		return 0;
+	}
+
+    sOneWireInterface->get_slave_ids(slaves, &slaveCount);
+    if(slaveCount > 0)
     {
-    	sOneWireInterface->get_slave_ids(slaves, &slaveCount);
-    	if(slaveCount > 0)
-		{
-			if(slaveCount > MAX_SLAVE_COUNT)
-				slaveCount = MAX_SLAVE_COUNT;
+        if(slaveCount > MAX_SLAVE_COUNT)
+            slaveCount = MAX_SLAVE_COUNT;
 
-			jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
+        jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
 
-			memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
+        memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
 
-			env->ReleaseLongArrayElements(slaveRNs, l, 0);
-		}
+        env->ReleaseLongArrayElements(slaveRNs, l, 0);
     }
 
 	return slaveCount;
