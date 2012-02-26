@@ -63,16 +63,8 @@ public class Android_onewire_jnitestActivity extends Activity {
     
         _btnStart.setOnClickListener(new View.OnClickListener() {  
             public void onClick(View v) {  
-            	
-            	if(_OneWireNativeService.isStarted())
-            	{
-	            	_OneWireNativeService.start();
-	            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
-            	}
-            	else
-            	{
-            		_txtStatus.setText("OneWire not supported...");
-            	}
+            	_OneWireNativeService.start();
+            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
             }
          });
         
@@ -86,8 +78,9 @@ public class Android_onewire_jnitestActivity extends Activity {
         
         _btnTest.setOnClickListener(new View.OnClickListener() {  
             public void onClick(View v) {  
-            	_OneWireNativeService.start();
-            	_txtStatus.setText(_OneWireNativeService.isStarted() ? "OneWire Started" : "OneWire Stopped");
+            	
+            	_txtStatus.setText(OneWireNativeService.isSupported() ? 
+            			"OneWire supported!!!" : "OneWire not supported...");
             }  
             
          }); 

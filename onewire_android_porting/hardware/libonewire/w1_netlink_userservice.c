@@ -640,8 +640,10 @@ static void stop_searching_thread(void)
 
 BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 {
+	int retcode = 0;
+
 	Debug("w1(1-wire) netlink service starting...\n");
-	
+
 	pthread_mutex_init(&g_globalLocker, NULL);
 
 	//open socket
@@ -651,7 +653,7 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
         perror("socket open");
         return FALSE;
 	}
-	
+
 	Debug("w1(1-wire) netlink open socket OK!\n");
 
 	g_bindAddr.nl_family = AF_NETLINK;
@@ -663,24 +665,33 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	g_dataAddr.nl_pid = 0;
 
 	//bind socket
-	if (bind(g_w1NetlinkSocket, (struct sockaddr *)&g_bindAddr, sizeof(struct sockaddr_nl)) == -1)
+	retcode = bind(g_w1NetlinkSocket, (struct sockaddr *)&g_bindAddr, sizeof(struct sockaddr_nl));
+	if (retcode == -1)
 	{
 		perror("socket bind");
+
+		Debug("socket bind error: %s\n", strerror(errno));
 
 		//close socket
 		close(g_w1NetlinkSocket);
         return FALSE;
 	}
-	
+
 	Debug("w1(1-wire) netlink socket bind OK!\n");
 
 	//Add membership to W1 Group. Or, you cannot send any message.
-	if (setsockopt(g_w1NetlinkSocket, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP, &g_group, sizeof(g_group)) < 0)
+	retcode = setsockopt(g_w1NetlinkSocket, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP, &g_group, sizeof(g_group));
+	if (retcode < 0)
 	{
 		perror("socket setsockopt");
+
+		Debug("socket setsockopt error: %s\n", strerror(errno));
+
+		//close socket
+		close(g_w1NetlinkSocket);
         return FALSE;
 	}
-	
+
 	Debug("w1(1-wire) netlink socket setsockopt OK!\n");
 
 	//init socket messages
@@ -689,6 +700,8 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	if (nlMsgSend == NULL || nlMsgRecv == NULL)
 	{
 		Debug("Cannot allocate memory for netlink message header\n");
+		//close socket
+		close(g_w1NetlinkSocket);
         return FALSE;
 	}
 	memset(nlMsgSend, 0, NLMSG_SPACE(MAX_MSG_SIZE));
@@ -699,7 +712,9 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	if(NULL == g_outMsg)
 	{
 		Debug("Cannot allocate memory for out cnmsg!\n");
-		return -1;
+		//close socket
+		close(g_w1NetlinkSocket);
+		return FALSE;
 	}
 	memset(g_outMsg, 0, MAX_CNMSG_SIZE);
 
@@ -708,7 +723,9 @@ BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks)
 	if(NULL == g_ackMsg)
 	{
 		Debug("Cannot allocate memory for ack cnmsg!\n");
-		return -1;
+		//close socket
+		close(g_w1NetlinkSocket);
+		return FALSE;
 	}
 	memset(g_ackMsg, 0, MAX_CNMSG_SIZE);
 
