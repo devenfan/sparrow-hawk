@@ -20,7 +20,8 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE_TAGS := user
+# You can use: user, eng, tests, optional
+LOCAL_MODULE_TAGS := eng
 
 # This is the target being built.
 LOCAL_PACKAGE_NAME := android_onewire_jnitest
