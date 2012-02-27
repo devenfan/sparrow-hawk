@@ -23,7 +23,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE_TAGS := user
 
 # This is the target being built.
-LOCAL_PACKAGE_NAME := LedClient
+LOCAL_PACKAGE_NAME := android_onewire_jnitest
 
 # Only compile source java files in this apk.
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
@@ -35,7 +35,9 @@ LOCAL_SDK_VERSION := current
 # Also link against our own custom library.
 #LOCAL_JAVA_LIBRARIES := mokoid
 
-LOCAL_PACKAGE_NAME := android_onewire_jnitest
+# Gain System Permission
+LOCAL_CERTIFICATE := platform
+
 
 include $(BUILD_PACKAGE)
 
