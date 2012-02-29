@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 public class Android_onewire_jnitestActivity extends Activity {
 	
+	static String TAG = "Activity";
 	
 	TextView _txtLog;
 	TextView _txtStatus;
@@ -30,7 +31,11 @@ public class Android_onewire_jnitestActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        runRootCommand("ls"); 
+        if(runRootCommand("ls")){
+        	Log.i(TAG, "OK, Got su permission...");
+        } else {
+        	Log.e(TAG, "Cannot switch to su...");
+        }
         
         _OneWireNativeService = new OneWireNativeService();
         _OneWireNativeService.setListener(new OneWireListener() {
@@ -107,26 +112,29 @@ public class Android_onewire_jnitestActivity extends Activity {
 
 			outputStream.writeBytes("exit\n");
 			outputStream.flush();
+			
+			Log.d(TAG, "su");
+			
 			process.waitFor();
 
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
 					process.getInputStream()));
 			
-			// BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-			// process.getErrorStream())); //如果出错用这个输出一下看结果，一定要获取root权限才可以执行
+			// You can use below line to check the error, only if the board has been rooted...
+			// BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream())); 
 			
 			String line = null;
 			while ((line = bufferedReader.readLine()) != null) {
-				Log.d("*********", line);
+				Log.d(TAG, line);
 			}
 			try {
 				bufferedReader.close();
 			} catch (Exception e) {
 				e.printStackTrace();
+				Log.e(TAG, e.toString());
 			}
 		} catch (Exception e) {
-			Log.d("*********",
-					"the device is not rooted, error message: "
+			Log.d(TAG, "the device is not rooted, error message: "
 							+ e.getMessage());
 			return false;
 			
@@ -140,6 +148,7 @@ public class Android_onewire_jnitestActivity extends Activity {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				Log.e(TAG, e.toString());
 			}
 		}
 		return true;
