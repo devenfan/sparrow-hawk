@@ -45,14 +45,34 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
 MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
 
-//Deven # 2012-02-10: Add macro to disable the search thread...
+/**
+ * Deven # 2012-03-03:
+ * 1. Change Master Attribute "search" to "search_count"
+ * 2. Change Master Attribute "timeout" to "search_interval"
+ * 3. Add module param "g_enable_search_thread" instead of macro,
+ *    with module param name "enable_search_thread".
+ * 4. Change module param "w1_timeout" to "g_search_interval",
+      change module param name "timeout" to "search_interval"
+ * 5. Change bin_attribute "w1_default_attr" from static to extern,
+ *    change name to "w1_default_bin_attr"
+ * 6. Add "w1_default_bin_attr" when w1_create_master_attributes,
+ *    and remove it when"w1_destroy_master_attributes"
+ *
+ * Deven # 2012-02-10:
+ * 1. Add macro to disable the search thread...
+ *
+**/
+
 //#define ENABLE_SEARCH_THREAD
+//static int w1_timeout = 3;    //search every 3 second
+int w1_max_slave_count = 10;    //it will be exposed outside
+int w1_max_slave_ttl = 10;      //it will be exposed outside
 
-static int w1_timeout = 3;      //search every 3 second
-int w1_max_slave_count = 10;
-int w1_max_slave_ttl = 10;
+static int g_enable_search_thread = 0;
+static int g_search_interval = 3; //by second
 
-module_param_named(timeout, w1_timeout, int, 0);
+module_param_named(enable_search_thread, g_enable_search_thread, int, 0);
+module_param_named(timeout, g_search_interval, int, 0);
 module_param_named(max_slave_count, w1_max_slave_count, int, 0);
 module_param_named(slave_ttl, w1_max_slave_ttl, int, 0);
 
@@ -61,15 +81,23 @@ LIST_HEAD(w1_masters);
 
 static int w1_attach_slave_device(struct w1_master *dev, struct w1_reg_num *rn);
 
+
+// bus_type ===============================================================
+
 static int w1_master_match(struct device *dev, struct device_driver *drv)
 {
 	return 1;
 }
 
+// device_driver ==========================================================
+
 static int w1_master_probe(struct device *dev)
 {
+    //TODO make node under /dev/...
 	return -ENODEV;
 }
+
+// device =================================================================
 
 static void w1_master_release(struct device *dev)
 {
@@ -99,6 +127,8 @@ static void w1_slave_release(struct device *dev)
 	complete(&sl->released);
 }
 
+// attributes =============================================================
+
 static ssize_t w1_slave_read_name(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	struct w1_slave *sl = dev_to_w1_slave(dev);
@@ -121,6 +151,8 @@ static struct device_attribute w1_slave_attr_name =
 static struct device_attribute w1_slave_attr_id =
 	__ATTR(id, S_IRUGO, w1_slave_read_id, NULL);
 
+
+//=========================================================================
 /* Default family */
 
 static ssize_t w1_default_write(struct kobject *kobj,
@@ -154,7 +186,7 @@ static ssize_t w1_default_read(struct kobject *kobj,
 	return count;
 }
 
-static struct bin_attribute w1_default_attr = {
+struct bin_attribute w1_default_bin_attr = {
       .attr = {
               .name = "rw",
               .mode = S_IRUGO | S_IWUSR,
@@ -166,12 +198,12 @@ static struct bin_attribute w1_default_attr = {
 
 static int w1_default_add_slave(struct w1_slave *sl)
 {
-	return sysfs_create_bin_file(&sl->dev.kobj, &w1_default_attr);
+	return sysfs_create_bin_file(&sl->dev.kobj, &w1_default_bin_attr);
 }
 
 static void w1_default_remove_slave(struct w1_slave *sl)
 {
-	sysfs_remove_bin_file(&sl->dev.kobj, &w1_default_attr);
+	sysfs_remove_bin_file(&sl->dev.kobj, &w1_default_bin_attr);
 }
 
 static struct w1_family_ops w1_default_fops = {
@@ -182,6 +214,8 @@ static struct w1_family_ops w1_default_fops = {
 static struct w1_family w1_default_family = {
 	.fops = &w1_default_fops,
 };
+
+//=========================================================================
 
 static int w1_uevent(struct device *dev, struct kobj_uevent_env *env);
 
@@ -220,6 +254,8 @@ struct device w1_slave_device = {
 };
 #endif  /*  0  */
 
+//=========================================================================
+
 static ssize_t w1_master_attribute_show_name(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	struct w1_master *md = dev_to_w1_master(dev);
@@ -232,7 +268,7 @@ static ssize_t w1_master_attribute_show_name(struct device *dev, struct device_a
 	return count;
 }
 
-static ssize_t w1_master_attribute_store_search(struct device * dev,
+static ssize_t w1_master_attribute_store_search_count(struct device * dev,
 						struct device_attribute *attr,
 						const char * buf, size_t count)
 {
@@ -251,7 +287,7 @@ static ssize_t w1_master_attribute_store_search(struct device * dev,
 	return count;
 }
 
-static ssize_t w1_master_attribute_show_search(struct device *dev,
+static ssize_t w1_master_attribute_show_search_count(struct device *dev,
 					       struct device_attribute *attr,
 					       char *buf)
 {
@@ -309,10 +345,10 @@ static ssize_t w1_master_attribute_show_pointer(struct device *dev, struct devic
 	return count;
 }
 
-static ssize_t w1_master_attribute_show_timeout(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t w1_master_attribute_show_search_interval(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	ssize_t count;
-	count = sprintf(buf, "%d\n", w1_timeout);
+	count = sprintf(buf, "%d\n", g_search_interval);
 	return count;
 }
 
@@ -520,9 +556,9 @@ static W1_MASTER_ATTR_RO(slaves, S_IRUGO);
 static W1_MASTER_ATTR_RO(slave_count, S_IRUGO);
 static W1_MASTER_ATTR_RO(max_slave_count, S_IRUGO);
 static W1_MASTER_ATTR_RO(attempts, S_IRUGO);
-static W1_MASTER_ATTR_RO(timeout, S_IRUGO);
+static W1_MASTER_ATTR_RO(search_interval, S_IRUGO);
 static W1_MASTER_ATTR_RO(pointer, S_IRUGO);
-static W1_MASTER_ATTR_RW(search, S_IRUGO | S_IWUGO);
+static W1_MASTER_ATTR_RW(search_count, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(pullup, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(add, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(remove, S_IRUGO | S_IWUGO);
@@ -533,9 +569,9 @@ static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_slave_count.attr,
 	&w1_master_attribute_max_slave_count.attr,
 	&w1_master_attribute_attempts.attr,
-	&w1_master_attribute_timeout.attr,
+	&w1_master_attribute_search_interval.attr,
 	&w1_master_attribute_pointer.attr,
-	&w1_master_attribute_search.attr,
+	&w1_master_attribute_search_count.attr,
 	&w1_master_attribute_pullup.attr,
 	&w1_master_attribute_add.attr,
 	&w1_master_attribute_remove.attr,
@@ -548,11 +584,18 @@ static struct attribute_group w1_master_defattr_group = {
 
 int w1_create_master_attributes(struct w1_master *master)
 {
-	return sysfs_create_group(&master->dev.kobj, &w1_master_defattr_group);
+    int retval = sysfs_create_bin_file(&master->dev.kobj, &w1_default_bin_attr);
+
+    if(!retval)
+        retval = sysfs_create_group(&master->dev.kobj, &w1_master_defattr_group);
+
+	return retval;
 }
 
 void w1_destroy_master_attributes(struct w1_master *master)
 {
+    sysfs_remove_bin_file(&master->dev.kobj, &w1_default_bin_attr);
+
 	sysfs_remove_group(&master->dev.kobj, &w1_master_defattr_group);
 }
 
@@ -966,10 +1009,10 @@ void w1_search_process(struct w1_master *dev, u8 search_type)
 int w1_process(void *data)
 {
 	struct w1_master *dev = (struct w1_master *) data;
-	/* As long as w1_timeout is only set by a module parameter the sleep
-	 * time can be calculated in jiffies once.
+	/* As long as w1_timeout is only set by a module parameter
+	 * the sleep time can be calculated in jiffies once.
 	 */
-	const unsigned long jtime = msecs_to_jiffies(w1_timeout * 1000);
+	const unsigned long jtime = msecs_to_jiffies(g_search_interval * 1000);
 
 	while (!kthread_should_stop()) {
 		if (dev->search_count) {

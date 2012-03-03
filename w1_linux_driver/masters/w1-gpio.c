@@ -18,6 +18,13 @@
 
 #include <asm/gpio.h>
 
+/**
+ * Simulate the Open Drain Port:
+   HIGH: gpio_direction_input(gpio) ...
+       - this turns off the output, so the pullup (or some other device) controls the signal.
+   LOW:	 gpio_direction_output(gpio, 0) ...
+       - this drives the signal and overrides the pullup.
+**/
 static void w1_gpio_write_bit_dir(void *data, u8 bit)
 {
 	struct w1_gpio_platform_data *pdata = data;

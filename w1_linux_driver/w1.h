@@ -237,6 +237,9 @@ extern int w1_max_slave_ttl;
 extern struct list_head w1_masters;
 extern struct mutex w1_mlock;
 
+//Deven # 2012-03-03: expose w1_default_bin_attr for master
+struct bin_attribute w1_default_bin_attr;
+
 extern int w1_process(void *);
 
 #endif /* __KERNEL__ */
