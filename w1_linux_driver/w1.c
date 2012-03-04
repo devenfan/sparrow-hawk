@@ -476,7 +476,7 @@ static ssize_t w1_master_attribute_show_list_slaves(struct device *dev,
 }
 
 
-static ssize_t w1_master_attribute_show_search_salves(struct device *dev,
+static ssize_t w1_master_attribute_show_search_slaves(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
     int c = PAGE_SIZE;
