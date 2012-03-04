@@ -203,7 +203,7 @@ static ssize_t w1_slave_bin_attr_read(struct kobject *kobj,
 static struct bin_attribute w1_slave_bin_attr = {
       .attr = {
               .name = "data",
-              .mode = S_IRUGO | S_IWUSR,
+              .mode = S_IRUGO | S_IWUGO, //S_IWUSR is only for root
       },
       .size = PAGE_SIZE,
       .read = w1_slave_bin_attr_read,
@@ -247,7 +247,7 @@ static ssize_t w1_master_bin_attr_read(struct kobject *kobj,
 static struct bin_attribute w1_master_bin_attr = {
       .attr = {
               .name = "data",
-              .mode = S_IRUGO | S_IWUSR,
+              .mode = S_IRUGO | S_IWUGO, //S_IWUSR is only for root
       },
       .size = PAGE_SIZE,
       .read = w1_master_bin_attr_read,
@@ -495,7 +495,7 @@ static ssize_t w1_master_attribute_store_search_slaves(struct device *dev,
 	mutex_lock(&md->mutex);
     w1_search_process(md, W1_SEARCH);
     mutex_unlock(&md->mutex);
-    return NO_ERROR;
+    return count;
 }
 
 
