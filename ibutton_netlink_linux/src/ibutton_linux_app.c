@@ -12,13 +12,12 @@
 /* ============================ log ralated ============================= */
 /* ====================================================================== */
 
+//#define ANDROID_NDK
+
 #define LOG_TAG   "w1_netlink_userapp"
-
-#define ANDROID_NDK
-
 #include "sh_log.h"
 
-#define Debug(format, args...)    android_debug(LOG_TAG, format, ##args)
+#define Debug(format, args...)    android_debug(format, ##args)
 
 
 static int g_fdMasterBus = -1;
@@ -53,9 +52,10 @@ static BOOL Test_1920Temperature()
         return FALSE;
     }
 
+    /*
     read(g_fdMasterBus, dataRecv, dataSendLen1);
     print_bytes(dataRecv, 0, dataSendLen1);
-
+    */
     sleep(1); //Data line is held high for at least 0.75 seconds by bus
               //master to allow conversion to complete. Here use 1s instead.
 
@@ -65,11 +65,19 @@ static BOOL Test_1920Temperature()
         return FALSE;
     }
 
+    /*
     read(g_fdMasterBus, dataRecv, dataSendLen2);
     print_bytes(dataRecv, 0, dataSendLen2);
+    */
 
-    read(g_fdMasterBus, dataRecv, 9);
-    print_bytes(dataRecv, 0, 9);
+
+
+    if(read(g_fdMasterBus, dataRecv, dataRecvLen) != dataRecvLen)
+    {
+        Debug("Test_1920Temperature-Step3 Failed!\n");
+        return FALSE;
+    }
+    print_bytes(dataRecv, 0, dataRecvLen);
 
     return succeed;
 }

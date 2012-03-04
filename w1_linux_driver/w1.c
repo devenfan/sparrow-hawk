@@ -58,6 +58,8 @@ MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
  * 6. Change Master Attribute "add" to "add_slave",
  *    change Master Attribute "remove" to "remove_slave"
  * 7. Change return value of "w1_master_bin_attr_read" & "w1_master_bin_attr_write"
+ * 8. Change Master Attribute "slaves" to "list_slaves"
+ * 9. Add Master Attribute "search_salves"
  *
  * Deven # 2012-03-03:
  * 1. Change Master Attribute "search" to "search_count"
@@ -435,6 +437,7 @@ static ssize_t w1_master_attribute_show_attempts(struct device *dev, struct devi
 	return count;
 }
 
+
 static ssize_t w1_master_attribute_show_slave_count(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	struct w1_master *md = dev_to_w1_master(dev);
@@ -446,7 +449,7 @@ static ssize_t w1_master_attribute_show_slave_count(struct device *dev, struct d
 	return count;
 }
 
-static ssize_t w1_master_attribute_show_slaves(struct device *dev,
+static ssize_t w1_master_attribute_show_list_slaves(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct w1_master *md = dev_to_w1_master(dev);
@@ -471,6 +474,29 @@ static ssize_t w1_master_attribute_show_slaves(struct device *dev,
 
 	return PAGE_SIZE - c;
 }
+
+
+static ssize_t w1_master_attribute_show_search_salves(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+    int c = PAGE_SIZE;
+	c -= snprintf(buf+PAGE_SIZE - c, c,
+		"write to search slave devices, you should read \"list_slaves\" later.\n");
+
+	return PAGE_SIZE - c;
+}
+
+
+static ssize_t w1_master_attribute_store_search_slaves(struct device *dev,
+						struct device_attribute *attr,
+						const char *buf, size_t count)
+{
+	mutex_lock(&dev->mutex);
+    w1_search_process(dev, W1_SEARCH);
+    mutex_unlock(&dev->mutex);
+    return NO_ERROR;
+}
+
 
 static ssize_t w1_master_attribute_show_add_slave(struct device *dev,
 	struct device_attribute *attr, char *buf)
@@ -626,7 +652,8 @@ static W1_MASTER_ATTR_RW(remove_slave, S_IRUGO | S_IWUGO);
 
 static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_name.attr,
-	&w1_master_attribute_slaves.attr,
+	&w1_master_attribute_list_slaves.attr,
+	&w1_master_attribute_search_slaves.attr,
 	&w1_master_attribute_slave_count.attr,
 	&w1_master_attribute_max_slave_count.attr,
 	&w1_master_attribute_attempts.attr,

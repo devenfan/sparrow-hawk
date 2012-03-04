@@ -1,44 +1,39 @@
 #ifndef SH_LOG_H_INCLUDED
 #define SH_LOG_H_INCLUDED
 
+
+//#define ANDROID_NDK
+
+#define LOG_NDEBUG 0
+
+#ifndef LOG_TAG
+#define LOG_TAG "unknown"
+#endif
+
+
 #ifdef ANDROID_NDK
 
 #include <android/log.h>    //android ndk log support
 
-#define android_debug(LOG_TAG, format, args...)                         \
+#define android_debug(format, args...)                                  \
 {                                                                       \
     __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, format, ##args);    \
     printf("[%s]: \t", LOG_TAG);                                        \
     printf(format, ##args);                                             \
 }
 
-#endif
+#else  //#ifdef ANDROID_PLATFORM
 
+#include "utils/Log.h"   //LOG_TAG Defined inside...
 
-
-#ifdef ANDROID_PLATFORM
-
-#endif
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-void sh_debug(const char * TAG, const char * log);
-
-void sh_info(const char * TAG, const char * log);
-
-void sh_warn(const char * TAG, const char * log);
-
-void sh_error(const char * TAG, const char * log);
-
-
-#ifdef __cplusplus
+#define android_debug(format, args...)                                  \
+{                                                                       \
+    LOGD(format, ##args);                                               \
+    printf("[%s]: \t", LOG_TAG);                                        \
+    printf(format, ##args);                                             \
 }
-#endif
 
+#endif
 
 
 #endif // SH_LOG_H_INCLUDED

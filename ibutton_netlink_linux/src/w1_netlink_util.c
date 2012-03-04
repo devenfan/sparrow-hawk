@@ -42,13 +42,13 @@
 /* ============================ log ralated ============================= */
 /* ====================================================================== */
 
+
+//#define ANDROID_NDK
+
 #define LOG_TAG   "w1_netlink_util"
-
-#define ANDROID_NDK
-
 #include "sh_log.h"
 
-#define Debug(format, args...)    android_debug(LOG_TAG, format, ##args)
+#define Debug(format, args...)    android_debug(format, ##args)
 
 
 /* ====================================================================== */
