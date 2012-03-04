@@ -639,7 +639,7 @@ static ssize_t w1_master_attribute_store_remove_slave(struct device *dev,
 		       w1_master_attribute_store_##_name)
 
 static W1_MASTER_ATTR_RO(name, S_IRUGO);
-static W1_MASTER_ATTR_RO(slaves, S_IRUGO);
+static W1_MASTER_ATTR_RO(list_slaves, S_IRUGO);
 static W1_MASTER_ATTR_RO(slave_count, S_IRUGO);
 static W1_MASTER_ATTR_RO(max_slave_count, S_IRUGO);
 static W1_MASTER_ATTR_RO(attempts, S_IRUGO);
@@ -647,13 +647,13 @@ static W1_MASTER_ATTR_RO(search_interval, S_IRUGO);
 static W1_MASTER_ATTR_RO(pointer, S_IRUGO);
 static W1_MASTER_ATTR_RW(search_count, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(pullup, S_IRUGO | S_IWUGO);
+static W1_MASTER_ATTR_RW(search_slaves, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(add_slave, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(remove_slave, S_IRUGO | S_IWUGO);
 
 static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_name.attr,
 	&w1_master_attribute_list_slaves.attr,
-	&w1_master_attribute_search_slaves.attr,
 	&w1_master_attribute_slave_count.attr,
 	&w1_master_attribute_max_slave_count.attr,
 	&w1_master_attribute_attempts.attr,
@@ -661,6 +661,7 @@ static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_pointer.attr,
 	&w1_master_attribute_search_count.attr,
 	&w1_master_attribute_pullup.attr,
+	&w1_master_attribute_search_slaves.attr,
 	&w1_master_attribute_add_slave.attr,
 	&w1_master_attribute_remove_slave.attr,
 	NULL
