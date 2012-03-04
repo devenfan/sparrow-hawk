@@ -222,7 +222,8 @@ static ssize_t w1_master_bin_attr_write(struct kobject *kobj,
 		goto out_up;
 	}
 
-	ret = w1_write_block(master, buf, count);
+	w1_write_block(master, buf, count);
+	ret = count;
 
 out_up:
 	mutex_unlock(&master->mutex);
