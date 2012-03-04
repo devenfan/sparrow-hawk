@@ -53,7 +53,11 @@ MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
  * 3. Change "w1_default_bin_attr" to "w1_slave_bin_attr",
  *    change name from "rw" to "data"
  * 4. Add "w1_master_bin_attr", use name "data"
- * 5. Change init_name of "w1_master_device", from "w1 bus master" to "w1_master_device"
+ * 5. Change init_name of "w1_master_device", from
+ *    "w1 bus master" to "w1_master_device"
+ * 6. Change Master Attribute "add" to "add_slave",
+ *    change Master Attribute "remove" to "remove_slave"
+ * 7. Change return value of "w1_master_bin_attr_read" & "w1_master_bin_attr_write"
  *
  * Deven # 2012-03-03:
  * 1. Change Master Attribute "search" to "search_count"
@@ -135,7 +139,7 @@ static void w1_slave_release(struct device *dev)
 	complete(&sl->released);
 }
 
-// attributes =============================================================
+// slave attributes ===================================================
 
 static ssize_t w1_slave_read_name(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -211,19 +215,18 @@ static ssize_t w1_master_bin_attr_write(struct kobject *kobj,
 				char *buf, loff_t off, size_t count)
 {
 	struct w1_master *master = kobj_to_w1_master(kobj);
-
+    int ret = -1;
 	mutex_lock(&master->mutex);
 
 	if (w1_reset_bus(master)) {
-		count = 0;
 		goto out_up;
 	}
 
-	w1_write_block(master, buf, count);
+	ret = w1_write_block(master, buf, count);
 
 out_up:
 	mutex_unlock(&master->mutex);
-	return count;
+	return ret;
 }
 
 static ssize_t w1_master_bin_attr_read(struct kobject *kobj,
@@ -231,11 +234,11 @@ static ssize_t w1_master_bin_attr_read(struct kobject *kobj,
 			       char *buf, loff_t off, size_t count)
 {
 	struct w1_master *master = kobj_to_w1_master(kobj);
-
+    int ret = -1;
 	mutex_lock(&master->mutex);
-	w1_read_block(master, buf, count);
+	ret = w1_read_block(master, buf, count);
 	mutex_unlock(&master->mutex);
-	return count;
+	return ret;
 }
 
 static struct bin_attribute w1_master_bin_attr = {
@@ -311,7 +314,7 @@ struct device w1_slave_device = {
 };
 #endif  /*  0  */
 
-//=========================================================================
+//master attributes ==========================================================
 
 static ssize_t w1_master_attribute_show_name(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -468,7 +471,7 @@ static ssize_t w1_master_attribute_show_slaves(struct device *dev,
 	return PAGE_SIZE - c;
 }
 
-static ssize_t w1_master_attribute_show_add(struct device *dev,
+static ssize_t w1_master_attribute_show_add_slave(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	int c = PAGE_SIZE;
@@ -533,7 +536,7 @@ static struct w1_slave *w1_slave_search_device(struct w1_master *dev,
 	return NULL;
 }
 
-static ssize_t w1_master_attribute_store_add(struct device *dev,
+static ssize_t w1_master_attribute_store_add_slave(struct device *dev,
 						struct device_attribute *attr,
 						const char *buf, size_t count)
 {
@@ -562,7 +565,7 @@ static ssize_t w1_master_attribute_store_add(struct device *dev,
 	return result;
 }
 
-static ssize_t w1_master_attribute_show_remove(struct device *dev,
+static ssize_t w1_master_attribute_show_remove_slave(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	int c = PAGE_SIZE;
@@ -571,7 +574,7 @@ static ssize_t w1_master_attribute_show_remove(struct device *dev,
 	return PAGE_SIZE - c;
 }
 
-static ssize_t w1_master_attribute_store_remove(struct device *dev,
+static ssize_t w1_master_attribute_store_remove_slave(struct device *dev,
 						struct device_attribute *attr,
 						const char *buf, size_t count)
 {
@@ -617,8 +620,8 @@ static W1_MASTER_ATTR_RO(search_interval, S_IRUGO);
 static W1_MASTER_ATTR_RO(pointer, S_IRUGO);
 static W1_MASTER_ATTR_RW(search_count, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(pullup, S_IRUGO | S_IWUGO);
-static W1_MASTER_ATTR_RW(add, S_IRUGO | S_IWUGO);
-static W1_MASTER_ATTR_RW(remove, S_IRUGO | S_IWUGO);
+static W1_MASTER_ATTR_RW(add_slave, S_IRUGO | S_IWUGO);
+static W1_MASTER_ATTR_RW(remove_slave, S_IRUGO | S_IWUGO);
 
 static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_name.attr,
@@ -630,8 +633,8 @@ static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_pointer.attr,
 	&w1_master_attribute_search_count.attr,
 	&w1_master_attribute_pullup.attr,
-	&w1_master_attribute_add.attr,
-	&w1_master_attribute_remove.attr,
+	&w1_master_attribute_add_slave.attr,
+	&w1_master_attribute_remove_slave.attr,
 	NULL
 };
 
