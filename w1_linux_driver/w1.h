@@ -230,6 +230,12 @@ static inline struct w1_master* dev_to_w1_master(struct device *dev)
 	return container_of(dev, struct w1_master, dev);
 }
 
+//Deven # 2012-03-04: We need to use it
+static inline struct w1_master* kobj_to_w1_master(struct kobject *kobj)
+{
+	return dev_to_w1_master(container_of(kobj, struct device, kobj));
+}
+
 extern struct device_driver w1_master_driver;
 extern struct device w1_master_device;
 extern int w1_max_slave_count;
@@ -238,7 +244,7 @@ extern struct list_head w1_masters;
 extern struct mutex w1_mlock;
 
 //Deven # 2012-03-03: expose w1_default_bin_attr for master
-struct bin_attribute w1_default_bin_attr;
+//extern struct bin_attribute w1_default_bin_attr;
 
 extern int w1_process(void *);
 

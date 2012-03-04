@@ -46,6 +46,15 @@ MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
 MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
 
 /**
+ * Deven # 2012-03-04:
+ * 1. Change "w1_default_write" to "w1_slave_bin_attr_write",
+ *    change "w1_default_read" to "w1_slave_bin_attr_read"
+ * 2. Add "w1_master_bin_attr_read" & "w1_master_bin_attr_write"
+ * 3. Change "w1_default_bin_attr" to "w1_slave_bin_attr",
+ *    change name from "rw" to "data"
+ * 4. Add "w1_master_bin_attr", use name "data"
+ * 5. Change init_name of "w1_master_device", from "w1 bus master" to "w1_master_device"
+ *
  * Deven # 2012-03-03:
  * 1. Change Master Attribute "search" to "search_count"
  * 2. Change Master Attribute "timeout" to "search_interval"
@@ -53,8 +62,7 @@ MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
  *    with module param name "enable_search_thread".
  * 4. Change module param "w1_timeout" to "g_search_interval",
       change module param name "timeout" to "search_interval"
- * 5. Change bin_attribute "w1_default_attr" from static to extern,
- *    change name to "w1_default_bin_attr"
+ * 5. Change bin_attribute "w1_default_attr" to "w1_default_bin_attr"
  * 6. Add "w1_default_bin_attr" when w1_create_master_attributes,
  *    and remove it when"w1_destroy_master_attributes"
  *
@@ -153,9 +161,9 @@ static struct device_attribute w1_slave_attr_id =
 
 
 //=========================================================================
-/* Default family */
 
-static ssize_t w1_default_write(struct kobject *kobj,
+
+static ssize_t w1_slave_bin_attr_write(struct kobject *kobj,
 				struct bin_attribute *bin_attr,
 				char *buf, loff_t off, size_t count)
 {
@@ -174,7 +182,7 @@ out_up:
 	return count;
 }
 
-static ssize_t w1_default_read(struct kobject *kobj,
+static ssize_t w1_slave_bin_attr_read(struct kobject *kobj,
 			       struct bin_attribute *bin_attr,
 			       char *buf, loff_t off, size_t count)
 {
@@ -186,24 +194,73 @@ static ssize_t w1_default_read(struct kobject *kobj,
 	return count;
 }
 
-struct bin_attribute w1_default_bin_attr = {
+static struct bin_attribute w1_slave_bin_attr = {
       .attr = {
-              .name = "rw",
+              .name = "data",
               .mode = S_IRUGO | S_IWUSR,
       },
       .size = PAGE_SIZE,
-      .read = w1_default_read,
-      .write = w1_default_write,
+      .read = w1_slave_bin_attr_read,
+      .write = w1_slave_bin_attr_write,
 };
+
+
+
+static ssize_t w1_master_bin_attr_write(struct kobject *kobj,
+				struct bin_attribute *bin_attr,
+				char *buf, loff_t off, size_t count)
+{
+	struct w1_master *master = kobj_to_w1_master(kobj);
+
+	mutex_lock(&master->mutex);
+
+	if (w1_reset_bus(master)) {
+		count = 0;
+		goto out_up;
+	}
+
+	w1_write_block(master, buf, count);
+
+out_up:
+	mutex_unlock(&master->mutex);
+	return count;
+}
+
+static ssize_t w1_master_bin_attr_read(struct kobject *kobj,
+			       struct bin_attribute *bin_attr,
+			       char *buf, loff_t off, size_t count)
+{
+	struct w1_master *master = kobj_to_w1_master(kobj);
+
+	mutex_lock(&master->mutex);
+	w1_read_block(master, buf, count);
+	mutex_unlock(&master->mutex);
+	return count;
+}
+
+static struct bin_attribute w1_master_bin_attr = {
+      .attr = {
+              .name = "data",
+              .mode = S_IRUGO | S_IWUSR,
+      },
+      .size = PAGE_SIZE,
+      .read = w1_master_bin_attr_read,
+      .write = w1_master_bin_attr_write,
+};
+
+
+
+//=========================================================================
+/* Default family */
 
 static int w1_default_add_slave(struct w1_slave *sl)
 {
-	return sysfs_create_bin_file(&sl->dev.kobj, &w1_default_bin_attr);
+	return sysfs_create_bin_file(&sl->dev.kobj, &w1_slave_bin_attr);
 }
 
 static void w1_default_remove_slave(struct w1_slave *sl)
 {
-	sysfs_remove_bin_file(&sl->dev.kobj, &w1_default_bin_attr);
+	sysfs_remove_bin_file(&sl->dev.kobj, &w1_slave_bin_attr);
 }
 
 static struct w1_family_ops w1_default_fops = {
@@ -234,7 +291,7 @@ struct device_driver w1_master_driver = {
 struct device w1_master_device = {
 	.parent = NULL,
 	.bus = &w1_bus_type,
-	.init_name = "w1 bus master",
+	.init_name = "w1_master_device",
 	.driver = &w1_master_driver,
 	.release = &w1_master_release
 };
@@ -584,7 +641,7 @@ static struct attribute_group w1_master_defattr_group = {
 
 int w1_create_master_attributes(struct w1_master *master)
 {
-    int retval = sysfs_create_bin_file(&master->dev.kobj, &w1_default_bin_attr);
+    int retval = sysfs_create_bin_file(&master->dev.kobj, &w1_master_bin_attr);
 
     if(!retval)
         retval = sysfs_create_group(&master->dev.kobj, &w1_master_defattr_group);
@@ -594,7 +651,7 @@ int w1_create_master_attributes(struct w1_master *master)
 
 void w1_destroy_master_attributes(struct w1_master *master)
 {
-    sysfs_remove_bin_file(&master->dev.kobj, &w1_default_bin_attr);
+    sysfs_remove_bin_file(&master->dev.kobj, &w1_master_bin_attr);
 
 	sysfs_remove_group(&master->dev.kobj, &w1_master_defattr_group);
 }
