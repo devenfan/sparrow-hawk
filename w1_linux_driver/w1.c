@@ -491,9 +491,10 @@ static ssize_t w1_master_attribute_store_search_slaves(struct device *dev,
 						struct device_attribute *attr,
 						const char *buf, size_t count)
 {
-	mutex_lock(&dev->mutex);
-    w1_search_process(dev, W1_SEARCH);
-    mutex_unlock(&dev->mutex);
+    struct w1_master *md = dev_to_w1_master(dev);
+	mutex_lock(&md->mutex);
+    w1_search_process(md, W1_SEARCH);
+    mutex_unlock(&md->mutex);
     return NO_ERROR;
 }
 
