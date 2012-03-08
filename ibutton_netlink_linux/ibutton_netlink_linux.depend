@@ -112,13 +112,13 @@
 	"sh_thread.h"
 	"w1_netlink_userservice.h"
 
-1329583533 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userspace.h
-	<asm/byteorder.h>
+1330871498 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userspace.h
+	<asm/types.h>
 
 1322755312 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\kernel_connector.h
 	<asm/types.h>
 
-1329583499 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.h
+1330871365 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.h
 
 1325672521 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userspace.c
 	<stdio.h>
@@ -138,7 +138,7 @@
 	<stdio.h>
 	<stdlib.h>
 
-1330234673 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.c
+1331198280 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.c
 	<stdio.h>
 	<stdlib.h>
 	<errno.h>
@@ -153,9 +153,9 @@
 	"sh_util.h"
 	"sh_thread.h"
 	<linux/netlink.h>
-	"kernel_connector.h"
+	"w1_userspace.h"
+	"w1_userservice.h"
 	"w1_netlink_userspace.h"
-	"w1_netlink_util.h"
 	"w1_netlink_userservice.h"
 	"sh_log.h"
 
@@ -185,7 +185,7 @@
 
 1329583401 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_list.h
 
-1325231028 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_test_headers.c
+1331003148 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_test_headers.c
 	<stdio.h>
 	<stdlib.h>
 	<sys/cdefs.h>
@@ -195,8 +195,11 @@
 	<unistd.h>
 	<pthread.h>
 	"sh_types.h"
-	"sh_thread.h"
 	"sh_error.h"
+	"sh_thread.h"
+	"sh_util.h"
+	"w1_userspace.h"
+	"w1_userservice.h"
 	"w1_netlink_userspace.h"
 	"w1_netlink_userservice.h"
 
@@ -208,9 +211,9 @@
 	<android/log.h>
 	"utils/Log.h"
 
-1329583550 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_util.h
+1330866832 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_util.h
 
-1330178184 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_util.c
+1331179254 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_util.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -220,9 +223,8 @@
 	"sh_error.h"
 	"sh_util.h"
 	"sh_thread.h"
-	"kernel_connector.h"
+	"w1_userspace.h"
 	"w1_netlink_userspace.h"
-	"w1_netlink_util.h"
 	"sh_log.h"
 
 1329228520 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_array.c
@@ -231,4 +233,66 @@
 	"sh_array.h"
 
 1329583371 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\sh_array.h
+
+1331188373 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_userspace_util.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"sh_types.h"
+	"sh_util.h"
+	"w1_userspace.h"
+
+1331179524 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_userspace.h
+	<asm/byteorder.h>
+
+1331112200 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_userservice.h
+
+1331194485 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_sysfs_userservice.c
+	<stdio.h>
+	<stdlib.h>
+	<fcntl.h>
+	<string.h>
+	<unistd.h>
+	<pthread.h>
+	"sh_types.h"
+	"sh_error.h"
+	"sh_util.h"
+	"sh_thread.h"
+	"w1_userspace.h"
+	"w1_userservice.h"
+	"w1_sysfs_userservice.h"
+	"sh_log.h"
+
+1331005072 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_sysfs_userservice.h
+
+1331204220 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\ibutton_linux_app.c
+	<stdio.h>
+	<stdlib.h>
+	<fcntl.h>
+	<string.h>
+	<unistd.h>
+	<pthread.h>
+	"sh_types.h"
+	"sh_error.h"
+	"sh_util.h"
+	"sh_thread.h"
+	"w1_userspace.h"
+	"w1_userservice.h"
+	"sh_log.h"
+
+1331204397 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\ibutton_netlink_app.c
+	<stdio.h>
+	<stdlib.h>
+	<fcntl.h>
+	<string.h>
+	<unistd.h>
+	<pthread.h>
+	"sh_types.h"
+	"sh_error.h"
+	"sh_util.h"
+	"sh_thread.h"
+	"w1_userspace.h"
+	"w1_userservice.h"
+	"w1_netlink_userservice.h"
+	"sh_log.h"
 

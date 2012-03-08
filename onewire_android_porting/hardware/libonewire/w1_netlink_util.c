@@ -32,10 +32,9 @@
 
 //<linux/connector.h> is not contained inside NDK android-5
 //Attention: NDK android-5 support android-6 & android 7
-#include "kernel_connector.h"
-
+//#include "kernel_connector.h"
+#include "w1_userspace.h"
 #include "w1_netlink_userspace.h"
-#include "w1_netlink_util.h"
 
 
 /* ====================================================================== */
@@ -54,39 +53,6 @@
 /* ====================================================================== */
 /* =========================== public methods =========================== */
 /* ====================================================================== */
-
-BOOL is_w1_slave_rn_empty(w1_slave_rn rn)
-{
-    w1_slave_rn empty_rn = W1_EMPTY_REG_NUM;
-
-    /*
-    char salveIDStr[20];
-
-    describe_w1_reg_num(&rn, salveIDStr);
-    Debug(salveIDStr);
-
-    describe_w1_reg_num(&empty_rn, salveIDStr);
-    Debug(salveIDStr);
-    */
-
-    return (memcmp(&rn, &empty_rn, sizeof(w1_slave_rn)) == 0) ? TRUE : FALSE;
-}
-
-
-BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2)
-{
-    /*
-    char salveIDStr[20];
-
-    describe_w1_reg_num(&rn1, salveIDStr);
-    Debug(salveIDStr);
-
-    describe_w1_reg_num(&rn2, salveIDStr);
-    Debug(salveIDStr);
-    */
-
-    return (memcmp(&rn1, &rn2, sizeof(w1_slave_rn)) == 0) ? TRUE : FALSE;
-}
 
 BOOL describe_w1_msg_type(int msgType, char * outputStr)
 {
@@ -177,14 +143,6 @@ BOOL describe_w1_cmd_type(int cmdType, char * outputStr)
 }
 
 
-BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr)
-{
-    if(w1RegNum == NULL || outputStr == NULL) return FALSE;
-
-    sprintf(outputStr, "%02X.%012llX.%02X", w1RegNum->family, (unsigned long long)w1RegNum->id, w1RegNum->crc);
-
-    return TRUE;
-}
 
 
 void print_cnmsg(const struct cn_msg * cnmsg)

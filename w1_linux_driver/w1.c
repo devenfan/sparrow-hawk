@@ -46,6 +46,15 @@ MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
 MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
 
 /**
+ * Deven # 2012-03-08:
+ * 1. Change Master Attribute "list_slaves" to "list_slaves_names"
+ * 2. Add Master Attribute "list_slaves_ids"
+ *
+ * Deven # 2012-03-06:
+ * 1. Add Master Attribute "reset_bus"
+ * 2. Disable reset_bus when write data to "w1_master_bin_attr_write".
+ *    Attention, we still reset_bus when write data to "w1_slave_bin_attr"
+ *
  * Deven # 2012-03-04:
  * 1. Change "w1_default_write" to "w1_slave_bin_attr_write",
  *    change "w1_default_read" to "w1_slave_bin_attr_read"
@@ -60,6 +69,7 @@ MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
  * 7. Change return value of "w1_master_bin_attr_read" & "w1_master_bin_attr_write"
  * 8. Change Master Attribute "slaves" to "list_slaves"
  * 9. Add Master Attribute "search_salves"
+ * 10.Add Master Attribute "id"
  *
  * Deven # 2012-03-03:
  * 1. Change Master Attribute "search" to "search_count"
@@ -220,9 +230,11 @@ static ssize_t w1_master_bin_attr_write(struct kobject *kobj,
     int ret = -1;
 	mutex_lock(&master->mutex);
 
+    /*
 	if (w1_reset_bus(master)) {
 		goto out_up;
 	}
+    */
 
 	w1_write_block(master, buf, count);
 	ret = count;
@@ -318,6 +330,19 @@ struct device w1_slave_device = {
 #endif  /*  0  */
 
 //master attributes ==========================================================
+
+
+static ssize_t w1_master_attribute_show_id(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	struct w1_master *md = dev_to_w1_master(dev);
+	ssize_t count;
+
+	mutex_lock(&md->mutex);
+	count = sprintf(buf, "%d\n", md->id);
+	mutex_unlock(&md->mutex);
+
+	return count;
+}
 
 static ssize_t w1_master_attribute_show_name(struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -449,7 +474,33 @@ static ssize_t w1_master_attribute_show_slave_count(struct device *dev, struct d
 	return count;
 }
 
-static ssize_t w1_master_attribute_show_list_slaves(struct device *dev,
+static ssize_t w1_master_attribute_show_list_slaves_ids(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	struct w1_master *md = dev_to_w1_master(dev);
+	int c = PAGE_SIZE;
+
+	mutex_lock(&md->mutex);
+
+	if (md->slave_count > 0)
+	{
+		struct list_head *ent, *n;
+		struct w1_slave *sl;
+
+		list_for_each_safe(ent, n, &md->slist) {
+			sl = list_entry(ent, struct w1_slave, w1_slave_entry);
+
+			c -= snprintf(buf + PAGE_SIZE - c, c, "%02X.%012llX.%02X\n",
+                 sl->reg_num.family, (unsigned long long)sl->reg_num.id, sl->reg_num.crc);
+		}
+	}
+
+	mutex_unlock(&md->mutex);
+
+	return PAGE_SIZE - c;
+}
+
+static ssize_t w1_master_attribute_show_list_slaves_names(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct w1_master *md = dev_to_w1_master(dev);
@@ -465,7 +516,7 @@ static ssize_t w1_master_attribute_show_list_slaves(struct device *dev,
 
 		list_for_each_safe(ent, n, &md->slist) {
 			sl = list_entry(ent, struct w1_slave, w1_slave_entry);
-
+            //The format of sl->name is %02x-%012llx
 			c -= snprintf(buf + PAGE_SIZE - c, c, "%s\n", sl->name);
 		}
 	}
@@ -481,7 +532,7 @@ static ssize_t w1_master_attribute_show_search_slaves(struct device *dev,
 {
     int c = PAGE_SIZE;
 	c -= snprintf(buf+PAGE_SIZE - c, c,
-		"write to search slave devices, you should read \"list_slaves\" later.\n");
+		"write to search slave devices, you should read \"list_slaves_ids\" later.\n");
 
 	return PAGE_SIZE - c;
 }
@@ -628,6 +679,36 @@ static ssize_t w1_master_attribute_store_remove_slave(struct device *dev,
 	return result;
 }
 
+
+
+static ssize_t w1_master_attribute_show_reset_bus(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	int c = PAGE_SIZE;
+	c -= snprintf(buf+PAGE_SIZE - c, c,
+		"write anything to reset 1-wire bus\n");
+	return PAGE_SIZE - c;
+}
+
+static ssize_t w1_master_attribute_store_reset_bus(struct device *dev,
+						struct device_attribute *attr,
+						const char *buf, size_t count)
+{
+    struct w1_master *master = kobj_to_w1_master(kobj);
+    int ret = -1;
+	mutex_lock(&master->mutex);
+
+	if (0 == w1_reset_bus(master)) {
+		ret = count;
+	}
+
+	mutex_unlock(&master->mutex);
+	return ret;
+}
+
+
+
+
 #define W1_MASTER_ATTR_RO(_name, _mode)				\
 	struct device_attribute w1_master_attribute_##_name =	\
 		__ATTR(w1_master_##_name, _mode,		\
@@ -639,8 +720,10 @@ static ssize_t w1_master_attribute_store_remove_slave(struct device *dev,
 		       w1_master_attribute_show_##_name,	\
 		       w1_master_attribute_store_##_name)
 
+static W1_MASTER_ATTR_RO(id, S_IRUGO);
 static W1_MASTER_ATTR_RO(name, S_IRUGO);
-static W1_MASTER_ATTR_RO(list_slaves, S_IRUGO);
+static W1_MASTER_ATTR_RO(list_slaves_ids, S_IRUGO);
+static W1_MASTER_ATTR_RO(list_slaves_names, S_IRUGO);
 static W1_MASTER_ATTR_RO(slave_count, S_IRUGO);
 static W1_MASTER_ATTR_RO(max_slave_count, S_IRUGO);
 static W1_MASTER_ATTR_RO(attempts, S_IRUGO);
@@ -651,10 +734,13 @@ static W1_MASTER_ATTR_RW(pullup, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(search_slaves, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(add_slave, S_IRUGO | S_IWUGO);
 static W1_MASTER_ATTR_RW(remove_slave, S_IRUGO | S_IWUGO);
+static W1_MASTER_ATTR_RW(reset_bus, S_IRUGO | S_IWUGO);
 
 static struct attribute *w1_master_default_attrs[] = {
+	&w1_master_attribute_id.attr,
 	&w1_master_attribute_name.attr,
-	&w1_master_attribute_list_slaves.attr,
+	&w1_master_attribute_list_slaves_ids.attr,
+	&w1_master_attribute_list_slaves_names.attr,
 	&w1_master_attribute_slave_count.attr,
 	&w1_master_attribute_max_slave_count.attr,
 	&w1_master_attribute_attempts.attr,
@@ -665,6 +751,7 @@ static struct attribute *w1_master_default_attrs[] = {
 	&w1_master_attribute_search_slaves.attr,
 	&w1_master_attribute_add_slave.attr,
 	&w1_master_attribute_remove_slave.attr,
+	&w1_master_attribute_reset_bus.attr,
 	NULL
 };
 

@@ -8,19 +8,19 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+
 #include "sh_types.h"
 #include "sh_error.h"
 #include "sh_util.h"
 #include "sh_thread.h"
-#include "kernel_connector.h"
-#include "w1_netlink_userspace.h"
-#include "w1_netlink_util.h"
-#include "w1_netlink_userservice.h"
 
+#include "w1_userspace.h"
+#include "w1_userservice.h"
+#include "w1_netlink_userspace.h"
+#include "w1_netlink_userservice.h"
 
 #define MASTER_MAX_COUNT   3
 #define SLAVE_MAX_COUNT   10
-
 
 static w1_master_id m_masterId;    //current master id
 
@@ -170,9 +170,8 @@ static void initialize()
 
     m_masterId = 0;
 
-    memset( m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT );
+    memset(m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT );
     m_slaveCount = 0;
-    //m_slaveCurrentIndex = -1;
 
     m_userCallbacks.master_added_callback = on_master_added;
     m_userCallbacks.master_removed_callback = on_master_removed;
@@ -259,57 +258,6 @@ static BOOL Test_ResetMaster()
     return succeed;
 }
 
-/*useless...
-static BOOL Test_ReadRom()
-{
-    BOOL succeed;
-
-    int dataSendLen = 1;
-    BYTE dataSend[dataSendLen];
-
-    int dataRecvLen = 0;
-    BYTE * dataRecv = NULL;
-
-    int dataReadLen = 8;
-    BYTE dataRead[dataReadLen];
-
-    dataSend[0] = 0x33;
-
-    succeed = w1_process_cmd(&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
-    //succeed = w1_process_cmd(m_slaveIDs + m_slaveCurrentIndex, sizeof(w1_slave_rn), W1_CMD_WRITE,
-                            dataSend, dataSendLen, &dataRecv, &dataRecvLen);
-
-    if(succeed)
-    {
-        Debug("w1_process_cmd[W1_CMD_WRITE] Succeed!\n");
-
-        print_bytes(dataRecv, 0, dataRecvLen);
-
-        memset(dataRead, 0, sizeof(BYTE) * dataReadLen);
-
-        succeed = w1_process_cmd(&m_masterId, sizeof(w1_master_id), W1_CMD_READ,
-        //succeed = w1_process_cmd(m_slaveIDs + m_slaveCurrentIndex, sizeof(w1_slave_rn), W1_CMD_READ,
-                            dataRead, dataReadLen, &dataRecv, &dataRecvLen);
-
-        if(succeed)
-        {
-            Debug("w1_process_cmd[W1_CMD_READ] Succeed!\n");
-
-            print_bytes(dataRecv, 0, dataRecvLen);
-        }
-        else
-        {
-            Debug("w1_process_cmd[W1_CMD_READ] Failed!\n");
-        }
-    }
-    else
-    {
-        Debug("w1_process_cmd[W1_CMD_WRITE] Failed!\n");
-    }
-
-    return succeed;
-}
-*/
 
 //It works...
 static BOOL Test_1904ReadRTC()

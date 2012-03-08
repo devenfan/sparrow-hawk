@@ -22,6 +22,9 @@
 #ifndef __CONNECTOR_H
 #define __CONNECTOR_H
 
+
+/** see kernel header: connector.h  */
+
 #include <asm/types.h>
 
 #define CN_IDX_CONNECTOR		0xffffffff

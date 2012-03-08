@@ -13,10 +13,11 @@
 #include <pthread.h>
 
 #include "sh_types.h"
-#include "sh_thread.h"
 #include "sh_error.h"
+#include "sh_thread.h"
+#include "sh_util.h"
 
+#include "w1_userspace.h"
+#include "w1_userservice.h"
 #include "w1_netlink_userspace.h"
-
-
 #include "w1_netlink_userservice.h"

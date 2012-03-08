@@ -66,28 +66,17 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="src\Makefile" />
-		<Unit filename="src\backup.txt" />
-		<Unit filename="src\ibutton_netlink_linux.c">
+		<Unit filename="src\backup.txt">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src\ibutton_linux_app.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\kernel_connector.h" />
-		<Unit filename="src\sh_array.c">
+		<Unit filename="src\ibutton_netlink_app.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\sh_array.h" />
 		<Unit filename="src\sh_error.h" />
-		<Unit filename="src\sh_list.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src\sh_list.h" />
-		<Unit filename="src\sh_log.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="src\sh_log.h" />
-		<Unit filename="src\sh_queue.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="src\sh_queue.h" />
 		<Unit filename="src\sh_test_headers.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -102,6 +91,9 @@
 		<Unit filename="src\sh_util.h" />
 		<Unit filename="src\w1_netlink_userapp.c">
 			<Option compilerVar="CC" />
+			<Option compile="0" />
+			<Option link="0" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="src\w1_netlink_userservice.c">
 			<Option compilerVar="CC" />
@@ -111,7 +103,15 @@
 		<Unit filename="src\w1_netlink_util.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="src\w1_netlink_util.h" />
+		<Unit filename="src\w1_sysfs_userservice.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\w1_sysfs_userservice.h" />
+		<Unit filename="src\w1_userservice.h" />
+		<Unit filename="src\w1_userspace.h" />
+		<Unit filename="src\w1_userspace_util.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger>

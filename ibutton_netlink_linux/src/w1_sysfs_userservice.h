@@ -18,22 +18,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef __W1_NETLINK_USERSERVICE_H
-#define __W1_NETLINK_USERSERVICE_H
-
-
+#ifndef W1_SYSFS_USERSERVICE_H_INCLUDED
+#define W1_SYSFS_USERSERVICE_H_INCLUDED
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-extern struct w1_user_service w1_netlink_userservice;
+extern struct w1_user_service w1_sysfs_userservice;
 
 
 #ifdef __cplusplus
 }
 #endif
 
-
-#endif /* __W1_NETLINK_USERSERVICE_H */
+#endif // W1_SYSFS_USERSERVICE_H_INCLUDED

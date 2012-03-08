@@ -7,8 +7,6 @@ extern "C" {
 #endif
 
 
-
-
 /**
 * OK return TRUE, Error return FALSE.
 * The input-output parameter "outputStr" must be at least 20.
@@ -22,13 +20,6 @@ BOOL describe_w1_msg_type(int msgType, char * outputStr);
 */
 BOOL describe_w1_cmd_type(int cmdType, char * outputStr);
 
-
-/**
-* OK return TRUE, Error return FALSE.
-* The input-output parameter "outputStr" must be at least 20.
-* It's formart Like: %02x.%012llx.%02x
-*/
-BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr);
 
 
 void print_cnmsg(const struct cn_msg * cnmsg);

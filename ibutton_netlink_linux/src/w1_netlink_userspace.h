@@ -30,7 +30,85 @@
 
 //<linux/connector.h> is not contained inside NDK android-5
 //Attention: NDK android-5 support android-6 & android 7
-//#include "kernel_connector.h"
+
+
+/** see kernel: connector.h  */
+
+#include <asm/types.h>
+
+#define CN_IDX_CONNECTOR		0xffffffff
+#define CN_VAL_CONNECTOR		0xffffffff
+
+/*
+ * Process Events connector unique ids -- used for message routing
+ */
+#define CN_IDX_PROC			0x1
+#define CN_VAL_PROC			0x1
+#define CN_IDX_CIFS			0x2
+#define CN_VAL_CIFS                     0x1
+#define CN_W1_IDX			0x3	/* w1 communication */
+#define CN_W1_VAL			0x1
+#define CN_IDX_V86D			0x4
+#define CN_VAL_V86D_UVESAFB		0x1
+#define CN_IDX_BB			0x5	/* BlackBoard, from the TSP GPL sampling framework */
+#define CN_IDX_DRBD			0x6
+#define CN_VAL_DRBD			0x1
+
+#define CN_NETLINK_USERS		7
+
+/*
+ * Maximum connector's message size.
+ */
+#define CONNECTOR_MAX_MSG_SIZE		16384
+
+/*
+ * idx and val are unique identifiers which
+ * are used for message routing and
+ * must be registered in connector.h for in-kernel usage.
+ */
+
+struct cb_id {
+	__u32 idx;
+	__u32 val;
+};
+
+struct cn_msg {
+	struct cb_id id;
+
+	__u32 seq;
+	__u32 ack;
+
+	__u16 len;		/* Length of the following data */
+	__u16 flags;
+	__u8 data[0];
+};
+
+/*
+ * Notify structure - requests notification about
+ * registering/unregistering idx/val in range [first, first+range].
+ */
+struct cn_notify_req {
+	__u32 first;
+	__u32 range;
+};
+
+/*
+ * Main notification control message
+ * *_notify_num 	- number of appropriate cn_notify_req structures after
+ *				this struct.
+ * group 		- notification receiver's idx.
+ * len 			- total length of the attached data.
+ */
+struct cn_ctl_msg {
+	__u32 idx_notify_num;
+	__u32 val_notify_num;
+	__u32 group;
+	__u32 len;
+	__u8 data[0];
+};
+
+
+/** see kernel: w1_netlink.h  */
 
 #ifndef	W1_GROUP
 #define W1_GROUP  	CN_W1_IDX
@@ -93,58 +171,49 @@ struct w1_netlink_cmd
 };
 
 
-#include <asm/byteorder.h>
-
-/*
-* It's originally inside w1.h
-*/
-typedef struct w1_reg_num
-{
-#if defined(__LITTLE_ENDIAN_BITFIELD)
-	__u64	family:8,
-		id:48,
-		crc:8;
-#elif defined(__BIG_ENDIAN_BITFIELD)
-	__u64	crc:8,
-		id:48,
-		family:8;
-#else
-#error "Please fix <asm/byteorder.h>"
-#endif
-} w1_slave_rn;
-
-
-#define W1_EMPTY_REG_NUM     {.family = 0, .id = 0, .crc = 0}
-
-
-
-typedef __u32 w1_master_id;
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
-#define is_w1_slave_rn_empty(rn)        ( (0 == (__u64)rn) ? TRUE : FALSE )
 
-#define are_w1_slave_rn_equal(rn1, rn2) ( ((__u64)rn1 == (__u64)rn2) ? TRUE : FALSE )
+
+/**
+* OK return TRUE, Error return FALSE.
+* The input-output parameter "outputStr" must be at least 20.
 */
+BOOL describe_w1_msg_type(int msgType, char * outputStr);
 
 
-BOOL is_w1_slave_rn_empty(w1_slave_rn rn);
+/**
+* OK return TRUE, Error return FALSE.
+* The input-output parameter "outputStr" must be at least 20.
+*/
+BOOL describe_w1_cmd_type(int cmdType, char * outputStr);
 
 
-BOOL are_w1_slave_rn_equal(w1_slave_rn rn1, w1_slave_rn rn2);
+/**
+* OK return TRUE, Error return FALSE.
+* The input-output parameter "outputStr" must be at least 20.
+* It's formart Like: %02x.%012llx.%02x
+*/
+BOOL describe_w1_reg_num(struct w1_reg_num * w1RegNum, char * outputStr);
+
+
+void print_cnmsg(const struct cn_msg * cnmsg);
+
+
+void print_w1msg(const struct w1_netlink_msg * w1msg);
+
+
+void print_w1cmd(const struct w1_netlink_cmd * w1cmd);
+
+
 
 
 #ifdef __cplusplus
 }
 #endif
-
-
-
-
 
 
 #endif /* __W1_NETLINK_USERSPACE_H */

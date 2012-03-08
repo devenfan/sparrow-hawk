@@ -1,5 +1,152 @@
 
 ###############################################################
+################# w1_netlink_userservice.h ####################
+###############################################################
+
+/**
+typedef void w1_master_added(w1_master_id master_id);
+
+typedef void w1_master_removed(w1_master_id master_id);
+
+
+typedef void w1_slave_added(w1_slave_rn salve_rn);
+
+typedef void w1_slave_removed(w1_slave_rn salve_rn);
+
+
+
+typedef struct w1_user_callbacks{
+
+    w1_master_added * master_added_callback;
+
+    w1_master_removed * master_removed_callback;
+
+    w1_slave_added * slave_added_callback;
+
+    w1_slave_removed * slave_removed_callback;
+
+}w1_user_callbacks;
+*/
+
+
+
+/**
+ * The first thing is start service, or other function cannot be used.
+
+BOOL w1_netlink_userservice_start(w1_user_callbacks * w1UserCallbacks);
+ */
+
+
+/**
+ * Please stop userspace service once you finish of using it.
+
+BOOL w1_netlink_userservice_stop(void);
+ */
+
+
+/**
+ * DONOT invoke this method unless userspace service is started...
+
+w1_master_id get_w1_master_id(void);
+ */
+
+/**
+ * DONOT invoke this method unless userspace service is started...
+
+void get_w1_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount);
+ */
+
+/**
+ * Pause w1 searching thread
+
+void pause_w1_searching_thread();
+ */
+
+/**
+ * Wakeup w1 searching thread
+
+void wakeup_w1_searching_thread();
+ */
+
+
+/**
+ * Synchronized method.
+
+BOOL w1_master_search(w1_master_id masterId, BOOL isSearchAlarm,
+                      w1_slave_rn * slaves, int * pSlaveCount);
+ */
+/**
+ * Synchronized method.
+
+BOOL w1_master_reset(w1_master_id masterId);
+ */
+
+
+/**
+ * Synchronized method, only support READ, WRITE, TOUCH.
+ *
+ * Input Parameters: masterOrSlaveId, idLen, w1CmdType, dataIn, dataInLen
+ * Output Parameters: dataOut, pDataOutLen
+
+BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
+                    void * dataIn, int dataInLen, void * dataOut, int * pDataOutLen);
+ */
+
+
+
+
+/**
+ * Synchronized method
+ *
+ * Input Parameters: masterId, readLen
+ * Output Parameters: dataOut
+
+BOOL w1_master_read(w1_master_id masterId, int readLen, void * dataOut);
+ */
+/**
+ * Synchronized method
+ *
+ * Input Parameters: masterId, writeLen
+ * Output Parameters: dataIn
+
+BOOL w1_master_write(w1_master_id masterId, int writeLen, void * dataIn);
+ */
+/**
+ * Synchronized method
+ *
+ * Input Parameters: masterId, dataIn, dataInLen
+ * Output Parameters: dataOut, pDataOutLen
+
+BOOL w1_master_touch(w1_master_id masterId, void * dataIn, int dataInLen, void * dataOut, int * pDataOutLen);
+ */
+
+
+
+/**
+ * Synchronized method, cannot use Asynchronized way,
+ * because more than 1 ack will be received if succeed.
+ * Attention: the "masters" & "pMasterCount" are used as output parameters.
+
+BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount);
+ */
+
+
+/*
+ * Asynchronized method, the result will come back later
+ * Cannot take Asynchronized way, or we cannot distinguash the ack messages...
+
+BOOL request_to_list_w1_masters(void);
+*/
+
+
+/*
+ * Asynchronized method, the result will come back later
+ *
+BOOL request_to_search_w1_slaves(BOOL alarmSearch);
+ */
+
+
+###############################################################
 #################### w1_netlink_userapp.c #####################
 ###############################################################
 
@@ -60,6 +207,62 @@ static void on_salve_found(w1_slave_rn * slave_ids, int slave_count)
 
     print_all_slaves();
 }
+
+
+
+/*useless...
+static BOOL Test_ReadRom()
+{
+    BOOL succeed;
+
+    int dataSendLen = 1;
+    BYTE dataSend[dataSendLen];
+
+    int dataRecvLen = 0;
+    BYTE * dataRecv = NULL;
+
+    int dataReadLen = 8;
+    BYTE dataRead[dataReadLen];
+
+    dataSend[0] = 0x33;
+
+    succeed = w1_process_cmd(&m_masterId, sizeof(w1_master_id), W1_CMD_WRITE,
+    //succeed = w1_process_cmd(m_slaveIDs + m_slaveCurrentIndex, sizeof(w1_slave_rn), W1_CMD_WRITE,
+                            dataSend, dataSendLen, &dataRecv, &dataRecvLen);
+
+    if(succeed)
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE] Succeed!\n");
+
+        print_bytes(dataRecv, 0, dataRecvLen);
+
+        memset(dataRead, 0, sizeof(BYTE) * dataReadLen);
+
+        succeed = w1_process_cmd(&m_masterId, sizeof(w1_master_id), W1_CMD_READ,
+        //succeed = w1_process_cmd(m_slaveIDs + m_slaveCurrentIndex, sizeof(w1_slave_rn), W1_CMD_READ,
+                            dataRead, dataReadLen, &dataRecv, &dataRecvLen);
+
+        if(succeed)
+        {
+            Debug("w1_process_cmd[W1_CMD_READ] Succeed!\n");
+
+            print_bytes(dataRecv, 0, dataRecvLen);
+        }
+        else
+        {
+            Debug("w1_process_cmd[W1_CMD_READ] Failed!\n");
+        }
+    }
+    else
+    {
+        Debug("w1_process_cmd[W1_CMD_WRITE] Failed!\n");
+    }
+
+    return succeed;
+}
+*/
+
+
 
 int main(void)
 {
@@ -388,5 +591,96 @@ static BOOL request_to_list_w1_masters(void)
 
 
 
+###############################################################
+###################### ibutton_linux_app.c ####################
+###############################################################
+
+
+
+static int g_fdMasterBus = -1;
+
+
+static BOOL Test_1920Temperature()
+{
+    BOOL succeed;
+
+    //Match ROM + Convert Temperature
+    int dataSendLen1 = 10;
+    BYTE dataSend1[10] = { 0x55, 0x10, 0x55, 0x69, 0x82, 0x00, 0x08, 0x00, 0x74,
+                        0x44};
+
+    //Match ROM + Read Scratchpad
+    int dataSendLen2 = 10;
+    BYTE dataSend2[10] = { 0x55, 0x10, 0x55, 0x69, 0x82, 0x00, 0x08, 0x00, 0x74,
+                        0xBE};
+
+    int dataRecvLen = 9;
+    BYTE dataRecv[64];
+    memset(dataRecv, 0, 64);
+
+
+    //-----------------------------------------------------------
+
+    //Every write will reset the bus...
+
+    if(write(g_fdMasterBus, dataSend1, dataSendLen1) != dataSendLen1)
+    {
+        Debug("Test_1920Temperature-Step1 Failed!\n");
+        return FALSE;
+    }
+
+    /*
+    read(g_fdMasterBus, dataRecv, dataSendLen1);
+    print_bytes(dataRecv, 0, dataSendLen1);
+    */
+    sleep(1); //Data line is held high for at least 0.75 seconds by bus
+              //master to allow conversion to complete. Here use 1s instead.
+
+    if(write(g_fdMasterBus, dataSend2, dataSendLen2) != dataSendLen2)
+    {
+        Debug("Test_1920Temperature-Step2 Failed!\n");
+        return FALSE;
+    }
+
+    /*
+    read(g_fdMasterBus, dataRecv, dataSendLen2);
+    print_bytes(dataRecv, 0, dataSendLen2);
+    */
+
+
+
+    if(read(g_fdMasterBus, dataRecv, dataRecvLen) != dataRecvLen)
+    {
+        Debug("Test_1920Temperature-Step3 Failed!\n");
+        return FALSE;
+    }
+    print_bytes(dataRecv, 0, dataRecvLen);
+
+    return succeed;
+}
+
+
+
+int main(void) {
+
+	puts("!!!Hello World!!!");
+
+	Debug("open \"/sys/bus/w1/devices/w1_master_device/data\" \n");
+
+    g_fdMasterBus = open("/sys/bus/w1/devices/w1_master_device/data", O_RDWR);
+
+    if(-1 == g_fdMasterBus) {
+        Debug("Open failed... \n");
+        return EXIT_FAILURE;
+    }
+
+    Debug("Test_1920Temperature \n");
+
+    Test_1920Temperature();
+
+    close(g_fdMasterBus);
+
+	return EXIT_SUCCESS;
+}
 
 
