@@ -25,12 +25,13 @@ LOCAL_SHARED_LIBRARIES := \
 	liblog 	\
 	libcutils
 
-LOCAL_SRC_FILES := \
+LOCAL_SRC_FILES :=  \
 	sh_thread.c		\
 	sh_util.c		\
-	w1_netlink_userspace.c	\
+	w1_userspace_util.c	    \
 	w1_netlink_util.c		\
-	w1_netlink_userservice.c
+	w1_netlink_userservice.c \
+	w1_sysfs_userservice
 
 LOCAL_MODULE := libonewire
 
@@ -46,8 +47,10 @@ LOCAL_COPY_HEADERS_TO := libonewire
 LOCAL_COPY_HEADERS := \
     sh_types.h \
     sh_log.h \
+    w1_userspace.h \
+    w1_userservice.h \
     w1_netlink_userspace.h \
-    w1_netlink_userservice.h
-
+    w1_netlink_userservice.h \
+    w1_sysfs_userservice.h
 
 include $(BUILD_SHARED_LIBRARY)

@@ -54,28 +54,29 @@ typedef struct w1hal_device_operations {
     /** set to sizeof(w1hal_interface) */
     size_t size;
 
-    BOOL (*start)(w1_user_callbacks * w1UserCallbacks);
+    void (*init)(w1_user_callbacks * w1UserCallbacks);
 
-    BOOL (*stop)(void);
+    BOOL (*start)();
+
+    void (*stop)();
 
     /** Get current master. */
-    w1_master_id (*get_master_id)(void);
+    w1_master_id (*get_current_master)();
 
     /** Get current slaves. */
-    void (*get_slave_ids)(w1_slave_rn * slaveIDs, int * slaveCount);
+    BOOL (*get_current_slaves)(w1_slave_rn * slaveIDs, int * slaveCount);
 
     /** Begin exclusive action. */
-    void (*begin_exclusive)(void);
+    BOOL (*begin_exclusive)(w1_master_id masterId);
 
     /** End exclusive action. */
-    void (*end_exclusive)(void);
+    void (*end_exclusive)(w1_master_id masterId);
 
     /** List all the Masters */
     BOOL (*list_masters)(w1_master_id * masters, int * pMasterCount);
 
     /** Search Slaves by Master Id */
-    BOOL (*search_slaves)(w1_master_id masterId, BOOL isSearchAlarm,
-                      w1_slave_rn * slaves, int * pSlaveCount);
+    BOOL (*search_slaves)(w1_master_id masterId, w1_slave_rn * slaves, int * pSlaveCount);
 
     /** Reset the Master */
     BOOL (*master_reset)(w1_master_id masterId);

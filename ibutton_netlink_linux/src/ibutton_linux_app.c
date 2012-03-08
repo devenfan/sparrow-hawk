@@ -484,6 +484,8 @@ void ibutton_test_teardown()
 }
 
 
+#define W1_SYSFS
+
 #ifdef W1_SYSFS
     #include "w1_sysfs_userservice.h"
 #else
@@ -546,6 +548,15 @@ int main(void)
     {
         Debug("Test_1920Temperature failed...\n");
     }
+
+    Debug("======================================================\n");
+
+    sleep(3);
+
+    char useless[50];
+    Debug("Type something to quit: \n");
+    scanf("%s", useless);
+    Debug("OK: %s\n", useless);
 
     ibutton_test_teardown();
 

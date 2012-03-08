@@ -22,31 +22,30 @@
 
 
 #include "libonewire/sh_types.h"
-//#include "libonewire/sh_error.h"
-//#include "libonewire/sh_util.h"
-//#include "libonewire/sh_thread.h"
-//#include "libonewire/kernel_connector.h"
-#include "libonewire/w1_netlink_userspace.h"
-//#include "libonewire/w1_netlink_util.h"
-#include "libonewire/w1_netlink_userservice.h"
+#include "libonewire/w1_userspace.h"
+#include "libonewire/w1_userservice.h"
 
+#include "libonewire/w1_netlink_userspace.h"
+#include "libonewire/w1_netlink_userservice.h"
+#include "libonewire/w1_sysfs_userservice.h"
 
 #include "libonewire_hal/w1_hal.h"
 
 
+static void w1hal_int_init(w1_user_callbacks * w1UserCallbacks);
 
-static BOOL w1hal_int_start(w1_user_callbacks * w1UserCallbacks);
+static BOOL w1hal_int_start();
 
-static BOOL w1hal_int_stop(void);
+static void w1hal_int_stop();
 
 
-static w1_master_id w1hal_int_get_master_id(void);
+static w1_master_id w1hal_int_get_current_master();
 
-static void w1hal_int_get_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount);
+static BOOL w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount);
 
-static void w1hal_int_begin_exclusive_action(void);
+static BOOL w1hal_int_begin_exclusive_action(w1_master_id masterId);
 
-static void w1hal_int_end_exclusive_action(void);
+static void w1hal_int_end_exclusive_action(w1_master_id masterId);
 
 
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount);
@@ -88,56 +87,67 @@ static const w1hal_interface sW1HalInterface =
 };
 
 
+#define W1_SYSFS
+
+#ifdef W1_SYSFS
+static w1_user_service * w1UserService = &w1_sysfs_userservice;
+#else
+static w1_user_service * w1UserService = &w1_netlink_userservice;
+#endif
 
 
 
-
-static BOOL w1hal_int_start(w1_user_callbacks * w1UserCallbacks)
+static void w1hal_int_init(w1_user_callbacks * w1UserCallbacks)
 {
-    return w1_netlink_userservice_start(w1UserCallbacks);
+    w1UserService->init(w1UserCallbacks);
 }
 
-static BOOL w1hal_int_stop(void)
+static BOOL w1hal_int_start()
 {
-    return w1_netlink_userservice_stop();
+    return w1UserService->start();
 }
 
-static w1_master_id w1hal_int_get_master_id(void)
+static void w1hal_int_stop()
 {
-    return get_w1_master_id();
+    w1UserService->stop();
 }
 
-static void w1hal_int_get_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount)
+static w1_master_id w1hal_int_get_current_master()
 {
-	get_w1_slave_ids(slaveIDs, slaveCount);
+    return 0;
 }
 
-static void w1hal_int_begin_exclusive_action(void)
+static BOOL w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
 {
-	pause_w1_searching_thread();
+	return FALSE;
 }
 
-static void w1hal_int_end_exclusive_action(void)
+static BOOL w1hal_int_begin_exclusive_action(w1_master_id masterId)
 {
-	wakeup_w1_searching_thread();
+	return w1UserService->master_begin_exclusive(masterId);
+}
+
+static void w1hal_int_end_exclusive_action(w1_master_id masterId)
+{
+	w1UserService->master_end_exclusive(masterId);
 }
 
 
 
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount)
 {
-    return w1_list_masters(masters, pMasterCount);
+    return w1UserService->list_masters(masters, pMasterCount);
 }
 
-static BOOL w1hal_int_search_slaves(w1_master_id masterId, BOOL isSearchAlarm,
+static BOOL w1hal_int_search_slaves(w1_master_id masterId,
                       w1_slave_rn * slaves, int * pSlaveCount)
 {
-    return w1_master_search(masterId, isSearchAlarm, slaves, pSlaveCount);
+    return w1UserService->search_slaves(masterId, slaves, pSlaveCount);
 }
 
 static BOOL w1hal_int_master_reset(w1_master_id masterId)
 {
-    return w1_master_reset(masterId);
+    return w1UserService->master_reset(masterId);
 }
 
 
@@ -145,17 +155,17 @@ static BOOL w1hal_int_master_reset(w1_master_id masterId)
 static BOOL w1hal_int_master_touch(w1_master_id masterId,
                     BYTE * dataIn, int dataInLen, BYTE * dataOut, int * pDataOutLen)
 {
-    return w1_master_touch(masterId, dataIn, dataInLen, dataOut, pDataOutLen);
+    return w1UserService->master_touch(masterId, dataIn, dataInLen, dataOut, pDataOutLen);
 }
 
 static BOOL w1hal_int_master_read(w1_master_id masterId, int readLen, BYTE * dataReadOut)
 {
-    return w1_master_read(masterId, readLen, dataReadOut);
+    return w1UserService->master_read(masterId, readLen, dataReadOut);
 }
 
 static BOOL w1hal_int_master_write(w1_master_id masterId, int writeLen, BYTE * dataWriteIn)
 {
-    return w1_master_write(masterId, writeLen, dataWriteIn);
+    return w1UserService->master_write(masterId, writeLen, dataWriteIn);
 }
 
 
