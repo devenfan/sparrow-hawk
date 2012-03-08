@@ -840,7 +840,10 @@ BOOL pause_w1_searching_thread()
     if(1 == g_w1SearchingThreadPauseFalg)
         return FALSE;
 
+    pthread_mutex_lock(&g_globalLocker);
     g_w1SearchingThreadPauseFalg = 1;   //needs locker???
+    pthread_mutex_unlock(&g_globalLocker);
+
     return TRUE;
 }
 
@@ -849,7 +852,9 @@ BOOL pause_w1_searching_thread()
 **/
 void wakeup_w1_searching_thread()
 {
+    pthread_mutex_lock(&g_globalLocker);
     g_w1SearchingThreadPauseFalg = 0;   //needs locker???
+    pthread_mutex_unlock(&g_globalLocker);
 }
 
 

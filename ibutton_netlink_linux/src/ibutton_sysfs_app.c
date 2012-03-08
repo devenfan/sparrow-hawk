@@ -17,7 +17,7 @@
 #include "w1_userservice.h"
 
 
-#include "w1_netlink_userservice.h"
+#include "w1_sysfs_userservice.h"
 
 /* ====================================================================== */
 /* ============================ log ralated ============================= */
@@ -25,7 +25,7 @@
 
 //#define ANDROID_NDK
 
-#define LOG_TAG   "ibutton_netlink_app"
+#define LOG_TAG   "ibutton_sysfs_app"
 #include "sh_log.h"
 
 #define Debug(format, args...)    android_debug(format, ##args)
@@ -47,7 +47,7 @@ extern void ibutton_test_teardown();
 
 int main(void)
 {
-    if(!ibutton_test_setup(&w1_netlink_userservice))
+    if(!ibutton_test_setup(&w1_sysfs_userservice))
     {
         Debug("ibutton_test_setup failed...\n");
         goto GameOver;
@@ -85,6 +85,19 @@ int main(void)
     {
         Debug("Test_SearchSlaves failed...\n");
     }
+
+    Debug("======================================================\n");
+
+    if(Test_1920Temperature())
+    {
+        Debug("Test_1920Temperature OK!!!\n");
+    }
+    else
+    {
+        Debug("Test_1920Temperature failed...\n");
+    }
+
+
 
 
     ibutton_test_teardown();

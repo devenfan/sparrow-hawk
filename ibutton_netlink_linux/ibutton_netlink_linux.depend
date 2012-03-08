@@ -138,7 +138,7 @@
 	<stdio.h>
 	<stdlib.h>
 
-1331198280 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.c
+1331214567 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_netlink_userservice.c
 	<stdio.h>
 	<stdlib.h>
 	<errno.h>
@@ -247,7 +247,7 @@
 
 1331112200 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_userservice.h
 
-1331194485 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_sysfs_userservice.c
+1331213307 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_sysfs_userservice.c
 	<stdio.h>
 	<stdlib.h>
 	<fcntl.h>
@@ -265,7 +265,7 @@
 
 1331005072 f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\w1_sysfs_userservice.h
 
-1331204220 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\ibutton_linux_app.c
+1331214305 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\ibutton_linux_app.c
 	<stdio.h>
 	<stdlib.h>
 	<fcntl.h>
@@ -294,5 +294,21 @@
 	"w1_userspace.h"
 	"w1_userservice.h"
 	"w1_netlink_userservice.h"
+	"sh_log.h"
+
+1331214145 source:f:\arm_board_android\workspace\android-ibutton-git\ibutton_netlink_linux\src\ibutton_sysfs_app.c
+	<stdio.h>
+	<stdlib.h>
+	<fcntl.h>
+	<string.h>
+	<unistd.h>
+	<pthread.h>
+	"sh_types.h"
+	"sh_error.h"
+	"sh_util.h"
+	"sh_thread.h"
+	"w1_userspace.h"
+	"w1_userservice.h"
+	"w1_sysfs_userservice.h"
 	"sh_log.h"
 

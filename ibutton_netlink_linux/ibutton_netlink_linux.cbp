@@ -74,6 +74,13 @@
 		</Unit>
 		<Unit filename="src\ibutton_netlink_app.c">
 			<Option compilerVar="CC" />
+			<Option link="0" />
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="src\ibutton_sysfs_app.c">
+			<Option compilerVar="CC" />
+			<Option link="0" />
+			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Unit filename="src\sh_error.h" />
 		<Unit filename="src\sh_log.h" />

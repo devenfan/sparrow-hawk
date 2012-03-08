@@ -43,7 +43,7 @@
 
 //#define ANDROID_NDK
 
-#define  LOG_TAG   "w1_netlink_userservice"
+#define  LOG_TAG   "w1_sysfs_userservice"
 #include "sh_log.h"
 
 #define Debug(format, args...)    android_debug(format, ##args)
@@ -52,12 +52,12 @@
 /* ============================== members =============================== */
 /* ====================================================================== */
 
-#define FILE_PATH_MASTER_ID         "/sys/bus/w1/devices/w1_master_device/id"
 #define FILE_PATH_DATA_RW           "/sys/bus/w1/devices/w1_master_device/data"
-#define FILE_PATH_RESET_BUS         "/sys/bus/w1/devices/w1_master_device/reset_bus"
-#define FILE_PATH_SEARCH_SLAVES     "/sys/bus/w1/devices/w1_master_device/search_slaves"
-#define FILE_PATH_LIST_SLAVES       "/sys/bus/w1/devices/w1_master_device/list_slaves"
-#define FILE_PATH_SLAVE_COUNT       "/sys/bus/w1/devices/w1_master_device/slave_count"
+#define FILE_PATH_MASTER_ID         "/sys/bus/w1/devices/w1_master_device/w1_master_id"
+#define FILE_PATH_RESET_BUS         "/sys/bus/w1/devices/w1_master_device/w1_master_reset_bus"
+#define FILE_PATH_SEARCH_SLAVES     "/sys/bus/w1/devices/w1_master_device/w1_master_search_slaves"
+#define FILE_PATH_LIST_SLAVES       "/sys/bus/w1/devices/w1_master_device/w1_master_list_slaves_ids"
+#define FILE_PATH_SLAVE_COUNT       "/sys/bus/w1/devices/w1_master_device/w1_master_slave_count"
 
 static pthread_mutex_t g_globalLocker;
 
@@ -138,8 +138,8 @@ static int read_slave_count()
     {
         if(read(fdSlaveCount, dataRead, 2) > 0)
         {
-            Debug("read_slave_count: %s\n", dataRead);
             slave_count = atoi(dataRead);
+            Debug("read_slave_count: %d\n", slave_count);
         }
     }
 
@@ -163,7 +163,7 @@ static BOOL read_slaves(int slaveCount, w1_slave_rn * slaves)
     {
         dataReadLen = read(fdListSlaves, dataRead, slaveCount * 19);
 
-        Debug("read_slaves: \n %s\n", dataRead);
+        Debug("read_slaves:\n%s\n", dataRead);
 
         if(slaveCount * 19 == dataReadLen)
         {
@@ -438,7 +438,7 @@ static void * w1_searching_loop(void * param)
         usleep(g_w1SearchingInterval * 1000);   //by microsecond
     }
 
-    Debug("w1(1-wire) slaves searching thread stopped!\n");
+    Debug("w1(1-wire) searching thread stopped!\n");
 
     sh_signal_notify(&g_w1SearchingThreadStopSignal);
 
@@ -525,7 +525,7 @@ void w1_sysfs_userservice_stop()
 {
     stop_searching_thread();
 
-    Debug("w1(1-wire) netlink userspace service stopped!\n");
+    Debug("w1(1-wire) sysfs userspace service stopped!\n");
 }
 
 
@@ -633,12 +633,24 @@ BOOL w1_sysfs_master_touch(w1_master_id masterId, void * dataIn, int dataInLen, 
 
 static BOOL w1_sysfs_master_begin_exclusive(w1_master_id masterId)
 {
+    if(0 == masterId) return FALSE;
+    if(g_masterId != masterId) return FALSE;
+
+    if(1 == g_w1SearchingThreadPauseFalg)
+        return FALSE;
+
+    pthread_mutex_lock(&g_globalLocker);
+    g_w1SearchingThreadPauseFalg = 1;   //needs locker???
+    pthread_mutex_unlock(&g_globalLocker);
+
     return TRUE;
 }
 
 static void w1_sysfs_master_end_exclusive(w1_master_id masterId)
 {
-    ;
+    pthread_mutex_lock(&g_globalLocker);
+    g_w1SearchingThreadPauseFalg = 0;   //needs locker???
+    pthread_mutex_unlock(&g_globalLocker);
 }
 
 

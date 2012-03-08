@@ -158,24 +158,6 @@ static void on_slave_removed(w1_slave_rn slave_id)
 /* ====================================================================== */
 
 
-
-BOOL Test_ResetMaster()
-{
-    BOOL succeed;
-
-    succeed = m_userService->master_reset(m_masterId);
-
-    if(succeed)
-    {
-        Debug("master_reset Succeed!\n");
-    }
-    else
-    {
-        Debug("master_reset Failed!\n");
-    }
-    return succeed;
-}
-
 BOOL Test_ListMasters()
 {
     BOOL succeed = FALSE;
@@ -202,6 +184,24 @@ BOOL Test_ListMasters()
 }
 
 
+BOOL Test_ResetMaster()
+{
+    BOOL succeed;
+
+    succeed = m_userService->master_reset(m_masterId);
+
+    if(succeed)
+    {
+        Debug("master_reset Succeed!\n");
+    }
+    else
+    {
+        Debug("master_reset Failed!\n");
+    }
+    return succeed;
+}
+
+
 BOOL Test_SearchSlaves()
 {
     BOOL succeed;
@@ -211,8 +211,9 @@ BOOL Test_SearchSlaves()
     int index = 0;
 
     memset(slaves, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
-
+    m_userService->master_begin_exclusive(m_masterId);
     succeed = m_userService->search_slaves(m_masterId, slaves, &slaveCount);
+    m_userService->master_end_exclusive(m_masterId);
     if(succeed)
     {
         Debug("search_slaves Succeed!\n");
@@ -480,6 +481,79 @@ BOOL ibutton_test_setup(struct w1_user_service * w1UserService)
 void ibutton_test_teardown()
 {
     m_userService->stop();
+}
+
+
+#ifdef W1_SYSFS
+    #include "w1_sysfs_userservice.h"
+#else
+    #include "w1_netlink_userservice.h"
+#endif
+
+int main(void)
+{
+#ifdef W1_SYSFS
+    if(!ibutton_test_setup(&w1_sysfs_userservice))
+#else
+    if(!ibutton_test_setup(&w1_netlink_userservice))
+#endif
+    {
+        Debug("ibutton_test_setup failed...\n");
+        goto GameOver;
+    }
+
+    Debug("======================================================\n");
+
+    if(Test_ListMasters())
+    {
+        Debug("Test_ListMasters OK!!!\n");
+    }
+    else
+    {
+        Debug("Test_ListMasters failed...\n");
+    }
+
+    Debug("======================================================\n");
+
+    if(Test_ResetMaster())
+    {
+        Debug("Test_ResetMaster OK!!!\n");
+    }
+    else
+    {
+        Debug("Test_ResetMaster failed...\n");
+    }
+
+    Debug("======================================================\n");
+
+    if(Test_SearchSlaves())
+    {
+        Debug("Test_SearchSlaves OK!!!\n");
+    }
+    else
+    {
+        Debug("Test_SearchSlaves failed...\n");
+    }
+
+
+    Debug("======================================================\n");
+
+    if(Test_1920Temperature())
+    {
+        Debug("Test_1920Temperature OK!!!\n");
+    }
+    else
+    {
+        Debug("Test_1920Temperature failed...\n");
+    }
+
+    ibutton_test_teardown();
+
+GameOver:
+
+    Debug("======================================================\n");
+	Debug("Main App Game Over...\n");
+	return 0;
 }
 
 

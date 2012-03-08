@@ -694,7 +694,7 @@ static ssize_t w1_master_attribute_store_reset_bus(struct device *dev,
 						struct device_attribute *attr,
 						const char *buf, size_t count)
 {
-    struct w1_master *master = kobj_to_w1_master(kobj);
+    struct w1_master *master = dev_to_w1_master(dev);
     int ret = -1;
 	mutex_lock(&master->mutex);
 
