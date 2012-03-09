@@ -199,7 +199,7 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
 		return JNI_FALSE;
 	}
 
-	return (sOneWireInterface->start(&sW1UserCallbacks));
+	return (sOneWireInterface->start());
 }
 
 /**
@@ -231,7 +231,7 @@ static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env,
 		return 0;
 	}
 
-    return sOneWireInterface->get_master_id();
+    return sOneWireInterface->get_current_master();
 }
 
 /**
@@ -250,7 +250,7 @@ static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env,
 		return 0;
 	}
 
-    sOneWireInterface->get_slave_ids(slaves, &slaveCount);
+    sOneWireInterface->get_current_slaves(slaves, &slaveCount);
     if(slaveCount > 0)
     {
         if(slaveCount > MAX_SLAVE_COUNT)
@@ -271,7 +271,7 @@ static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env,
  * Class Name: 		OneWireNativeService
  * Method Name:  	begin_exclusive
 */
-static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jobject obj)
+static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jobject obj, jint masterId)
 {
 	if(!sOneWireInterface)
 	{
@@ -279,7 +279,7 @@ static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env
 		return JNI_FALSE;
 	}
 
-	return sOneWireInterface->begin_exclusive();
+	return sOneWireInterface->begin_exclusive(*((w1_master_id*)&masterId));
 }
 
 /**
@@ -287,14 +287,14 @@ static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env
  * Class Name: 		OneWireNativeService
  * Method Name:  	end_exclusive
 */
-static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobject obj)
+static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobject obj, jint masterId)
 {
 	if(!sOneWireInterface)
 	{
 	    LOGE("w1 Stub operations not exist!");
 	}
 
-	sOneWireInterface->end_exclusive();
+	sOneWireInterface->end_exclusive(*((w1_master_id*)&masterId));
 }
 
 /**
@@ -306,7 +306,7 @@ static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobje
 {
 	jint masterCount = 0;
 	w1_master_id masters[MAX_MASTER_COUNT];
-
+	/*
 	if(sOneWireInterface)
 	{
 		if(sOneWireInterface->list_masters(masters, &masterCount))
@@ -324,7 +324,7 @@ static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobje
 			}
 		}
 	}
-
+	*/
 	return masterCount;
 }
 
@@ -334,14 +334,14 @@ static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobje
  * Method Name:  	search_slaves
 */
 static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobject obj,
-                jint masterId, jboolean isSearchAlarm, jlongArray slaveRNs)
+                jint masterId, jlongArray slaveRNs)
 {
 	jint slaveCount = 0;
 	w1_slave_rn slaves[MAX_SLAVE_COUNT];
 
     if(sOneWireInterface)
     {
-    	if(sOneWireInterface->search_slaves(*((w1_master_id*)&masterId), (BOOL)isSearchAlarm, slaves, &slaveCount))
+    	if(sOneWireInterface->search_slaves(*((w1_master_id*)&masterId), slaves, &slaveCount))
     	{
     		if(slaveCount > 0)
 			{
@@ -456,11 +456,11 @@ static JNINativeMethod sMethods[] = {
 
     {"native_get_current_master", 	"()I", 					(void*)android_onewire_OneWireNativeService_get_current_master},
     {"native_get_current_slaves", 	"([J)I", 				(void*)android_onewire_OneWireNativeService_get_current_slaves},
-    {"native_begin_exclusive", 		"()Z", 					(void*)android_onewire_OneWireNativeService_begin_exclusive},
-    {"native_end_exclusive", 		"()V", 					(void*)android_onewire_OneWireNativeService_end_exclusive},
+    {"native_begin_exclusive", 		"(I)Z", 					(void*)android_onewire_OneWireNativeService_begin_exclusive},
+    {"native_end_exclusive", 		"(I)V", 					(void*)android_onewire_OneWireNativeService_end_exclusive},
 
     //{"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireNativeService_list_masters},
-    {"native_search_slaves", 		"(IZ[J)I", 				(void*)android_onewire_OneWireNativeService_search_slaves},
+    {"native_search_slaves", 		"(I[J)I", 				(void*)android_onewire_OneWireNativeService_search_slaves},
     {"native_master_reset", 		"(I)Z", 				(void*)android_onewire_OneWireNativeService_master_reset},
     {"native_master_touch", 		"(I[BI[B)Z", 			(void*)android_onewire_OneWireNativeService_master_touch},
     {"native_master_read", 			"(II[B)Z", 				(void*)android_onewire_OneWireNativeService_master_read},

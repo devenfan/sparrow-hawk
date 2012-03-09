@@ -72,8 +72,8 @@ typedef struct w1hal_device_operations {
     /** End exclusive action. */
     void (*end_exclusive)(w1_master_id masterId);
 
-    /** List all the Masters */
-    BOOL (*list_masters)(w1_master_id * masters, int * pMasterCount);
+    /** List all the Masters 
+    BOOL (*list_masters)(w1_master_id * masters, int * pMasterCount);*/
 
     /** Search Slaves by Master Id */
     BOOL (*search_slaves)(w1_master_id masterId, w1_slave_rn * slaves, int * pSlaveCount);
