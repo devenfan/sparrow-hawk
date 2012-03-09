@@ -41,10 +41,15 @@ typedef struct w1_user_service {
 
     void (*stop)();
 
-    //support multi-masters
-    BOOL (*list_masters)(w1_master_id * masterIDs, int * masterCount);
+    w1_master_id (*get_current_master)();
 
-    //void (*list_slaves)(w1_master_id masterId, w1_slave_rn * slaveIDs, int * slaveCount);
+    void (*get_current_slaves)(w1_slave_rn * slaveIDs, int * slaveCount);
+
+    //BOOL (*list_masters)(w1_master_id * masterIDs, int * masterCount);
+
+    BOOL (*begin_exclusive)(w1_master_id masterId);
+
+    void (*end_exclusive)(w1_master_id masterId);
 
     BOOL (*search_slaves)(w1_master_id masterId, w1_slave_rn * slaves, int * pSlaveCount);
 
@@ -56,9 +61,6 @@ typedef struct w1_user_service {
 
     BOOL (*master_touch)(w1_master_id masterId, void * dataIn, int dataInLen, void * dataOut, int * pDataOutLen);
 
-    BOOL (*master_begin_exclusive)(w1_master_id masterId);
-
-    void (*master_end_exclusive)(w1_master_id masterId);
 
 } w1_user_service;
 
