@@ -38,6 +38,7 @@ public class Android_onewire_jnitestActivity extends Activity {
         }
         
         _OneWireNativeService = new OneWireNativeService();
+        /*
         _OneWireNativeService.setListener(new OneWireListener() {
 			
 			//@Override
@@ -63,7 +64,7 @@ public class Android_onewire_jnitestActivity extends Activity {
 				
 			}
 		});
-        
+        */
         _txtLog = (TextView) findViewById(R.id.txtLog);
         _txtStatus = (TextView) findViewById(R.id.txtStatus);
         _btnStart = (Button) findViewById(R.id.btnStart);
