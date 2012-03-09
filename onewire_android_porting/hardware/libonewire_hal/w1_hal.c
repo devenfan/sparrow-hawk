@@ -31,9 +31,6 @@
 #include "libonewire/w1_userspace.h"
 #include "libonewire/w1_userservice.h"
 
-//#include "libonewire/w1_netlink_userspace.h"
-//#include "libonewire/w1_netlink_userservice.h"
-//#include "libonewire/w1_sysfs_userservice.h"
 
 #include "libonewire_hal/w1_hal.h"
 

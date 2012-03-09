@@ -529,6 +529,26 @@ void w1_sysfs_userservice_stop()
 }
 
 
+/**
+ * DONOT invoke this method unless userspace service is started...
+**/
+static w1_master_id get_current_w1_master()
+{
+    return g_masterId;  //needs locker???
+}
+
+/**
+ * DONOT invoke this method unless userspace service is started...
+**/
+static void get_current_w1_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
+{
+    if(g_slavesCount > 0)
+    {
+        *slaveCount = g_slavesCount;
+        memcpy(slaveIDs, g_slavesIDs, sizeof(w1_slave_rn) * g_slavesCount);
+    }
+}
+
 
 /**
  *
@@ -631,7 +651,7 @@ BOOL w1_sysfs_master_touch(w1_master_id masterId, void * dataIn, int dataInLen, 
 }
 
 
-static BOOL w1_sysfs_master_begin_exclusive(w1_master_id masterId)
+static BOOL w1_master_begin_exclusive(w1_master_id masterId)
 {
     if(0 == masterId) return FALSE;
     if(g_masterId != masterId) return FALSE;
@@ -646,7 +666,7 @@ static BOOL w1_sysfs_master_begin_exclusive(w1_master_id masterId)
     return TRUE;
 }
 
-static void w1_sysfs_master_end_exclusive(w1_master_id masterId)
+static void w1_master_end_exclusive(w1_master_id masterId)
 {
     pthread_mutex_lock(&g_globalLocker);
     g_w1SearchingThreadPauseFalg = 0;   //needs locker???
@@ -660,13 +680,17 @@ struct w1_user_service w1_sysfs_userservice =
     .init = w1_sysfs_userservice_init,
     .start = w1_sysfs_userservice_start,
     .stop = w1_sysfs_userservice_stop,
-    .list_masters = w1_sysfs_list_masters,
+    //.list_masters = w1_sysfs_list_masters,
+
+    .get_current_master = get_current_w1_master,
+    .get_current_slaves = get_current_w1_slaves,
+    .begin_exclusive = w1_master_begin_exclusive,
+    .end_exclusive = w1_master_end_exclusive,
+
     .search_slaves = w1_sysfs_master_search,
     .master_reset = w1_sysfs_master_reset,
     .master_read = w1_sysfs_master_read,
     .master_write = w1_sysfs_master_write,
     .master_touch = w1_sysfs_master_touch,
-    .master_begin_exclusive = w1_sysfs_master_begin_exclusive,
-    .master_end_exclusive = w1_sysfs_master_end_exclusive,
 };
 

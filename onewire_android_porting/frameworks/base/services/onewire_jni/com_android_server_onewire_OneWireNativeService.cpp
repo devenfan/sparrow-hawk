@@ -31,13 +31,8 @@
 #include <pthread.h>
 
 #include "libonewire/sh_types.h"
-//#include "libonewire/sh_error.h"
-//#include "libonewire/sh_util.h"
-//#include "libonewire/sh_thread.h"
-//#include "libonewire/kernel_connector.h"
-#include "libonewire/w1_netlink_userspace.h"
-//#include "libonewire/w1_netlink_util.h"
-#include "libonewire/w1_netlink_userservice.h"
+#include "libonewire/w1_userspace.h"
+#include "libonewire/w1_userservice.h"
 
 #include "libonewire_hal/w1_hal.h"
 
@@ -276,10 +271,15 @@ static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env,
  * Class Name: 		OneWireNativeService
  * Method Name:  	begin_exclusive
 */
-static void android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jobject obj)
+static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jobject obj)
 {
-	if(sOneWireInterface)
-		sOneWireInterface->begin_exclusive();
+	if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
+		return JNI_FALSE;
+	}
+
+	return sOneWireInterface->begin_exclusive();
 }
 
 /**
@@ -289,8 +289,12 @@ static void android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jo
 */
 static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobject obj)
 {
-	if(sOneWireInterface)
-		sOneWireInterface->end_exclusive();
+	if(!sOneWireInterface)
+	{
+	    LOGE("w1 Stub operations not exist!");
+	}
+
+	sOneWireInterface->end_exclusive();
 }
 
 /**
@@ -440,265 +444,6 @@ static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, j
 }
 
 
-/*
-static jboolean android_location_GpsLocationProvider_set_position_mode(JNIEnv* env, jobject obj,
-        jint mode, jint recurrence, jint min_interval, jint preferred_accuracy, jint preferred_time)
-{
-    if (sGpsInterface)
-        return (sGpsInterface->set_position_mode(mode, recurrence, min_interval, preferred_accuracy,
-                preferred_time) == 0);
-    else
-        return false;
-}
-
-static jboolean android_location_GpsLocationProvider_start(JNIEnv* env, jobject obj)
-{
-    if (sGpsInterface)
-        return (sGpsInterface->start() == 0);
-    else
-        return false;
-}
-
-static jboolean android_location_GpsLocationProvider_stop(JNIEnv* env, jobject obj)
-{
-    if (sGpsInterface)
-        return (sGpsInterface->stop() == 0);
-    else
-        return false;
-}
-
-static void android_location_GpsLocationProvider_delete_aiding_data(JNIEnv* env, jobject obj, jint flags)
-{
-    if (sGpsInterface)
-        sGpsInterface->delete_aiding_data(flags);
-}
-
-static jint android_location_GpsLocationProvider_read_sv_status(JNIEnv* env, jobject obj,
-        jintArray prnArray, jfloatArray snrArray, jfloatArray elevArray, jfloatArray azumArray,
-        jintArray maskArray)
-{
-    // this should only be called from within a call to reportSvStatus
-
-    jint* prns = env->GetIntArrayElements(prnArray, 0);
-    jfloat* snrs = env->GetFloatArrayElements(snrArray, 0);
-    jfloat* elev = env->GetFloatArrayElements(elevArray, 0);
-    jfloat* azim = env->GetFloatArrayElements(azumArray, 0);
-    jint* mask = env->GetIntArrayElements(maskArray, 0);
-
-    int num_svs = sGpsSvStatus.num_svs;
-    for (int i = 0; i < num_svs; i++) {
-        prns[i] = sGpsSvStatus.sv_list[i].prn;
-        snrs[i] = sGpsSvStatus.sv_list[i].snr;
-        elev[i] = sGpsSvStatus.sv_list[i].elevation;
-        azim[i] = sGpsSvStatus.sv_list[i].azimuth;
-    }
-    mask[0] = sGpsSvStatus.ephemeris_mask;
-    mask[1] = sGpsSvStatus.almanac_mask;
-    mask[2] = sGpsSvStatus.used_in_fix_mask;
-
-    env->ReleaseIntArrayElements(prnArray, prns, 0);
-    env->ReleaseFloatArrayElements(snrArray, snrs, 0);
-    env->ReleaseFloatArrayElements(elevArray, elev, 0);
-    env->ReleaseFloatArrayElements(azumArray, azim, 0);
-    env->ReleaseIntArrayElements(maskArray, mask, 0);
-    return num_svs;
-}
-
-static void android_location_GpsLocationProvider_agps_set_reference_location_cellid(JNIEnv* env,
-        jobject obj, jint type, jint mcc, jint mnc, jint lac, jint cid)
-{
-    AGpsRefLocation location;
-
-    if (!sAGpsRilInterface) {
-        LOGE("no AGPS RIL interface in agps_set_reference_location_cellid");
-        return;
-    }
-
-    switch(type) {
-        case AGPS_REF_LOCATION_TYPE_GSM_CELLID:
-        case AGPS_REF_LOCATION_TYPE_UMTS_CELLID:
-            location.type = type;
-            location.u.cellID.mcc = mcc;
-            location.u.cellID.mnc = mnc;
-            location.u.cellID.lac = lac;
-            location.u.cellID.cid = cid;
-            break;
-        default:
-            LOGE("Neither a GSM nor a UMTS cellid (%s:%d).",__FUNCTION__,__LINE__);
-            return;
-            break;
-    }
-    sAGpsRilInterface->set_ref_location(&location, sizeof(location));
-}
-
-static void android_location_GpsLocationProvider_agps_send_ni_message(JNIEnv* env,
-        jobject obj, jbyteArray ni_msg, jint size)
-{
-    size_t sz;
-
-    if (!sAGpsRilInterface) {
-        LOGE("no AGPS RIL interface in send_ni_message");
-        return;
-    }
-    if (size < 0)
-        return;
-    sz = (size_t)size;
-    jbyte* b = env->GetByteArrayElements(ni_msg, 0);
-    sAGpsRilInterface->ni_message((uint8_t *)b,sz);
-    env->ReleaseByteArrayElements(ni_msg,b,0);
-}
-
-static void android_location_GpsLocationProvider_agps_set_id(JNIEnv *env,
-        jobject obj, jint type, jstring  setid_string)
-{
-    if (!sAGpsRilInterface) {
-        LOGE("no AGPS RIL interface in agps_set_id");
-        return;
-    }
-
-    const char *setid = env->GetStringUTFChars(setid_string, NULL);
-    sAGpsRilInterface->set_set_id(type, setid);
-    env->ReleaseStringUTFChars(setid_string, setid);
-}
-
-static jint android_location_GpsLocationProvider_read_nmea(JNIEnv* env, jobject obj,
-                                            jbyteArray nmeaArray, jint buffer_size)
-{
-    // this should only be called from within a call to reportNmea
-    jbyte* nmea = (jbyte *)env->GetPrimitiveArrayCritical(nmeaArray, 0);
-    int length = sNmeaStringLength;
-    if (length > buffer_size)
-        length = buffer_size;
-    memcpy(nmea, sNmeaString, length);
-    env->ReleasePrimitiveArrayCritical(nmeaArray, nmea, JNI_ABORT);
-    return length;
-}
-
-static void android_location_GpsLocationProvider_inject_time(JNIEnv* env, jobject obj,
-        jlong time, jlong timeReference, jint uncertainty)
-{
-    if (sGpsInterface)
-        sGpsInterface->inject_time(time, timeReference, uncertainty);
-}
-
-static void android_location_GpsLocationProvider_inject_location(JNIEnv* env, jobject obj,
-        jdouble latitude, jdouble longitude, jfloat accuracy)
-{
-    if (sGpsInterface)
-        sGpsInterface->inject_location(latitude, longitude, accuracy);
-}
-
-static jboolean android_location_GpsLocationProvider_supports_xtra(JNIEnv* env, jobject obj)
-{
-    return (sGpsXtraInterface != NULL);
-}
-
-static void android_location_GpsLocationProvider_inject_xtra_data(JNIEnv* env, jobject obj,
-        jbyteArray data, jint length)
-{
-    if (!sGpsXtraInterface) {
-        LOGE("no XTRA interface in inject_xtra_data");
-        return;
-    }
-
-    jbyte* bytes = (jbyte *)env->GetPrimitiveArrayCritical(data, 0);
-    sGpsXtraInterface->inject_xtra_data((char *)bytes, length);
-    env->ReleasePrimitiveArrayCritical(data, bytes, JNI_ABORT);
-}
-
-static void android_location_GpsLocationProvider_agps_data_conn_open(JNIEnv* env, jobject obj, jstring apn)
-{
-    if (!sAGpsInterface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
-        return;
-    }
-    if (apn == NULL) {
-        jniThrowException(env, "java/lang/IllegalArgumentException", NULL);
-        return;
-    }
-    const char *apnStr = env->GetStringUTFChars(apn, NULL);
-    sAGpsInterface->data_conn_open(apnStr);
-    env->ReleaseStringUTFChars(apn, apnStr);
-}
-
-static void android_location_GpsLocationProvider_agps_data_conn_closed(JNIEnv* env, jobject obj)
-{
-    if (!sAGpsInterface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
-        return;
-    }
-    sAGpsInterface->data_conn_closed();
-}
-
-static void android_location_GpsLocationProvider_agps_data_conn_failed(JNIEnv* env, jobject obj)
-{
-    if (!sAGpsInterface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
-        return;
-    }
-    sAGpsInterface->data_conn_failed();
-}
-
-static void android_location_GpsLocationProvider_set_agps_server(JNIEnv* env, jobject obj,
-        jint type, jstring hostname, jint port)
-{
-    if (!sAGpsInterface) {
-        LOGE("no AGPS interface in agps_data_conn_open");
-        return;
-    }
-    const char *c_hostname = env->GetStringUTFChars(hostname, NULL);
-    sAGpsInterface->set_server(type, c_hostname, port);
-    env->ReleaseStringUTFChars(hostname, c_hostname);
-}
-
-static void android_location_GpsLocationProvider_send_ni_response(JNIEnv* env, jobject obj,
-      jint notifId, jint response)
-{
-    if (!sGpsNiInterface) {
-        LOGE("no NI interface in send_ni_response");
-        return;
-    }
-
-    sGpsNiInterface->respond(notifId, response);
-}
-
-static jstring android_location_GpsLocationProvider_get_internal_state(JNIEnv* env, jobject obj)
-{
-    jstring result = NULL;
-    if (sGpsDebugInterface) {
-        const size_t maxLength = 2047;
-        char buffer[maxLength+1];
-        size_t length = sGpsDebugInterface->get_internal_state(buffer, maxLength);
-        if (length > maxLength) length = maxLength;
-        buffer[length] = 0;
-        result = env->NewStringUTF(buffer);
-    }
-    return result;
-}
-
-static void android_location_GpsLocationProvider_update_network_state(JNIEnv* env, jobject obj,
-        jboolean connected, int type, jboolean roaming, jboolean available, jstring extraInfo, jstring apn)
-{
-
-    if (sAGpsRilInterface && sAGpsRilInterface->update_network_state) {
-        if (extraInfo) {
-            const char *extraInfoStr = env->GetStringUTFChars(extraInfo, NULL);
-            sAGpsRilInterface->update_network_state(connected, type, roaming, extraInfoStr);
-            env->ReleaseStringUTFChars(extraInfo, extraInfoStr);
-        } else {
-            sAGpsRilInterface->update_network_state(connected, type, roaming, NULL);
-        }
-
-        // update_network_availability callback was not included in original AGpsRilInterface
-        if (sAGpsRilInterface->size >= sizeof(AGpsRilInterface)
-                && sAGpsRilInterface->update_network_availability) {
-            const char *c_apn = env->GetStringUTFChars(apn, NULL);
-            sAGpsRilInterface->update_network_availability(available, c_apn);
-            env->ReleaseStringUTFChars(apn, c_apn);
-        }
-    }
-}
-*/
 
 
 
@@ -711,10 +456,10 @@ static JNINativeMethod sMethods[] = {
 
     {"native_get_current_master", 	"()I", 					(void*)android_onewire_OneWireNativeService_get_current_master},
     {"native_get_current_slaves", 	"([J)I", 				(void*)android_onewire_OneWireNativeService_get_current_slaves},
-    {"native_begin_exclusive", 		"()V", 					(void*)android_onewire_OneWireNativeService_begin_exclusive},
+    {"native_begin_exclusive", 		"()Z", 					(void*)android_onewire_OneWireNativeService_begin_exclusive},
     {"native_end_exclusive", 		"()V", 					(void*)android_onewire_OneWireNativeService_end_exclusive},
 
-    {"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireNativeService_list_masters},
+    //{"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireNativeService_list_masters},
     {"native_search_slaves", 		"(IZ[J)I", 				(void*)android_onewire_OneWireNativeService_search_slaves},
     {"native_master_reset", 		"(I)Z", 				(void*)android_onewire_OneWireNativeService_master_reset},
     {"native_master_touch", 		"(I[BI[B)Z", 			(void*)android_onewire_OneWireNativeService_master_touch},
@@ -722,6 +467,9 @@ static JNINativeMethod sMethods[] = {
     {"native_master_write", 		"(II[B)Z", 				(void*)android_onewire_OneWireNativeService_master_write},
 
 };
+
+
+
 
 int register_android_server_onewire_OneWireNativeService(JNIEnv* env)
 {

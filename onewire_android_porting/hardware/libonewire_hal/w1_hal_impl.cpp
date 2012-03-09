@@ -72,8 +72,8 @@ static const w1hal_interface sW1HalInterface =
     w1hal_int_start,
     w1hal_int_stop,
 
-	w1hal_int_get_master_id,
-	w1hal_int_get_slave_ids,
+	w1hal_int_get_current_master,
+	w1hal_int_get_current_slaves,
 	w1hal_int_begin_exclusive_action,
 	w1hal_int_end_exclusive_action,
 

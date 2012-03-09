@@ -818,7 +818,7 @@ void w1_netlink_userservice_stop()
 /**
  * DONOT invoke this method unless userspace service is started...
 **/
-w1_master_id get_w1_master_id()
+static w1_master_id get_current_w1_master()
 {
     return g_masterId;  //needs locker???
 }
@@ -826,10 +826,13 @@ w1_master_id get_w1_master_id()
 /**
  * DONOT invoke this method unless userspace service is started...
 **/
-void get_w1_slave_ids(w1_slave_rn * slaveIDs, int * slaveCount)
+static void get_current_w1_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
 {
-    memcpy(slaveIDs, g_slavesIDs, sizeof(w1_slave_rn) * g_slavesCount);
-    *slaveCount = g_slavesCount;
+    if(g_slavesCount > 0)
+    {
+        *slaveCount = g_slavesCount;
+        memcpy(slaveIDs, g_slavesIDs, sizeof(w1_slave_rn) * g_slavesCount);
+    }
 }
 
 /**
@@ -1278,14 +1281,18 @@ struct w1_user_service w1_netlink_userservice =
     .init = w1_netlink_userservice_init,
     .start = w1_netlink_userservice_start,
     .stop = w1_netlink_userservice_stop,
-    .list_masters = w1_list_masters,
+
+    .get_current_master = get_current_w1_master,
+    .get_current_slaves = get_current_w1_slaves,
+    .begin_exclusive = w1_master_begin_exclusive,
+    .end_exclusive = w1_master_end_exclusive,
+
+    //.list_masters = w1_list_masters,
     .search_slaves = w1_master_search,
     .master_reset = w1_master_reset,
     .master_read = w1_master_read,
     .master_write = w1_master_write,
     .master_touch = w1_master_touch,
-    .master_begin_exclusive = w1_master_begin_exclusive,
-    .master_end_exclusive = w1_master_end_exclusive,
 };
 
 

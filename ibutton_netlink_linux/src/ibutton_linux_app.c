@@ -157,7 +157,7 @@ static void on_slave_removed(w1_slave_rn slave_id)
 /* ============================ Test Method ============================= */
 /* ====================================================================== */
 
-
+/*
 BOOL Test_ListMasters()
 {
     BOOL succeed = FALSE;
@@ -182,7 +182,7 @@ BOOL Test_ListMasters()
 
     return succeed;
 }
-
+*/
 
 BOOL Test_ResetMaster()
 {
@@ -211,23 +211,19 @@ BOOL Test_SearchSlaves()
     int index = 0;
 
     memset(slaves, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
-    m_userService->master_begin_exclusive(m_masterId);
+
+    m_userService->begin_exclusive(m_masterId);
     succeed = m_userService->search_slaves(m_masterId, slaves, &slaveCount);
-    m_userService->master_end_exclusive(m_masterId);
+    m_userService->end_exclusive(m_masterId);
+
     if(succeed)
     {
         Debug("search_slaves Succeed!\n");
 
         m_slaveCount = slaveCount;
-        //m_slaveCurrentIndex = (slaveCount > 0) ? 0 : -1;
 
         memset(m_slaveIDs, 0, sizeof(w1_slave_rn) * SLAVE_MAX_COUNT);
-        for(index = 0; index < slaveCount; index++)
-        {
-            m_slaveIDs[index] = slaves[index];
-        }
-
-        //memcpy(m_slaveIDs, slaves, sizeof(w1_slave_rn) * m_slaveCount);
+        memcpy(m_slaveIDs, slaves, sizeof(w1_slave_rn) * m_slaveCount);
     }
     else
     {
@@ -504,16 +500,9 @@ int main(void)
         goto GameOver;
     }
 
-    Debug("======================================================\n");
+    m_masterId = m_userService->get_current_master();
 
-    if(Test_ListMasters())
-    {
-        Debug("Test_ListMasters OK!!!\n");
-    }
-    else
-    {
-        Debug("Test_ListMasters failed...\n");
-    }
+    m_userService->get_current_slaves(m_slaveIDs, &m_slaveCount);
 
     Debug("======================================================\n");
 
