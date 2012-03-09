@@ -199,6 +199,8 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
 		return JNI_FALSE;
 	}
 
+	sOneWireInterface->init(&sW1UserCallbacks);
+
 	return (sOneWireInterface->start());
 }
 

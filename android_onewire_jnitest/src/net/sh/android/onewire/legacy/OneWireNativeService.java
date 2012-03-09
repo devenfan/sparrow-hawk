@@ -132,14 +132,12 @@ public class OneWireNativeService {
     //return the slave count...
     private native int native_get_current_slaves(long[] slaveRNs);
     
-    //TODO return status...
-    private native void native_begin_exclusive(); 
+    private native boolean native_begin_exclusive(); 
     
-    //TODO return status...
     private native void native_end_exclusive();
     
     //return the master count...
-    private native int native_list_masters(int[] masterIDs);
+    //private native int native_list_masters(int[] masterIDs);
     
     //return the slave count...
     private native int native_search_slaves(

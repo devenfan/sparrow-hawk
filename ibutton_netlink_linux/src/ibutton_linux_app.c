@@ -387,18 +387,18 @@ BOOL Test_1920Temperature()
     Debug("[1]MatchROM Succeed!\n");
 
     //2. ConvertTemperature
-    m_userService->master_begin_exclusive(m_masterId);
+    m_userService->begin_exclusive(m_masterId);
 
     succeed = m_userService->master_write(m_masterId, dataLen2, data2);
     if(!succeed)
     {
-        m_userService->master_end_exclusive(m_masterId);
+        m_userService->end_exclusive(m_masterId);
         Debug("[2]ConvertTemperature Failed!\n");
         return FALSE;
     }
     sleep(1); //Data line is held high for at least 0.75 seconds by bus
               //master to allow conversion to complete. Here use 1s instead.
-    m_userService->master_end_exclusive(m_masterId);
+    m_userService->end_exclusive(m_masterId);
     Debug("[2]ConvertTemperature Succeed!\n");
 
 
@@ -543,16 +543,17 @@ int main(void)
     sleep(3);
 
     char useless[50];
-    Debug("Type something to quit: \n");
+    Debug("\nType something to quit: \n\n");
     scanf("%s", useless);
-    Debug("OK: %s\n", useless);
+    Debug("\nYour input: %s\nOK! Let's Quit!\n\n", useless);
 
     ibutton_test_teardown();
 
 GameOver:
 
     Debug("======================================================\n");
-	Debug("Main App Game Over...\n");
+	Debug("Main App Game Over...\n\n");
+    Debug("======================================================\n");
 	return 0;
 }
 

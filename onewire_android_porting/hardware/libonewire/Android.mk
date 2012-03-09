@@ -31,7 +31,7 @@ LOCAL_SRC_FILES :=  \
 	w1_userspace_util.c	    \
 	w1_netlink_util.c		\
 	w1_netlink_userservice.c \
-	w1_sysfs_userservice
+	w1_sysfs_userservice.c
 
 LOCAL_MODULE := libonewire
 
