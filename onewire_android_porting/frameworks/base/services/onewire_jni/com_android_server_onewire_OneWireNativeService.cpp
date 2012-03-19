@@ -257,7 +257,7 @@ static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env,
     w1_master_id master = sOneWireInterface->get_current_master();
     convert_master_id_to_jint(&master, &idOut);
 
-    return id;
+    return idOut;
 }
 
 /**
@@ -478,7 +478,6 @@ static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, j
         jint masterId, jint writeLen, jbyteArray dataWriteIn)
 {
     jboolean result = JNI_FALSE;
-    w1_master_id id;
 
     w1_master_id idOut;
     convert_jint_to_master_id(&masterId, &idOut);
@@ -489,7 +488,7 @@ static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, j
 
         memcpy(&id, &masterId, sizeof(w1_master_id));
 
-        result = sOneWireInterface->master_write(idOut, writeLen, reinpreter_cast<BYTE *>b);
+        result = sOneWireInterface->master_write(idOut, writeLen, (BYTE *)b);
 
         env->ReleaseByteArrayElements(dataWriteIn, b, 0);
     }
