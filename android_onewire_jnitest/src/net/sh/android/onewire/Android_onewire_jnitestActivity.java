@@ -92,8 +92,10 @@ public class Android_onewire_jnitestActivity extends Activity {
         _btnTest.setOnClickListener(new View.OnClickListener() {  
             public void onClick(View v) {  
             	
-            	_txtStatus.setText(OneWireNativeService.isSupported() ? 
-            			"OneWire supported!!!" : "OneWire not supported...");
+//            	_txtStatus.setText(OneWireNativeService.isSupported() ? 
+//            			"OneWire supported!!!" : "OneWire not supported...");
+            	
+            	_txtStatus.setText("Master ID: " + _OneWireNativeService.getMasterId());
             }  
             
          }); 

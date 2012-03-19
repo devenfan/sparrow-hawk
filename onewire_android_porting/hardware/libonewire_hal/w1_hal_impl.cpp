@@ -52,7 +52,7 @@ static void w1hal_int_stop();
 
 static w1_master_id w1hal_int_get_current_master();
 
-static BOOL w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount);
+static void w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount);
 
 static BOOL w1hal_int_begin_exclusive_action(w1_master_id masterId);
 
@@ -61,7 +61,7 @@ static void w1hal_int_end_exclusive_action(w1_master_id masterId);
 
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount);
 
-static BOOL w1hal_int_search_slaves(w1_master_id masterId, 
+static BOOL w1hal_int_search_slaves(w1_master_id masterId,
                       w1_slave_rn * slaves, int * pSlaveCount);
 
 static BOOL w1hal_int_master_reset(w1_master_id masterId);
@@ -118,12 +118,12 @@ static void w1hal_int_stop()
 
 static w1_master_id w1hal_int_get_current_master()
 {
-    return 0;
+    return w1UserService->get_current_master();
 }
 
-static BOOL w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
+static void w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
 {
-	return FALSE;
+	w1UserService->get_current_slaves(slaveIDs, slaveCount);
 }
 
 static BOOL w1hal_int_begin_exclusive_action(w1_master_id masterId)

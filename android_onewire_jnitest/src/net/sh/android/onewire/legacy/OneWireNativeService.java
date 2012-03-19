@@ -64,9 +64,10 @@ public class OneWireNativeService {
     	}
     }
     
-    public void init(){
-    	class_init_native(); 
+    public int getMasterId(){
+    	return native_get_current_master();
     }
+    
     
     // Callbacks (Invoked by JNI native codes...) --------------------------
     
@@ -97,22 +98,22 @@ public class OneWireNativeService {
      * slaveRN: 8 bytes
      * */
     private void slaveAdded(long slaveRN){
-    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
-    	Log.i(TAG, "slaveAdded: " + ID);
-    	if(_listener != null){
-    		_listener.oneWireSlaveAdded(ID);
-    	}
+//    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
+//    	Log.i(TAG, "slaveAdded: " + ID);
+//    	if(_listener != null){
+//    		_listener.oneWireSlaveAdded(ID);
+//    	}
     }
 
     /**
      * slaveRN: 8 bytes
      * */
     private void slaveRemoved(long slaveRN){
-    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
-    	Log.i(TAG, "slaveRemoved: " + ID);
-    	if(_listener != null){
-    		_listener.oneWireSlaveRemoved(ID);
-    	}
+//    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
+//    	Log.i(TAG, "slaveRemoved: " + ID);
+//    	if(_listener != null){
+//    		_listener.oneWireSlaveRemoved(ID);
+//    	}
     }
     
 

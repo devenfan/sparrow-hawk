@@ -121,24 +121,34 @@ static void master_removed_callback(w1_master_id masterId)
 
 static void slave_added_callback(w1_slave_rn slaveRN)
 {
+    LOGD("slave_added_callback: 1");
     JNIEnv* env = AndroidRuntime::getJNIEnv();
+    LOGD("slave_added_callback: 2");
 
     jlong id;
     convert_slave_id_to_jlong(&slaveRN, &id);
+    LOGD("slave_added_callback: 3");
     env->CallVoidMethod(mCallbacksObj, method_slaveAdded, id);
+    LOGD("slave_added_callback: 4");
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
+    LOGD("slave_added_callback: 5");
 }
 
 static void slave_removed_callback(w1_slave_rn slaveRN)
 {
+    LOGD("slave_removed_callback: 1");
     JNIEnv* env = AndroidRuntime::getJNIEnv();
+    LOGD("slave_removed_callback: 2");
 
     jlong id;
     convert_slave_id_to_jlong(&slaveRN, &id);
+    LOGD("slave_removed_callback: 3");
     env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, id);
+    LOGD("slave_removed_callback: 4");
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
+    LOGD("slave_removed_callback: 5");
 }
 
 
@@ -217,7 +227,6 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
 */
 static jboolean android_onewire_OneWireNativeService_is_supported(JNIEnv* env, jclass clazz)
 {
-
     if(!sOneWireInterface)
     {
         LOGE("w1 Stub operations not exist!");
@@ -238,6 +247,8 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
     {
         mCallbacksObj = env->NewGlobalRef(obj);
     }
+
+    LOGD("mCallbacksObj: 0x%p", mCallbacksObj);
 
     if(!sOneWireInterface)
     {
