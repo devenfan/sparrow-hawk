@@ -66,7 +66,7 @@ static void convert_jlong_to_slave_id(const jlong * idIn, w1_slave_rn * idOut)
 }
 
 
-static void convert_slave_id_to_jlong(const w1_slave_rn * idId, jlong * idOut)
+static void convert_slave_id_to_jlong(const w1_slave_rn * idIn, jlong * idOut)
 {
     memcpy(idOut, idIn, sizeof(jlong));
 }
@@ -123,7 +123,7 @@ static void slave_added_callback(w1_slave_rn slaveRN)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
 
-    jint id;
+    jlong id;
     convert_slave_id_to_jlong(&slaveRN, &id);
     env->CallVoidMethod(mCallbacksObj, method_slaveAdded, id);
 
@@ -134,7 +134,7 @@ static void slave_removed_callback(w1_slave_rn slaveRN)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
 
-    jint id;
+    jlong id;
     convert_slave_id_to_jlong(&slaveRN, &id);
     env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, id);
 
