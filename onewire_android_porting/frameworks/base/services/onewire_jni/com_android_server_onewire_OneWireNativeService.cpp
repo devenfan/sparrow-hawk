@@ -60,9 +60,20 @@ namespace android
 
 
 
+static void convert_jlong_to_slave_id(const jlong * idIn, w1_slave_rn * idOut)
+{
+    memcpy(idOut, idIn, sizeof(w1_slave_rn));
+}
+
+
+static void convert_slave_id_to_jlong(const w1_slave_rn * idId, jlong * idOut)
+{
+    memcpy(idOut, idIn, sizeof(jlong));
+}
+
 static void convert_jint_to_master_id(const jint * idIn, w1_master_id * idOut)
 {
-    memcpy(idOut, idIn, sizeof(jint));
+    memcpy(idOut, idIn, sizeof(w1_master_id));
 }
 
 static void convert_master_id_to_jint(const w1_master_id * idIn, jint * idOut)
@@ -89,28 +100,44 @@ static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodNa
 static void master_added_callback(w1_master_id masterId)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_masterAdded, *((jint*)&masterId));
+
+    jint id;
+    convert_master_id_to_jint(&masterId, &id);
+    env->CallVoidMethod(mCallbacksObj, method_masterAdded, id);
+
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void master_removed_callback(w1_master_id masterId)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_masterRemoved, *((jint*)&masterId));
+
+    jint id;
+    convert_master_id_to_jint(&masterId, &id);
+    env->CallVoidMethod(mCallbacksObj, method_masterRemoved, id);
+
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void slave_added_callback(w1_slave_rn slaveRN)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_slaveAdded, *((jlong*)&slaveRN));
+
+    jint id;
+    convert_slave_id_to_jlong(&slaveRN, &id);
+    env->CallVoidMethod(mCallbacksObj, method_slaveAdded, id);
+
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void slave_removed_callback(w1_slave_rn slaveRN)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-    env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, *((jlong*)&slaveRN));
+
+    jint id;
+    convert_slave_id_to_jlong(&slaveRN, &id);
+    env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, id);
+
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
@@ -118,7 +145,6 @@ static void slave_removed_callback(w1_slave_rn slaveRN)
 
 w1_user_callbacks sW1UserCallbacks =
 {
-
     master_added_callback,
     master_removed_callback,
     slave_added_callback,
@@ -485,8 +511,6 @@ static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, j
     if(sOneWireInterface)
     {
         jbyte* b = env->GetByteArrayElements(dataWriteIn, NULL);
-
-        memcpy(&id, &masterId, sizeof(w1_master_id));
 
         result = sOneWireInterface->master_write(idOut, writeLen, (BYTE *)b);
 
