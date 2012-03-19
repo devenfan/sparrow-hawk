@@ -55,11 +55,29 @@ static const w1hal_interface * sOneWireInterface = NULL;
 #define MAX_SLAVE_COUNT  10
 #define MAX_MASTER_COUNT  3
 
-namespace android {
+namespace android
+{
 
 
-static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName) {
-    if (env->ExceptionCheck()) {
+
+static void convert_jint_to_master_id(const jint * idIn, w1_master_id * idOut)
+{
+    memcpy(idOut, idIn, sizeof(jint));
+}
+
+static void convert_master_id_to_jint(const w1_master_id * idIn, jint * idOut)
+{
+    memcpy(idOut, idIn, sizeof(jint));
+}
+
+
+
+
+
+static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName)
+{
+    if (env->ExceptionCheck())
+    {
         LOGE("An exception was thrown by callback '%s'.", methodName);
         //LOGE_EX(env);
         env->ExceptionClear();
@@ -71,34 +89,35 @@ static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodNa
 static void master_added_callback(w1_master_id masterId)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-	env->CallVoidMethod(mCallbacksObj, method_masterAdded, *((jint*)&masterId));
+    env->CallVoidMethod(mCallbacksObj, method_masterAdded, *((jint*)&masterId));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void master_removed_callback(w1_master_id masterId)
 {
-	JNIEnv* env = AndroidRuntime::getJNIEnv();
-	env->CallVoidMethod(mCallbacksObj, method_masterRemoved, *((jint*)&masterId));
+    JNIEnv* env = AndroidRuntime::getJNIEnv();
+    env->CallVoidMethod(mCallbacksObj, method_masterRemoved, *((jint*)&masterId));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void slave_added_callback(w1_slave_rn slaveRN)
 {
-	JNIEnv* env = AndroidRuntime::getJNIEnv();
+    JNIEnv* env = AndroidRuntime::getJNIEnv();
     env->CallVoidMethod(mCallbacksObj, method_slaveAdded, *((jlong*)&slaveRN));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 static void slave_removed_callback(w1_slave_rn slaveRN)
 {
-	JNIEnv* env = AndroidRuntime::getJNIEnv();
+    JNIEnv* env = AndroidRuntime::getJNIEnv();
     env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, *((jlong*)&slaveRN));
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
 
 
 
-w1_user_callbacks sW1UserCallbacks = {
+w1_user_callbacks sW1UserCallbacks =
+{
 
     master_added_callback,
     master_removed_callback,
@@ -109,8 +128,8 @@ w1_user_callbacks sW1UserCallbacks = {
 
 
 
-
-static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, jclass clazz) {
+static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, jclass clazz)
+{
     int err;
     hw_module_t* module;
 
@@ -126,7 +145,7 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
 
 #else
 
-	err = hw_get_module(ONEWIRE_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
+    err = hw_get_module(ONEWIRE_HARDWARE_MODULE_ID, (hw_module_t const**)&module);
 
     if (err == 0)
     {
@@ -136,8 +155,8 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
         err = module->methods->open(module, ONEWIRE_HARDWARE_MODULE_ID, &device);
         if (err == 0)
         {
-			struct w1hal_device_t * onewire_device = (struct w1hal_device_t *)device;
-			sOneWireInterface = onewire_device->get_w1_interface(onewire_device);
+            struct w1hal_device_t * onewire_device = (struct w1hal_device_t *)device;
+            sOneWireInterface = onewire_device->get_w1_interface(onewire_device);
 
             LOGI("Got w1 Stub operations.");
         }
@@ -153,14 +172,14 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
 
 #endif
 
-	if(NULL == sOneWireInterface)
-	{
-	    LOGE("Error! w1 Stub operations not found!");
-	}
-	else
-	{
-	    LOGI("Good! w1 Stub operations found!");
-	}
+    if(NULL == sOneWireInterface)
+    {
+        LOGE("Error! w1 Stub operations not found!");
+    }
+    else
+    {
+        LOGI("Good! w1 Stub operations found!");
+    }
 
 }
 
@@ -170,14 +189,15 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
  * Class Name: 		OneWireNativeService
  * Method Name:  	is_supported
 */
-static jboolean android_onewire_OneWireNativeService_is_supported(JNIEnv* env, jclass clazz) {
+static jboolean android_onewire_OneWireNativeService_is_supported(JNIEnv* env, jclass clazz)
+{
 
     if(!sOneWireInterface)
-	{
-	    LOGE("w1 Stub operations not exist!");
-	}
+    {
+        LOGE("w1 Stub operations not exist!");
+    }
 
-	return (sOneWireInterface != NULL);
+    return (sOneWireInterface != NULL);
 }
 
 /**
@@ -193,15 +213,15 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
         mCallbacksObj = env->NewGlobalRef(obj);
     }
 
-	if(!sOneWireInterface)
-	{
-	    LOGE("w1 Stub operations not exist!");
-		return JNI_FALSE;
-	}
+    if(!sOneWireInterface)
+    {
+        LOGE("w1 Stub operations not exist!");
+        return JNI_FALSE;
+    }
 
-	sOneWireInterface->init(&sW1UserCallbacks);
+    sOneWireInterface->init(&sW1UserCallbacks);
 
-	return (sOneWireInterface->start());
+    return (sOneWireInterface->start());
 }
 
 /**
@@ -211,13 +231,13 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
 */
 static void android_onewire_OneWireNativeService_stop(JNIEnv* env, jobject obj)
 {
-	if(!sOneWireInterface)
-	{
-	    LOGE("w1 Stub operations not exist!");
-		return;
-	}
+    if(!sOneWireInterface)
+    {
+        LOGE("w1 Stub operations not exist!");
+        return;
+    }
 
-	sOneWireInterface->stop();
+    sOneWireInterface->stop();
 }
 
 /**
@@ -227,13 +247,17 @@ static void android_onewire_OneWireNativeService_stop(JNIEnv* env, jobject obj)
 */
 static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env, jobject obj)
 {
-	if(!sOneWireInterface)
-	{
-	    LOGE("w1 Stub operations not exist!");
-		return 0;
-	}
+    if(!sOneWireInterface)
+    {
+        LOGE("w1 Stub operations not exist!");
+        return 0;
+    }
 
-    return sOneWireInterface->get_current_master();
+    jint idOut = 0;
+    w1_master_id master = sOneWireInterface->get_current_master();
+    convert_master_id_to_jint(&master, &idOut);
+
+    return id;
 }
 
 /**
@@ -243,14 +267,14 @@ static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env,
 */
 static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env, jobject obj, jlongArray slaveRNs)
 {
-	jint slaveCount = 0;
-	w1_slave_rn slaves[MAX_SLAVE_COUNT];
+    jint slaveCount = 0;
+    w1_slave_rn slaves[MAX_SLAVE_COUNT];
 
-	if(!sOneWireInterface)
-	{
-	    LOGE("w1 Stub operations not exist!");
-		return 0;
-	}
+    if(!sOneWireInterface)
+    {
+        LOGE("w1 Stub operations not exist!");
+        return 0;
+    }
 
     sOneWireInterface->get_current_slaves(slaves, &slaveCount);
     if(slaveCount > 0)
@@ -265,7 +289,7 @@ static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env,
         env->ReleaseLongArrayElements(slaveRNs, l, 0);
     }
 
-	return slaveCount;
+    return slaveCount;
 }
 
 /**
@@ -275,13 +299,16 @@ static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env,
 */
 static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jobject obj, jint masterId)
 {
-	if(!sOneWireInterface)
-	{
-	    LOGE("w1 Stub operations not exist!");
-		return JNI_FALSE;
-	}
+    if(!sOneWireInterface)
+    {
+        LOGE("w1 Stub operations not exist!");
+        return JNI_FALSE;
+    }
 
-	return sOneWireInterface->begin_exclusive(*((w1_master_id*)&masterId));
+    w1_master_id idOut;
+    convert_jint_to_master_id(&masterId, &idOut);
+
+    return sOneWireInterface->begin_exclusive(idOut);
 }
 
 /**
@@ -291,12 +318,15 @@ static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env
 */
 static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobject obj, jint masterId)
 {
-	if(!sOneWireInterface)
-	{
-	    LOGE("w1 Stub operations not exist!");
-	}
+    if(!sOneWireInterface)
+    {
+        LOGE("w1 Stub operations not exist!");
+    }
 
-	sOneWireInterface->end_exclusive(*((w1_master_id*)&masterId));
+    w1_master_id idOut;
+    convert_jint_to_master_id(&masterId, &idOut);
+
+    sOneWireInterface->end_exclusive(idOut);
 }
 
 /**
@@ -306,28 +336,28 @@ static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobj
 */
 static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobject obj, jintArray masterIDs)
 {
-	jint masterCount = 0;
-	w1_master_id masters[MAX_MASTER_COUNT];
-	/*
-	if(sOneWireInterface)
-	{
-		if(sOneWireInterface->list_masters(masters, &masterCount))
-		{
-			if(masterCount > 0)
-			{
-				if(masterCount > MAX_MASTER_COUNT)
-					masterCount = MAX_MASTER_COUNT;
+    jint masterCount = 0;
+    w1_master_id masters[MAX_MASTER_COUNT];
+    /*
+    if(sOneWireInterface)
+    {
+    	if(sOneWireInterface->list_masters(masters, &masterCount))
+    	{
+    		if(masterCount > 0)
+    		{
+    			if(masterCount > MAX_MASTER_COUNT)
+    				masterCount = MAX_MASTER_COUNT;
 
-				jint* i = env->GetIntArrayElements(masterIDs, NULL);
+    			jint* i = env->GetIntArrayElements(masterIDs, NULL);
 
-				memcpy(i, masters, sizeof(w1_master_id) * masterCount);
+    			memcpy(i, masters, sizeof(w1_master_id) * masterCount);
 
-				env->ReleaseIntArrayElements(masterIDs, i, 0);
-			}
-		}
-	}
-	*/
-	return masterCount;
+    			env->ReleaseIntArrayElements(masterIDs, i, 0);
+    		}
+    	}
+    }
+    */
+    return masterCount;
 }
 
 /**
@@ -336,30 +366,33 @@ static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobje
  * Method Name:  	search_slaves
 */
 static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobject obj,
-                jint masterId, jlongArray slaveRNs)
+        jint masterId, jlongArray slaveRNs)
 {
-	jint slaveCount = 0;
-	w1_slave_rn slaves[MAX_SLAVE_COUNT];
+    jint slaveCount = 0;
+    w1_slave_rn slaves[MAX_SLAVE_COUNT];
+
+    w1_master_id idOut;
+    convert_jint_to_master_id(&masterId, &idOut);
 
     if(sOneWireInterface)
     {
-    	if(sOneWireInterface->search_slaves(*((w1_master_id*)&masterId), slaves, &slaveCount))
-    	{
-    		if(slaveCount > 0)
-			{
-				if(slaveCount > MAX_SLAVE_COUNT)
-					slaveCount = MAX_SLAVE_COUNT;
+        if(sOneWireInterface->search_slaves(idOut, slaves, &slaveCount))
+        {
+            if(slaveCount > 0)
+            {
+                if(slaveCount > MAX_SLAVE_COUNT)
+                    slaveCount = MAX_SLAVE_COUNT;
 
-				jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
+                jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
 
-				memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
+                memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
 
-				env->ReleaseLongArrayElements(slaveRNs, l, 0);
-			}
-    	}
+                env->ReleaseLongArrayElements(slaveRNs, l, 0);
+            }
+        }
     }
 
-	return slaveCount;
+    return slaveCount;
 }
 
 /**
@@ -369,11 +402,15 @@ static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobj
 */
 static jboolean android_onewire_OneWireNativeService_master_reset(JNIEnv* env, jobject obj, jint masterId)
 {
-	jboolean result = JNI_FALSE;
-	if(sOneWireInterface)
-	{
-		result = sOneWireInterface->master_reset(*((w1_master_id*)&masterId));
-	}
+    jboolean result = JNI_FALSE;
+
+    w1_master_id idOut;
+    convert_jint_to_master_id(&masterId, &idOut);
+
+    if(sOneWireInterface)
+    {
+        result = sOneWireInterface->master_reset(idOut);
+    }
     return result;
 }
 
@@ -383,24 +420,27 @@ static jboolean android_onewire_OneWireNativeService_master_reset(JNIEnv* env, j
  * Method Name:  	master_touch
 */
 static jboolean android_onewire_OneWireNativeService_master_touch(JNIEnv* env, jobject obj,
-                jint masterId, jbyteArray dataIn, jint dataInLen, jbyteArray dataOut)
+        jint masterId, jbyteArray dataIn, jint dataInLen, jbyteArray dataOut)
 {
     jboolean result = JNI_FALSE;
-	jint dataOutLen = 0;
+    jint dataOutLen = 0;
+
+    w1_master_id idOut;
+    convert_jint_to_master_id(&masterId, &idOut);
 
     if(sOneWireInterface)
     {
-    	jbyte* b1 = env->GetByteArrayElements(dataIn, NULL);
-    	jbyte* b2 = env->GetByteArrayElements(dataOut, NULL);
+        jbyte* b1 = env->GetByteArrayElements(dataIn, NULL);
+        jbyte* b2 = env->GetByteArrayElements(dataOut, NULL);
 
-    	result = sOneWireInterface->master_touch(*((w1_master_id*)&masterId),
-                        (BYTE *)b1, dataInLen, (BYTE *)b2, &dataOutLen);
+        result = sOneWireInterface->master_touch(idOut,
+                 (BYTE *)b1, dataInLen, (BYTE *)b2, &dataOutLen);
 
-		env->ReleaseByteArrayElements(dataIn, b1, 0);
-		env->ReleaseByteArrayElements(dataOut, b2, 0);
+        env->ReleaseByteArrayElements(dataIn, b1, 0);
+        env->ReleaseByteArrayElements(dataOut, b2, 0);
 
-    	if(result && dataInLen == dataOutLen)
-    		result = JNI_TRUE; //how many in, how many out...
+        if(result && dataInLen == dataOutLen)
+            result = JNI_TRUE; //how many in, how many out...
     }
     return result;
 }
@@ -411,16 +451,20 @@ static jboolean android_onewire_OneWireNativeService_master_touch(JNIEnv* env, j
  * Method Name:  	master_read
 */
 static jboolean android_onewire_OneWireNativeService_master_read(JNIEnv* env, jobject obj,
-                jint masterId, jint readLen, jbyteArray dataReadOut)
+        jint masterId, jint readLen, jbyteArray dataReadOut)
 {
     jboolean result = JNI_FALSE;
+
+    w1_master_id idOut;
+    convert_jint_to_master_id(&masterId, &idOut);
+
     if(sOneWireInterface)
     {
-    	jbyte* b = env->GetByteArrayElements(dataReadOut, NULL);
+        jbyte* b = env->GetByteArrayElements(dataReadOut, NULL);
 
-		result = sOneWireInterface->master_read(*((w1_master_id*)&masterId), readLen, (BYTE *)b);
+        result = sOneWireInterface->master_read(idOut, readLen, (BYTE *)b);
 
-		env->ReleaseByteArrayElements(dataReadOut, b, 0);
+        env->ReleaseByteArrayElements(dataReadOut, b, 0);
     }
     return result;
 }
@@ -431,16 +475,23 @@ static jboolean android_onewire_OneWireNativeService_master_read(JNIEnv* env, jo
  * Method Name:  	master_write
 */
 static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, jobject obj,
-                jint masterId, jint writeLen, jbyteArray dataWriteIn)
+        jint masterId, jint writeLen, jbyteArray dataWriteIn)
 {
     jboolean result = JNI_FALSE;
+    w1_master_id id;
+
+    w1_master_id idOut;
+    convert_jint_to_master_id(&masterId, &idOut);
+
     if(sOneWireInterface)
     {
-    	jbyte* b = env->GetByteArrayElements(dataWriteIn, NULL);
+        jbyte* b = env->GetByteArrayElements(dataWriteIn, NULL);
 
-		result = sOneWireInterface->master_write(*((w1_master_id*)&masterId), writeLen, (BYTE *)b);
+        memcpy(&id, &masterId, sizeof(w1_master_id));
 
-		env->ReleaseByteArrayElements(dataWriteIn, b, 0);
+        result = sOneWireInterface->master_write(idOut, writeLen, reinpreter_cast<BYTE *>b);
+
+        env->ReleaseByteArrayElements(dataWriteIn, b, 0);
     }
     return result;
 }
@@ -449,8 +500,9 @@ static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, j
 
 
 
-static JNINativeMethod sMethods[] = {
-     /* name, 						signature, 				funcPtr */
+static JNINativeMethod sMethods[] =
+{
+    /* name, 						signature, 				funcPtr */
     {"class_init_native", 			"()V", 					(void*)android_onewire_OneWireNativeService_class_init_native},
     {"native_is_supported", 		"()Z", 					(void*)android_onewire_OneWireNativeService_is_supported},
     {"native_start", 				"()Z", 					(void*)android_onewire_OneWireNativeService_start},
