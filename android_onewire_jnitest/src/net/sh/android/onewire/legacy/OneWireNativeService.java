@@ -98,8 +98,8 @@ public class OneWireNativeService {
      * slaveRN: 8 bytes
      * */
     public void slaveAdded(long slaveRN){
-//    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
-//    	Log.i(TAG, "slaveAdded: " + ID);
+    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
+    	Log.i(TAG, "slaveAdded: " + ID);
 //    	if(_listener != null){
 //    		_listener.oneWireSlaveAdded(ID);
 //    	}
@@ -109,8 +109,8 @@ public class OneWireNativeService {
      * slaveRN: 8 bytes
      * */
     public void slaveRemoved(long slaveRN){
-//    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
-//    	Log.i(TAG, "slaveRemoved: " + ID);
+    	OneWireSlaveID ID = new OneWireSlaveID(slaveRN);
+    	Log.i(TAG, "slaveRemoved: " + ID);
 //    	if(_listener != null){
 //    		_listener.oneWireSlaveRemoved(ID);
 //    	}
