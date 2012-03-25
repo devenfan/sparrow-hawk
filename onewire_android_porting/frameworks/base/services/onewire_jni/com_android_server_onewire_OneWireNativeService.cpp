@@ -50,13 +50,14 @@ static jmethodID method_slaveRemoved;
 static const w1hal_interface * sOneWireInterface = NULL;
 
 
-//#define WAKE_LOCK_NAME  "OneWireWakeLock"
+#define WAKE_LOCK_NAME  "OneWireWakeLock"
 
 #define MAX_SLAVE_COUNT  10
 #define MAX_MASTER_COUNT  3
 
 namespace android
 {
+
 
 
 
@@ -97,9 +98,34 @@ static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodNa
 
 
 
+static void acquire_wakelock_callback()
+{
+    acquire_wake_lock(PARTIAL_WAKE_LOCK, WAKE_LOCK_NAME);
+}
+
+static void release_wakelock_callback()
+{
+    release_wake_lock(WAKE_LOCK_NAME);
+}
+
+static pthread_t create_thread_callback(const char* name, void (*start)(void *), void* arg)
+{
+    return (pthread_t)AndroidRuntime::createJavaThread(name, start, arg);
+}
+
+
+
+
+
 static void master_added_callback(w1_master_id masterId)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
+
+    if(NULL == env)
+    {
+        LOGE("Cannot getJNIEnv from AndroidRuntime!");
+        return;
+    }
 
     jint id;
     convert_master_id_to_jint(&masterId, &id);
@@ -112,6 +138,12 @@ static void master_removed_callback(w1_master_id masterId)
 {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
 
+    if(NULL == env)
+    {
+        LOGE("Cannot getJNIEnv from AndroidRuntime!");
+        return;
+    }
+
     jint id;
     convert_master_id_to_jint(&masterId, &id);
     env->CallVoidMethod(mCallbacksObj, method_masterRemoved, id);
@@ -121,40 +153,48 @@ static void master_removed_callback(w1_master_id masterId)
 
 static void slave_added_callback(w1_slave_rn slaveRN)
 {
-    LOGD("slave_added_callback: 1");
+
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-    LOGD("slave_added_callback: 2");
+
+    if(NULL == env)
+    {
+        LOGE("Cannot getJNIEnv from AndroidRuntime!");
+        return;
+    }
 
     jlong id;
     convert_slave_id_to_jlong(&slaveRN, &id);
-    LOGD("slave_added_callback: 3");
+
     env->CallVoidMethod(mCallbacksObj, method_slaveAdded, id);
-    LOGD("slave_added_callback: 4");
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
-    LOGD("slave_added_callback: 5");
 }
 
 static void slave_removed_callback(w1_slave_rn slaveRN)
 {
-    LOGD("slave_removed_callback: 1");
     JNIEnv* env = AndroidRuntime::getJNIEnv();
-    LOGD("slave_removed_callback: 2");
+
+    if(NULL == env)
+    {
+        LOGE("Cannot getJNIEnv from AndroidRuntime!");
+        return;
+    }
 
     jlong id;
     convert_slave_id_to_jlong(&slaveRN, &id);
-    LOGD("slave_removed_callback: 3");
     env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, id);
-    LOGD("slave_removed_callback: 4");
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
-    LOGD("slave_removed_callback: 5");
 }
 
 
 
 w1_user_callbacks sW1UserCallbacks =
 {
+    acquire_wakelock_callback,
+    release_wakelock_callback,
+    create_thread_callback,
+
     master_added_callback,
     master_removed_callback,
     slave_added_callback,

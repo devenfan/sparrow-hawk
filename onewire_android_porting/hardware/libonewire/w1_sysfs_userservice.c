@@ -453,6 +453,7 @@ static void start_searching_thread(void)
 
     sh_signal_init(&g_w1SearchingThreadStopSignal);
 
+    if(NULL == g_userCallbacks->create_thread_cb)
     {
         pthread_attr_t attr;
         pthread_attr_init(&attr);
@@ -460,6 +461,11 @@ static void start_searching_thread(void)
 
         //Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
         pthread_create(&g_w1SearchingThread, &attr, w1_searching_loop, NULL);
+    }
+    else
+    {
+        //g_w1SearchingThread = sh_create_thread("w1_sys_userservice", w1_searching_loop, NULL);
+        g_w1SearchingThread = g_userCallbacks->create_thread_cb("w1_sys_searching", w1_searching_loop, NULL);
     }
 }
 
