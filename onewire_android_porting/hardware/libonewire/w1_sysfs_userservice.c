@@ -366,7 +366,7 @@ static void * w1_searching_loop(void * param)
                     g_masterId = masterSearched;
 
                     if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
-                                g_userCallbacks->master_removed_callback(masterSearched);
+                        g_userCallbacks->master_removed_callback(masterSearched);
 
                     continue;
                 }
@@ -428,7 +428,7 @@ static void * w1_searching_loop(void * param)
                     g_masterId = masterSearched;
 
                     if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
-                                g_userCallbacks->master_added_callback(masterSearched);
+                        g_userCallbacks->master_added_callback(masterSearched);
 
                     continue;
                 }
@@ -445,6 +445,11 @@ static void * w1_searching_loop(void * param)
     return 0;
 }
 
+
+static void w1_searching_loop2(void * param)
+{
+    w1_searching_loop(param);
+}
 
 static void start_searching_thread(void)
 {
@@ -465,7 +470,7 @@ static void start_searching_thread(void)
     else
     {
         //g_w1SearchingThread = sh_create_thread("w1_sys_userservice", w1_searching_loop, NULL);
-        g_w1SearchingThread = g_userCallbacks->create_thread_cb("w1_sys_searching", w1_searching_loop, NULL);
+        g_w1SearchingThread = g_userCallbacks->create_thread_cb("w1_sys_searching", w1_searching_loop2, NULL);
     }
 }
 
