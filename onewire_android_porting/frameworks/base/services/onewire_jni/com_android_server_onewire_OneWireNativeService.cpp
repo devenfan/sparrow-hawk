@@ -110,7 +110,8 @@ static void release_wakelock_callback()
 
 static pthread_t create_thread_callback(const char* name, void (*start)(void *), void* arg)
 {
-    return (pthread_t)AndroidRuntime::createJavaThread(name, start, arg);
+    AndroidRuntime::createJavaThread(name, start, arg);
+    return 1;
 }
 
 
