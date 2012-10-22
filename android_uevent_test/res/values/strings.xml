@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello_gps">Hello! GPS Demo!</string>
+    <string name="app_name">Android UEvent Test</string>
+    <string name="hello_uevent">Hello! UEvent Netlink</string>
+    <string name="hello_battery">Hello! Battery Service!</string>
+</resources>
