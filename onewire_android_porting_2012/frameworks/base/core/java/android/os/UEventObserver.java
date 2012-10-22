@@ -99,13 +99,17 @@ public abstract class UEventObserver {
         public void run() {
             native_setup();
 
-			Log.i(TAG, ">>>>>>>>>> UEventObserver JNI setup successfully !!!");
+			Log.i(TAG, ">>>>>>>> UEventObserver JNI: setup successfully!!!");
 
             byte[] buffer = new byte[1024];
             int len;
             while (true) {
                 len = next_event(buffer);
+				
                 if (len > 0) {
+
+					Log.d(TAG, ">>>>>>>> UEventObserver jni: got a event!!!");
+					
                     String bufferStr = new String(buffer, 0, len);  // easier to search a String
                     synchronized (mObservers) {
                         for (int i = 0; i < mObservers.size(); i += 2) {
