@@ -46,6 +46,10 @@ MODULE_AUTHOR("Evgeniy Polyakov <johnpol@2ka.mipt.ru>");
 MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
 
 /**
+ * Deven # 2012-11-02:
+ * 1.  Change init_name of "w1_master_device", from
+ *    "w1_master_device" to "w1_bus_master"
+ *
  * Deven # 2012-03-08:
  * 1. Change Master Attribute "list_slaves" to "list_slaves_names"
  * 2. Add Master Attribute "list_slaves_ids"
@@ -83,11 +87,12 @@ MODULE_DESCRIPTION("Driver for 1-wire Dallas network protocol.");
  *    and remove it when"w1_destroy_master_attributes"
  *
  * Deven # 2012-02-10:
- * 1. Add macro to disable the search thread...
+ * 1. Add macro "ENABLE_SEARCH_THREAD" to disable the search thread...
  *
 **/
 
 //#define ENABLE_SEARCH_THREAD
+
 //static int w1_timeout = 3;    //search every 3 second
 int w1_max_slave_count = 10;    //it will be exposed outside
 int w1_max_slave_ttl = 10;      //it will be exposed outside
@@ -309,7 +314,7 @@ struct device_driver w1_master_driver = {
 struct device w1_master_device = {
 	.parent = NULL,
 	.bus = &w1_bus_type,
-	.init_name = "w1_master_device",
+	.init_name = "w1_bus_master",
 	.driver = &w1_master_driver,
 	.release = &w1_master_release
 };
