@@ -29,6 +29,19 @@
 #include "w1_netlink.h"
 #include "w1_int.h"
 
+/**
+ * Deven # 2012-11-02:
+ * 1.  Inside function "w1_alloc_dev", print dev_name()  after device allocated, 
+ *      print dev_name() after device registered.
+ *
+ * Deven # 2012-02-10:
+ * 1. Add macro "ENABLE_SEARCH_THREAD" to disable the search thread...
+ *
+**/
+
+//#define ENABLE_SEARCH_THREAD
+
+
 static int w1_search_count = -1; /* Default is continual scan */
 module_param_named(search_count, w1_search_count, int, 0);
 
@@ -78,17 +91,21 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 	dev_set_name(&dev->dev, "w1_bus_master%u", dev->id);
 	snprintf(dev->name, sizeof(dev->name), "w1_bus_master%u", dev->id);
 
+    printk(KERN_DEBUG "w1 master device allocated: %s\n", dev_name(&dev->dev));
+
 	dev->driver = driver;
 
 	dev->seq = 1;
 
 	err = device_register(&dev->dev);
 	if (err) {
-		printk(KERN_ERR "Failed to register master device. err=%d\n", err);
+		printk(KERN_ERR "Failed to register w1 master device. err=%d\n", err);
 		memset(dev, 0, sizeof(struct w1_master));
 		kfree(dev);
 		dev = NULL;
 	}
+	
+    printk(KERN_DEBUG "w1 master device registered: %s\n", dev_name(&dev->dev));
 
 	return dev;
 }
@@ -157,7 +174,10 @@ int w1_add_master_device(struct w1_bus_master *master)
 
 	dev->initialized = 1;
 
-//Deven # 2012-02-10: Let the up later handle itself...
+// Deven # 2012-02-10: 
+// 1. Let the thread up later handle itself...
+// 2. The reason why we add this macro is to advoid the conflict that 
+//     the kernel thread & the userspace thread would send netlink message simultaneously.
 #ifdef ENABLE_SEARCH_THREAD
 	dev->thread = kthread_run(&w1_process, dev, "%s", dev->name);
 	if (IS_ERR(dev->thread)) {
