@@ -34,7 +34,7 @@
  * 1. Inside function "w1_alloc_dev", print dev_name()  after device allocated, 
  *     print dev_name() after device registered.
  * 2. change "w1_bus_master%u" to "w1_bus_master_%u"
- * 3. change "device->init_name" instead of invoking "set_dev_name(device*)",
+ * 3. change the line of invoking "set_dev_name(device*)",
  *     because "set_dev_name(device*)" dosen't work before "device_register(device*)"
  *
  * Deven # 2012-02-10:
@@ -93,9 +93,10 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 	memcpy(&dev->dev, device, sizeof(struct device));
 
 	//Deven # 20121102: 
-	//"set_dev_name(device*)" dosen't work before "device_register(device*)"
+	//1. "set_dev_name(device*)" dosen't work before "device_register(device*)"
 	//dev_set_name(&dev->dev, "w1_bus_master_%u", dev->id);
-	snprintf((&dev->dev)->init_name, sizeof((&dev->dev)->init_name), "w1_bus_master_%u", dev->id);
+	//2. change "init_name" is useless...
+	//snprintf((&dev->dev)->init_name, sizeof((&dev->dev)->init_name), "w1_bus_master_%u", dev->id);
 	
 	snprintf(dev->name, sizeof(dev->name), "w1_bus_master_%u", dev->id);
 
@@ -112,8 +113,13 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 		kfree(dev);
 		dev = NULL;
 	}
-	
+
     printk(KERN_DEBUG "w1 master device registered: %s\n", dev_name(&dev->dev));
+
+	//3. "dev_set_name(device*)" after "device_register(device*)"
+	dev_set_name(&dev->dev, "w1_bus_master_%u", dev->id);
+	
+    printk(KERN_DEBUG "w1 master device name changed: %s\n", dev_name(&dev->dev));
 
 	return dev;
 }
