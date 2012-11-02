@@ -36,6 +36,7 @@
  * 2. change "w1_bus_master%u" to "w1_bus_master_%u"
  * 3. change "init_name" to NULL before "set_dev_name(device*)",
  *     otherwise "set_dev_name(device*)" won't affect the foler name under /sys
+ * 4. add kfree process inside function: "w1_free_dev"
  *
  * Deven # 2012-02-10:
  * 1. Add macro "ENABLE_SEARCH_THREAD" to disable the search thread...
@@ -126,6 +127,12 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 static void w1_free_dev(struct w1_master *dev)
 {
 	device_unregister(&dev->dev);
+
+	printk(KERN_DEBUG "w1 master device will be freed: %s\n", dev_name(&dev->dev));
+
+	memset(dev, 0, sizeof(struct w1_master));
+
+	kfree(dev);
 }
 
 int w1_add_master_device(struct w1_bus_master *master)
