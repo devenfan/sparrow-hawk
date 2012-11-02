@@ -37,6 +37,7 @@
  * 3. change "init_name" to NULL before "set_dev_name(device*)",
  *     otherwise "set_dev_name(device*)" won't affect the foler name under /sys
  * 4. add kfree process inside function: "w1_free_dev"
+ * 5. change " atomic_set(&dev->refcnt, 1)" to "atomic_set(&dev->refcnt, 1)" because no kernel thread for w1 master
  *
  * Deven # 2012-02-10:
  * 1. Add macro "ENABLE_SEARCH_THREAD" to disable the search thread...
@@ -86,7 +87,11 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 	/* 1 for w1_process to decrement
 	 * 1 for __w1_remove_master_device to decrement
 	 */
+#ifdef ENABLE_SEARCH_THREAD
 	atomic_set(&dev->refcnt, 2);
+#else
+	atomic_set(&dev->refcnt, 1);
+#endif
 
 	INIT_LIST_HEAD(&dev->slist);
 	mutex_init(&dev->mutex);
@@ -133,6 +138,7 @@ static void w1_free_dev(struct w1_master *dev)
 	memset(dev, 0, sizeof(struct w1_master));
 
 	kfree(dev);
+
 }
 
 int w1_add_master_device(struct w1_bus_master *master)
