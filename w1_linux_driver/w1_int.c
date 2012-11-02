@@ -94,7 +94,7 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 
 	//Deven # 20121102: 
 	//1. "set_dev_name(device*)" dosen't work before "device_register(device*)"
-	//dev_set_name(&dev->dev, "w1_bus_master_%u", dev->id);
+	dev_set_name(&dev->dev, "w1_bus_master_%u", dev->id);
 	//2. change "init_name" is useless...
 	//snprintf((&dev->dev)->init_name, sizeof((&dev->dev)->init_name), "w1_bus_master_%u", dev->id);
 	
