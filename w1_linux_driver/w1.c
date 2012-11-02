@@ -311,6 +311,11 @@ struct device_driver w1_master_driver = {
 	.probe = w1_master_probe,
 };
 
+// Deven # 2012-11-02:
+// 1. "init_name" will decide the folder name under /sys
+// 2. change device name by set_dev_name(device*) won't affect the foler name
+// 3. the only way to change the folder name is to make "init_name" NULL &&
+//     set_dev_name(device*) simultaneously.
 struct device w1_master_device = {
 	.parent = NULL,
 	.bus = &w1_bus_type,

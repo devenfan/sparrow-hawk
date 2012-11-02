@@ -34,8 +34,8 @@
  * 1. Inside function "w1_alloc_dev", print dev_name()  after device allocated, 
  *     print dev_name() after device registered.
  * 2. change "w1_bus_master%u" to "w1_bus_master_%u"
- * 3. change the line of invoking "set_dev_name(device*)",
- *     because "set_dev_name(device*)" dosen't work before "device_register(device*)"
+ * 3. change "init_name" to NULL before "set_dev_name(device*)",
+ *     otherwise "set_dev_name(device*)" won't affect the foler name under /sys
  *
  * Deven # 2012-02-10:
  * 1. Add macro "ENABLE_SEARCH_THREAD" to disable the search thread...
@@ -92,12 +92,16 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 
 	memcpy(&dev->dev, device, sizeof(struct device));
 
-	//Deven # 20121102: 
-	//1. "set_dev_name(device*)" dosen't work before "device_register(device*)"
+
+	// Deven # 2012-11-02:
+	// 1. "init_name" will decide the folder name under /sys
+	// 2. change device name only by set_dev_name(device*) won't affect the foler name
+	// 3. the only way to change the folder name is to make "init_name" NULL &&
+	//	   set_dev_name(device*) simultaneously.
+
+	(&dev->dev)->init_name = NULL;
 	dev_set_name(&dev->dev, "w1_bus_master_%u", dev->id);
-	//2. change "init_name" is useless...
-	//snprintf((&dev->dev)->init_name, sizeof((&dev->dev)->init_name), "w1_bus_master_%u", dev->id);
-	
+
 	snprintf(dev->name, sizeof(dev->name), "w1_bus_master_%u", dev->id);
 
     printk(KERN_DEBUG "w1 master device allocated: %s\n", dev_name(&dev->dev));
@@ -115,11 +119,6 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 	}
 
     printk(KERN_DEBUG "w1 master device registered: %s\n", dev_name(&dev->dev));
-
-	//3. "dev_set_name(device*)" after "device_register(device*)"
-	dev_set_name(&dev->dev, "w1_bus_master_%u", dev->id);
-	
-    printk(KERN_DEBUG "w1 master device name changed: %s\n", dev_name(&dev->dev));
 
 	return dev;
 }
