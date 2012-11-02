@@ -31,8 +31,11 @@
 
 /**
  * Deven # 2012-11-02:
- * 1.  Inside function "w1_alloc_dev", print dev_name()  after device allocated, 
- *      print dev_name() after device registered.
+ * 1. Inside function "w1_alloc_dev", print dev_name()  after device allocated, 
+ *     print dev_name() after device registered.
+ * 2. change "w1_bus_master%u" to "w1_bus_master_%u"
+ * 3. change "device->init_name" instead of invoking "set_dev_name(device*)",
+ *     because "set_dev_name(device*)" dosen't work before "device_register(device*)"
  *
  * Deven # 2012-02-10:
  * 1. Add macro "ENABLE_SEARCH_THREAD" to disable the search thread...
@@ -88,8 +91,13 @@ static struct w1_master * w1_alloc_dev(u32 id, int slave_count, int slave_ttl,
 	mutex_init(&dev->mutex);
 
 	memcpy(&dev->dev, device, sizeof(struct device));
-	dev_set_name(&dev->dev, "w1_bus_master%u", dev->id);
-	snprintf(dev->name, sizeof(dev->name), "w1_bus_master%u", dev->id);
+
+	//Deven # 20121102: 
+	//"set_dev_name(device*)" dosen't work before "device_register(device*)"
+	//dev_set_name(&dev->dev, "w1_bus_master_%u", dev->id);
+	snprintf((&dev->dev)->init_name, sizeof((&dev->dev)->init_name), "w1_bus_master_%u", dev->id);
+	
+	snprintf(dev->name, sizeof(dev->name), "w1_bus_master_%u", dev->id);
 
     printk(KERN_DEBUG "w1 master device allocated: %s\n", dev_name(&dev->dev));
 
