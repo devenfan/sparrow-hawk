@@ -1,38 +1,34 @@
-/*
- *
- * Original filename: kernel_src_2.6.29/drivers/w1/w1_netlink.h
- *
- * Copyright (c) 2011 Deven Fan <deven.fan@gmail.com>
- *
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+
+
 
 #ifndef __W1_NETLINK_USERSPACE_H
 #define __W1_NETLINK_USERSPACE_H
 
-//#include "sh_types.h"
 
-//netlink.h cannot be here... It will cause issues if other file include "w1_netlink_userspace.h"
-//#include <linux/netlink.h>		//it will include <linux/socket.h>
-
-//<linux/connector.h> is not contained inside NDK android-5
-//Attention: NDK android-5 support android-6 & android 7
+// #include "sh_types.h"
 
 
-/** see kernel: connector.h  */
+
+/* 
+ * netlink.h will include <linux/socket.h>. 
+ * But netlink.h cannot be included here,  because it will cause issues 
+ * if other file include "w1_netlink_userspace.h".
+ */
+// #include <linux/netlink.h>		
+
+
+/*
+ * <linux/connector.h> is not contained inside NDK android-5, 
+ *   also it is not contained inside OS source code.
+ * 
+ * Attention: NDK android-5 supports android-6 & android 7
+ */
+
+// #include <linux/connector.h>
+
+/*
+ * see kernel: connector.h  -------------------------------------------
+ */
 
 #include <asm/types.h>
 
@@ -45,7 +41,7 @@
 #define CN_IDX_PROC			0x1
 #define CN_VAL_PROC			0x1
 #define CN_IDX_CIFS			0x2
-#define CN_VAL_CIFS                     0x1
+#define CN_VAL_CIFS         	0x1
 #define CN_W1_IDX			0x3	/* w1 communication */
 #define CN_W1_VAL			0x1
 #define CN_IDX_V86D			0x4
@@ -108,7 +104,9 @@ struct cn_ctl_msg {
 };
 
 
-/** see kernel: w1_netlink.h  */
+/*
+ * see kernel: w1_netlink.h  -------------------------------------------
+ */
 
 #ifndef	W1_GROUP
 #define W1_GROUP  	CN_W1_IDX

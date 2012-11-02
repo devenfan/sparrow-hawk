@@ -6,8 +6,8 @@
 #include <asm/byteorder.h>
 
 /*
-* It's originally inside w1.h
-*/
+ * It's originally inside w1.h ----------------------------------------------
+ */
 typedef struct w1_reg_num
 {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
@@ -29,6 +29,11 @@ typedef struct w1_reg_num
 
 
 typedef __u32 w1_master_id;
+
+
+/*
+* Below are utility functions ----------------------------------------------
+*/
 
 
 #ifdef __cplusplus

@@ -32,15 +32,59 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename=".gitignore" />
+		<Unit filename="frameworks\base\core\java\android\app\ActivityThread.java" />
+		<Unit filename="frameworks\base\core\java\android\app\AlarmManager.java" />
+		<Unit filename="frameworks\base\core\java\android\app\ApplicationContext.java" />
+		<Unit filename="frameworks\base\core\java\android\app\IAlarmManager.aidl" />
+		<Unit filename="frameworks\base\core\java\android\app\IOneWireManager.aidl" />
+		<Unit filename="frameworks\base\core\java\android\app\PendingIntent.java" />
+		<Unit filename="frameworks\base\core\java\android\content\Context.java" />
+		<Unit filename="frameworks\base\core\java\android\hardware\ISensorService.aidl" />
+		<Unit filename="frameworks\base\core\java\android\hardware\Sensor.java" />
+		<Unit filename="frameworks\base\core\java\android\hardware\SensorEvent.java" />
+		<Unit filename="frameworks\base\core\java\android\hardware\SensorEventListener.java" />
+		<Unit filename="frameworks\base\core\java\android\hardware\SensorListener.java" />
+		<Unit filename="frameworks\base\core\java\android\hardware\SensorManager.java" />
+		<Unit filename="frameworks\base\core\java\android\os\Hardware.java" />
+		<Unit filename="frameworks\base\core\java\android\os\IHardwareService.aidl" />
+		<Unit filename="frameworks\base\core\java\android\os\IServiceManager.java" />
+		<Unit filename="frameworks\base\core\java\android\os\ServiceManager.java" />
+		<Unit filename="frameworks\base\core\java\android\os\ServiceManagerNative.java" />
 		<Unit filename="frameworks\base\core\java\android\os\UEventObserver.java" />
 		<Unit filename="frameworks\base\core\jni\Android.mk" />
+		<Unit filename="frameworks\base\core\jni\AndroidRuntime.cpp" />
+		<Unit filename="frameworks\base\core\jni\android_hardware_SensorManager.cpp" />
 		<Unit filename="frameworks\base\core\jni\android_os_UEventObserver.cpp" />
+		<Unit filename="frameworks\base\services\Android.mk" />
+		<Unit filename="frameworks\base\services\java\com\android\server\AlarmManagerService.java" />
+		<Unit filename="frameworks\base\services\java\com\android\server\BatteryService.java" />
+		<Unit filename="frameworks\base\services\java\com\android\server\HardwareService.java" />
+		<Unit filename="frameworks\base\services\java\com\android\server\NotificationManagerService.java" />
+		<Unit filename="frameworks\base\services\java\com\android\server\PowerManagerService.java" />
+		<Unit filename="frameworks\base\services\java\com\android\server\SensorService.java" />
+		<Unit filename="frameworks\base\services\java\com\android\server\SystemServer.java" />
 		<Unit filename="frameworks\base\services\jni\Android.mk" />
-		<Unit filename="frameworks\base\services\jni\com_android_server_onewire_OneWireNativeService.cpp" />
+		<Unit filename="frameworks\base\services\jni\com_android_server_AlarmManagerService.cpp" />
+		<Unit filename="frameworks\base\services\jni\com_android_server_BatteryService.cpp" />
+		<Unit filename="frameworks\base\services\jni\com_android_server_HardwareService.cpp" />
+		<Unit filename="frameworks\base\services\jni\com_android_server_SensorService.cpp" />
+		<Unit filename="frameworks\base\services\jni\com_android_server_SystemServer.cpp" />
 		<Unit filename="frameworks\base\services\jni\onload.cpp" />
 		<Unit filename="frameworks\base\services\onewire_jni\Android.mk" />
 		<Unit filename="frameworks\base\services\onewire_jni\com_android_server_onewire_OneWireNativeService.cpp" />
+		<Unit filename="frameworks\base\services\onewire_jni\com_android_server_onewire_OneWireNativeService_v1.cpp" />
 		<Unit filename="frameworks\base\services\onewire_jni\onload.cpp" />
+		<Unit filename="hardware\libhardware\include\hardware\sensors.h" />
+		<Unit filename="hardware\libhardware_legacy\Android.mk" />
+		<Unit filename="hardware\libhardware_legacy\connector\readme.txt" />
+		<Unit filename="hardware\libhardware_legacy\include\hardware_legacy\uevent.h" />
+		<Unit filename="hardware\libhardware_legacy\uevent\Android.mk" />
+		<Unit filename="hardware\libhardware_legacy\uevent\uevent.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="hardware\libhardware_legacy\uevent\uevent_stub.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="hardware\libonewire\Android.mk" />
 		<Unit filename="hardware\libonewire\sh_error.h" />
 		<Unit filename="hardware\libonewire\sh_log.h" />
@@ -76,6 +120,7 @@
 		</Unit>
 		<Unit filename="hardware\libonewire_hal\w1_hal.h" />
 		<Unit filename="hardware\libonewire_hal\w1_hal_impl.cpp" />
+		<Unit filename="onewire_android_porting_2012.layout" />
 		<Unit filename="vendor\sec\ut6410\conf\init.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>

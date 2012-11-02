@@ -7,18 +7,22 @@ extern "C" {
 #endif
 
 
-/** Callback utility for acquiring the w1 wakelock.
- *  This can be used to prevent the CPU from suspending while handling w1 events.
+/*
+ * Callback utility for acquiring the w1 wakelock.
+ * This can be used to prevent the CPU from suspending while handling w1 events.
  */
 typedef void (* w1_acquire_wakelock)();
 
 
-/** Callback utility for releasing the w1 wakelock. */
+/*
+ * Callback utility for releasing the w1 wakelock. 
+ */
 typedef void (* w1_release_wakelock)();
 
 
-/** Callback for creating a thread that can call into the Java framework code.
- *  This must be used to create any threads that report events up to the android framework.
+/*
+ * Callback for creating a thread that can call into the Java framework code.
+ * This must be used to create any threads that report events up to the android framework.
  */
 typedef pthread_t (* w1_create_thread)(const char* name, void (*start)(void *), void* arg);
 

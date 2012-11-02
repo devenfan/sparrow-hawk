@@ -52,12 +52,12 @@
 /* ============================== members =============================== */
 /* ====================================================================== */
 
-#define FILE_PATH_DATA_RW           "/sys/bus/w1/devices/w1_master_device/data"
-#define FILE_PATH_MASTER_ID         "/sys/bus/w1/devices/w1_master_device/w1_master_id"
-#define FILE_PATH_RESET_BUS         "/sys/bus/w1/devices/w1_master_device/w1_master_reset_bus"
-#define FILE_PATH_SEARCH_SLAVES     "/sys/bus/w1/devices/w1_master_device/w1_master_search_slaves"
-#define FILE_PATH_LIST_SLAVES       "/sys/bus/w1/devices/w1_master_device/w1_master_list_slaves_ids"
-#define FILE_PATH_SLAVE_COUNT       "/sys/bus/w1/devices/w1_master_device/w1_master_slave_count"
+#define FILE_PATH_DATA_RW           "/sys/bus/w1/devices/w1_bus_master/data"
+#define FILE_PATH_MASTER_ID         "/sys/bus/w1/devices/w1_bus_master/w1_master_id"
+#define FILE_PATH_RESET_BUS         "/sys/bus/w1/devices/w1_bus_master/w1_master_reset_bus"
+#define FILE_PATH_SEARCH_SLAVES     "/sys/bus/w1/devices/w1_bus_master/w1_master_search_slaves"
+#define FILE_PATH_LIST_SLAVES       "/sys/bus/w1/devices/w1_bus_master/w1_master_list_slaves_ids"
+#define FILE_PATH_SLAVE_COUNT       "/sys/bus/w1/devices/w1_bus_master/w1_master_slave_count"
 
 static pthread_mutex_t g_globalLocker;
 
