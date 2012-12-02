@@ -23,7 +23,7 @@
 #include <errno.h>
 
 #define  LOG_NDEBUG 0
-#define  LOG_TAG    "W1HALStub"
+#define  LOG_TAG    "OneWireHALStub"
 #include <cutils/log.h>
 #include <cutils/atomic.h>
 
@@ -36,17 +36,21 @@
 
 /*****************************************************************************/
 
-extern const w1hal_interface* get_w1hal_interface();
+extern const onewire_interface* ex_get_onewire_interface();
 
-const w1hal_interface* w1hal__get_w1_interface(struct w1hal_device_t* dev)
+
+const onewire_interface* __get_w1_interface(struct w1hal_device_t* dev)
 {
-    return get_w1hal_interface();
+    return ex_get_onewire_interface();
 }
 
 
-int w1hal_device_close(struct hw_device_t* device)
+
+
+
+int onewire_device_close(struct hw_device_t* device)
 {
-	struct w1hal_device_t* ctx = (struct w1hal_device_t*)device;
+	struct onewire_device_t* ctx = (struct onewire_device_t*)device;
 	if (ctx) {
 		free(ctx);
 	}
@@ -54,21 +58,20 @@ int w1hal_device_close(struct hw_device_t* device)
 }
 
 
-static int w1hal_device_open(const struct hw_module_t* module, const char* name,
+static int onewire_device_open(const struct hw_module_t* module, const char* name,
         struct hw_device_t** device)
 {
-	struct w1hal_device_t *dev;
+	struct onewire_device_t *dev;
 
-	dev = (struct w1hal_device_t *)malloc(sizeof(*dev));
+	dev = (struct onewire_device_t *)malloc(sizeof(*dev));
 	memset(dev, 0, sizeof(*dev));
 
 	dev->common.tag =  HARDWARE_DEVICE_TAG;
 	dev->common.version = 0;
 	dev->common.module = (struct hw_module_t*)module;
-	dev->common.close = w1hal_device_close;
+	dev->common.close = onewire_device_close;
 
-	//dev->operations = &s_w1hal_device_operations;
-    dev->get_w1_interface = w1hal__get_w1_interface;
+    dev->get_onewire_interface = __get_w1_interface;
 
 	//*device = &dev->common;
 	*device = (struct hw_device_t*)dev;
@@ -77,8 +80,8 @@ static int w1hal_device_open(const struct hw_module_t* module, const char* name,
 }
 
 
-static struct hw_module_methods_t s_w1hal_module_methods = {
-    open: w1hal_device_open
+static struct hw_module_methods_t onewire_module_methods = {
+    open: onewire_device_open
 };
 
 
@@ -91,7 +94,7 @@ static struct hw_module_methods_t s_w1hal_module_methods = {
  * methods: struct hw_module_methods_t，the interface inside - "Open" must be implemented
  *
  */
-const struct w1hal_module_t HAL_MODULE_INFO_SYM = {
+const struct onewire_module_t HAL_MODULE_INFO_SYM = {
     common: {
         tag: HARDWARE_MODULE_TAG,
         version_major: 1,
@@ -99,7 +102,7 @@ const struct w1hal_module_t HAL_MODULE_INFO_SYM = {
         id: ONEWIRE_HARDWARE_MODULE_ID,
         name: "OneWire Stub",
         author: "Deven Fan",
-        methods: &s_w1hal_module_methods,
+        methods: &onewire_module_methods,
     }
     /* supporting APIs go here */
 };

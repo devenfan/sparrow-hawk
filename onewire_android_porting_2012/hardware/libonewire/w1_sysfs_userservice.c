@@ -26,7 +26,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
-
+#include <dirent.h>
 
 #include "sh_types.h"
 #include "sh_error.h"
@@ -36,6 +36,14 @@
 #include "w1_userspace.h"
 #include "w1_userservice.h"
 #include "w1_sysfs_userservice.h"
+
+
+/**
+ * Deven # 2012-11-03:
+ * 1. As the interface has been changed a lot, I have to abandon this implementation firstly
+ *
+*/
+
 
 /* ====================================================================== */
 /* ============================ log ralated ============================= */
@@ -51,6 +59,9 @@
 /* ====================================================================== */
 /* ============================== members =============================== */
 /* ====================================================================== */
+
+#define W1_DEVICES_FOLDER_PATH 		"/sys/bus/w1/devices/"
+#define W1_DEVICE_NAME_PREFIX		"w1_bus_master_"
 
 #define FILE_PATH_DATA_RW           "/sys/bus/w1/devices/w1_bus_master/data"
 #define FILE_PATH_MASTER_ID         "/sys/bus/w1/devices/w1_bus_master/w1_master_id"
@@ -567,6 +578,35 @@ static void get_current_w1_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
 **/
 BOOL w1_sysfs_list_masters(w1_master_id * masters, int * pMasterCount)
 {
+	if(NULL == masters || pMasterCount == NULL) return FALSE;
+
+	DIR * dir_w1_devices = NULL;
+
+	struct dirent * dirent_w1_devices = NULL;
+
+	int count = 0;
+
+	dir_w1_devices = opendir(W1_DEVICES_FOLDER_PATH);
+
+  	if(NULL == dir_w1_devices) return FALSE;
+
+	dirent_w1_devices = readdir(dir_w1_devices);
+
+	while(dirent_w1_devices != NULL)
+	{
+		Debug("w1(1-wire) sysfs folder found: %s!\n", dirent_w1_devices->d_name);
+
+		if(strstr(dirent_w1_devices->d_name, W1_DEVICE_NAME_PREFIX) != NULL)
+		{
+			*(masters + count++) = atoi(dirent_w1_devices->d_name + strlen(W1_DEVICE_NAME_PREFIX));
+		}
+	}
+
+	closedir(dir_w1_devices);
+
+	*pMasterCount = count;
+
+	/*
     w1_master_id id = read_master_id();
     if(0 == id)
     {
@@ -577,6 +617,8 @@ BOOL w1_sysfs_list_masters(w1_master_id * masters, int * pMasterCount)
         *pMasterCount = 1;
         masters[0] = id;
     }
+    */
+
     return TRUE;
 }
 
@@ -662,10 +704,10 @@ BOOL w1_sysfs_master_touch(w1_master_id masterId, void * dataIn, int dataInLen, 
 }
 
 
-static BOOL w1_master_begin_exclusive(w1_master_id masterId)
+static BOOL w1_master_begin_exclusive()
 {
-    if(0 == masterId) return FALSE;
-    if(g_masterId != masterId) return FALSE;
+    //if(0 == masterId) return FALSE;
+    //if(g_masterId != masterId) return FALSE;
 
     if(1 == g_w1SearchingThreadPauseFalg)
         return FALSE;
@@ -677,7 +719,7 @@ static BOOL w1_master_begin_exclusive(w1_master_id masterId)
     return TRUE;
 }
 
-static void w1_master_end_exclusive(w1_master_id masterId)
+static void w1_master_end_exclusive()
 {
     pthread_mutex_lock(&g_globalLocker);
     g_w1SearchingThreadPauseFalg = 0;   //needs locker???
@@ -691,13 +733,13 @@ struct w1_user_service w1_sysfs_userservice =
     .init = w1_sysfs_userservice_init,
     .start = w1_sysfs_userservice_start,
     .stop = w1_sysfs_userservice_stop,
-    //.list_masters = w1_sysfs_list_masters,
 
-    .get_current_master = get_current_w1_master,
-    .get_current_slaves = get_current_w1_slaves,
+    //.get_current_master = get_current_w1_master,
+    //.get_current_slaves = get_current_w1_slaves,
     .begin_exclusive = w1_master_begin_exclusive,
     .end_exclusive = w1_master_end_exclusive,
 
+    .list_masters = w1_sysfs_list_masters,
     .search_slaves = w1_sysfs_master_search,
     .master_reset = w1_sysfs_master_reset,
     .master_read = w1_sysfs_master_read,

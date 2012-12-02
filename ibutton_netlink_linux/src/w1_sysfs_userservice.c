@@ -26,7 +26,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
-
+
+#include <sys/dir.h>
+#include <sys/stat.h>
 
 #include "sh_types.h"
 #include "sh_error.h"

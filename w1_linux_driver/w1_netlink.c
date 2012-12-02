@@ -397,7 +397,7 @@ out_up:
 			atomic_dec(&sl->refcnt);
 		mutex_unlock(&dev->mutex);
 out_cont:
-        //no need to send msg if W1_LIST_MASTERS is OK
+        //no need to send error msg if W1_LIST_MASTERS is OK
 		//if (!cmd || err)
 		//	w1_netlink_send_error(msg, m, cmd, err);
 		if(W1_LIST_MASTERS == m->type)

@@ -14,7 +14,7 @@
 #include <utils/SystemClock.h>
 
 #define  LOG_NDEBUG 0
-#define  LOG_TAG "lib_w1hal"
+#define  LOG_TAG "OneWireHALStubImpl"
 #include <utils/Log.h>
 
 
@@ -29,7 +29,7 @@
 
 
 
-#define W1_SYSFS
+//#define W1_SYSFS
 
 #ifdef W1_SYSFS
     #include "libonewire/w1_sysfs_userservice.h"
@@ -76,16 +76,16 @@ static BOOL w1hal_int_master_write(w1_master_id masterId, int writeLen, BYTE * d
 
 
 
-// Defines the w1hal_interface in w1_hal.h
-static const w1hal_interface sW1HalInterface =
+// Defines the onewire_interface in w1_hal.h
+static const onewire_interface sW1HalInterface =
 {
-    sizeof(w1hal_interface),
+    sizeof(onewire_interface),
     w1hal_int_init,
 	w1hal_int_start,
     w1hal_int_stop,
 
-	w1hal_int_get_current_master,
-	w1hal_int_get_current_slaves,
+	//w1hal_int_get_current_master,
+	//w1hal_int_get_current_slaves,
 	w1hal_int_begin_exclusive_action,
 	w1hal_int_end_exclusive_action,
 
@@ -115,7 +115,7 @@ static void w1hal_int_stop()
 {
     w1UserService->stop();
 }
-
+/*
 static w1_master_id w1hal_int_get_current_master()
 {
     return w1UserService->get_current_master();
@@ -125,6 +125,7 @@ static void w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCoun
 {
 	w1UserService->get_current_slaves(slaveIDs, slaveCount);
 }
+*/
 
 static BOOL w1hal_int_begin_exclusive_action(w1_master_id masterId)
 {
@@ -140,8 +141,7 @@ static void w1hal_int_end_exclusive_action(w1_master_id masterId)
 
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount)
 {
-    //return w1UserService->list_masters(masters, pMasterCount);
-	return FALSE;
+    return w1UserService->list_masters(masters, pMasterCount);
 }
 
 static BOOL w1hal_int_search_slaves(w1_master_id masterId,
@@ -178,7 +178,7 @@ static BOOL w1hal_int_master_write(w1_master_id masterId, int writeLen, BYTE * d
 
 
 
-const w1hal_interface* w1_get_hardware_interface()
+const onewire_interface* w1_get_hardware_interface()
 {
     char propBuf[PROPERTY_VALUE_MAX];
 
@@ -186,24 +186,36 @@ const w1hal_interface* w1_get_hardware_interface()
     property_get("onewire.disable", propBuf, "");
     if (propBuf[0] == '1')
     {
-        LOGD("w1_get_interface returning NULL because onewire.disable=1\n");
+        LOGD("w1_get_hardware_interface returning NULL because onewire.disable=1\n");
         return NULL;
     }
 
     return &sW1HalInterface;
 }
 
-/** for w1_hal.c */
-extern "C" const w1hal_interface* get_w1hal_interface()
+
+
+/**
+ *  implement the extern interface inside w1_hal.c:
+ *  extern const onewire_interface* ex_get_onewire_interface();
+*/
+extern "C" const onewire_interface* ex_get_onewire_interface()
 {
+    LOGD("[ONEWIRE_STUB_MODE] ex_get_onewire_interface called!");
     return &sW1HalInterface;
 }
 
 
-/** ONEWIRE_LEGACY_MODE */
-const w1hal_interface* hw_get_w1_interface()
+
+
+
+/**
+ * ONEWIRE_LEGACY_MODE
+ * implement the interface in w1_hal.h
+ */
+const onewire_interface* hw_get_onewire_interface()
 {
-    LOGD("hw_get_w1_interface called!");
+    LOGD("[ONEWIRE_LEGACY_MODE] hw_get_onewire_interface called!");
     return &sW1HalInterface;
 }
 

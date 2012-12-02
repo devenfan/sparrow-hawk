@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Deven # 2012-11-03:
+# 1. Remove compilation for w1_sysfs_userservice.c
+#
 
 LOCAL_PATH := $(call my-dir)
 
@@ -30,8 +34,8 @@ LOCAL_SRC_FILES :=  \
 	sh_util.c		\
 	w1_userspace_util.c	    \
 	w1_netlink_util.c		\
-	w1_netlink_userservice.c \
-	w1_sysfs_userservice.c
+	w1_netlink_userservice.c
+#	w1_sysfs_userservice.c
 
 LOCAL_MODULE := libonewire
 
@@ -50,7 +54,7 @@ LOCAL_COPY_HEADERS := \
     w1_userspace.h \
     w1_userservice.h \
     w1_netlink_userspace.h \
-    w1_netlink_userservice.h \
-    w1_sysfs_userservice.h
+    w1_netlink_userservice.h
+#    w1_sysfs_userservice.h
 
 include $(BUILD_SHARED_LIBRARY)

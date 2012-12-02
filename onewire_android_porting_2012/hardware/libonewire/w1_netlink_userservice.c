@@ -52,6 +52,13 @@
 #include "w1_netlink_userservice.h"
 
 
+/**
+ * Deven # 2012-11-03:
+ * 1. To support multi-masters, interface has been changed.
+ * 2. Inside w1 searching thread, masters & slaves all should been found.
+ *
+ *
+*/
 
 /* ====================================================================== */
 /* ========================= static variables =========================== */
@@ -92,21 +99,23 @@ static struct cn_msg * g_outMsg;            //the out message
 
 #define ACK_TIMEOUT    5000     //TIMEOUT for waiting ACK, by milliSeconds...
 
-#define MAX_SLAVE_COUNT   10
+#define MAX_MASTER_COUNT   10
+#define MAX_SLAVE_COUNT   100
 
-static w1_master_id g_masterId;    //current master id
-static w1_slave_rn g_slavesIDs[MAX_SLAVE_COUNT];
-static int g_slavesCount;
+static w1_master_id     g_masterIDs[MAX_MASTER_COUNT];
+static int              g_mastersCount;
+static w1_slave_rn      g_slavesIDs[MAX_MASTER_COUNT][MAX_SLAVE_COUNT];
+static int              g_slavesCount[MAX_MASTER_COUNT];
 
 static pthread_t        g_w1SearchingThread;
 static int              g_w1SearchingThreadStopFlag = 0;
-static int              g_w1SearchingThreadPauseFalg = 0;
+static int              g_w1SearchingThreadPauseFlag = 0;
 static sh_signal_ctrl   g_w1SearchingThreadStopSignal;
 static int              g_w1SearchingInterval = 1000; //by millisecond
 
-/* ====================================================================== */
-/* ============================ log ralated ============================= */
-/* ====================================================================== */
+/* ----------------------------------------------------------------------- */
+/* ------------------------------- log ------------------------------------ */
+/* ---------------------------------------------------------------------- */
 
 
 //#define ANDROID_NDK
@@ -116,9 +125,9 @@ static int              g_w1SearchingInterval = 1000; //by millisecond
 
 #define Debug(format, args...)    android_debug(format, ##args)
 
-/* ====================================================================== */
-/* ========================== private methods =========================== */
-/* ====================================================================== */
+/* ----------------------------------------------------------------------- */
+/* --------------------------- private methods ------------------------------ */
+/* ----------------------------------------------------------------------- */
 
 
 int generate_w1_global_sequence(void);
@@ -164,9 +173,9 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount);
 BOOL w1_master_search(w1_master_id masterId, w1_slave_rn * slaves, int * pSlaveCount);
 
 
-/* ====================================================================== */
-/* ===================== w1 msg message handler ========================= */
-/* ====================================================================== */
+/* ------------------------------------------------------------------------- */
+/* ----------------------- w1 msg message handler -----------------------------*/
+/* ------------------------------------------------------------------------- */
 
 static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 {
@@ -201,6 +210,14 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
     //print_cnmsg(cnmsg);
     //print_w1msg(w1msg);
 
+    // Deven # 2012-11-03:
+    // 1. W1_SLAVE_ADD & W1_SLAVE_REMOVE events will not be raised,
+    //    because the kernel w1 search thread has not started.
+    //    So, the callback will not be invoked.
+    // 2. W1_MASTER_ADD & W1_MASTER_REMOVE events will be raised,
+    //    but we will list masters inside the searching thread.
+    //    So, the callback will not be invoked.
+
     if(W1_SLAVE_ADD == w1msg->type || W1_SLAVE_REMOVE == w1msg->type)
     {
         //Only when Slave Device Found or removed, the slave id(w1msg->id.id) contains 64 bits
@@ -212,18 +229,16 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         if(W1_SLAVE_ADD == w1msg->type)
         {
             Debug("w1(1-wire) slave[%s] added from kernel... warnning!!!\n", idDescribe);
-            /*
-            if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
-                g_userCallbacks->slave_added_callback(*slave_rn);
-            */
+
+            //if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
+            //    g_userCallbacks->slave_added_callback(*slave_rn);
         }
         else
         {
             Debug("w1(1-wire) slave[%s] removed from kernel... warnning!!!\n", idDescribe);
-            /*
-            if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
-                g_userCallbacks->slave_removed_callback(*slave_rn);
-            */
+
+            //if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
+            //    g_userCallbacks->slave_removed_callback(*slave_rn);
         }
         return;
     }
@@ -237,25 +252,15 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
         {
             Debug("w1(1-wire) master[%d] added from kernel... Good!!!\n", master_id);
 
-            if(g_masterId == 0)
-            {
-                g_masterId = master_id;
-            }
-
-            if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
-                g_userCallbacks->master_added_callback(master_id);
+            //if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
+            //    g_userCallbacks->master_added_callback(master_id);
         }
         else
         {
             Debug("w1(1-wire) master[%d] removed from kernel... Good!!!\n", master_id);
 
-            if(g_masterId == master_id)
-            {
-                g_masterId = 0;
-            }
-
-            if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
-                g_userCallbacks->master_removed_callback(master_id);
+            //if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
+            //    g_userCallbacks->master_removed_callback(master_id);
         }
         return;
     }
@@ -316,9 +321,9 @@ static void on_w1_netlinkmsg_received(struct cn_msg * cnmsg)
 
 
 
-/* ====================================================================== */
-/* =================== socket msg receiving thread ====================== */
-/* ====================================================================== */
+/* ---------------------------------------------------------------------------- */
+/* ---------------------- socket msg receiving thread ------------------------- */
+/* ---------------------------------------------------------------------------- */
 
 
 static int retrieve_socket_msg(void)
@@ -442,9 +447,98 @@ static void stop_receiving_thread(void)
 
 
 
-/* ====================================================================== */
-/* ======================== w1 searching thread ========================= */
-/* ====================================================================== */
+/* ------------------------------------------------------------------------- */
+/* ----------------------- w1 searching thread ----------------------------- */
+/* ------------------------------------------------------- ----------------- */
+
+static void w1_compare_masters(w1_master_id * mastersOld, int mastersOldCount,
+                               w1_master_id * mastersNew, int mastersNewCount,
+                               w1_master_id * mastersAdded, int * mastersAddedCount,
+                               w1_master_id * mastersRemoved, int * mastersRemovedCount,
+                               w1_master_id * mastersKept, int * mastersKeptCount)
+{
+    //we suspect all input parameters are legal, no NULL input...
+    int i, j, added, removed, kept;
+
+    //all empty...
+    if((0 == mastersOldCount && 0 == mastersNewCount))
+    {
+        *mastersAddedCount = 0;
+        *mastersRemovedCount = 0;
+        return;
+    }
+
+    //only old empty, consider the new ones are added
+    if(mastersOldCount == 0)
+    {
+        *mastersAddedCount = mastersNewCount;
+        for(i = 0; i < mastersNewCount; i++)
+        {
+            mastersAdded[i] = mastersNew[i];
+        }
+        return;
+    }
+
+    //only new empty, consider the new ones are removed
+    if(mastersNewCount == 0)
+    {
+        *mastersRemovedCount = mastersOldCount;
+        for(i = 0; i < mastersOldCount; i++)
+        {
+            mastersRemoved[i] = mastersOld[i];
+        }
+        return;
+    }
+
+    //compare both
+    added = 0;
+    removed = 0;
+    kept = 0;
+
+    for(i = 0; i < mastersNewCount; i++)
+    {
+        for(j = 0; j < mastersOldCount; j++)
+        {
+            if(mastersNew[i] == mastersOld[j])
+            {
+                mastersKept[kept++] = mastersNew[i];
+                break;
+            }
+        }
+
+        if(j == mastersOldCount)
+        {
+            //not found in slavesOld, means slavesNew[i] is newly added
+            mastersAdded[added++] = mastersNew[i];
+        }
+    }
+
+    if(mastersOldCount > kept)
+    {
+        for(i = 0; i < mastersOldCount; i++)
+        {
+            for(j = 0; j < kept; j++)
+            {
+                if(mastersOld[i] == slavesKept[j])
+                {
+                    break;
+                }
+            }
+
+            if(j == kept)
+            {
+                //not found in slavesKept, means slavesOld[i] is removed
+                mastersRemoved[removed++] = mastersOld[i];
+            }
+        }
+    }
+
+    *mastersAddedCount = added;
+    *mastersRemovedCount = removed;
+    *mastersKeptCount = kept;
+}
+
+
 
 static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
                               w1_slave_rn * slavesNew, int slavesNewCount,
@@ -534,8 +628,24 @@ static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
 }
 
 
-static void * w1slaves_searching_loop(void * param)
+
+
+
+
+
+static void * w1_searching_loop(void * param)
 {
+    w1_master_id mastersSearched[MAX_MASTER_COUNT];
+    w1_master_id mastersAdded[MAX_MASTER_COUNT];
+    w1_master_id mastersRemoved[MAX_MASTER_COUNT];
+    w1_master_id mastersKept[MAX_MASTER_COUNT];
+
+    int mastersSearchedCount = 0;
+    int mastersAddedCount = 0;
+    int mastersRemovedCount = 0;
+    int mastersKeptCount = 0;
+
+    w1_master_id currentMaster;
 
     w1_slave_rn slavesSearched[MAX_SLAVE_COUNT];
     w1_slave_rn slavesAdded[MAX_SLAVE_COUNT];
@@ -556,57 +666,121 @@ static void * w1slaves_searching_loop(void * param)
 
     while(!g_w1SearchingThreadStopFlag)
     {
-        if(!g_w1SearchingThreadPauseFalg)
+        if(!g_w1SearchingThreadPauseFlag)
         {
-            if(g_masterId > 0)
-            {
-                slavesSearchedCount = 0;
-                slavesAddedCount = 0;
-                slavesRemovedCount = 0;
-                slavesKeptCount = 0;
+            //List Masters...
+            mastersSearchedCount = 0;
+            mastersAddedCount = 0;
+            mastersRemovedCount = 0;
+            mastersKeptCount = 0;
 
-                if(w1_master_search(g_masterId, slavesSearched, &slavesSearchedCount))
+            if(w1_list_masters(mastersSearched, &mastersSearchedCount))
+            {
+                Debug("%d w1 masters listed during the searching!\n", mastersSearched);
+
                 {
                     pthread_mutex_lock(&g_globalLocker);
 
-                    w1_compare_slaves(g_slavesIDs, g_slavesCount, slavesSearched, slavesSearchedCount,
-                                      slavesAdded, &slavesAddedCount, slavesRemoved, &slavesRemovedCount,
-                                      slavesKept, &slavesKeptCount);
+                    w1_compare_masters(g_mastersIDs, g_mastersCount, mastersSearched, mastersSearchedCount,
+                                      mastersAdded, &mastersAddedCount, mastersRemoved, &mastersRemovedCount,
+                                      mastersKept, &mastersKeptCount);
 
-                    g_slavesCount = slavesKeptCount + slavesAddedCount;
-                    memcpy(g_slavesIDs, slavesKept, sizeof(w1_slave_rn) * slavesKeptCount);
-                    memcpy(g_slavesIDs + slavesKeptCount, slavesAdded, sizeof(w1_slave_rn) * slavesAddedCount);
+                    g_mastersCount = mastersKeptCount + mastersAddedCount;
+
+                    memcpy(g_mastersIDs, mastersKept, sizeof(w1_master_id) * mastersKeptCount);
+                    memcpy(g_mastersIDs + mastersKeptCount, mastersAdded, sizeof(w1_master_id) * mastersAddedCount);
 
                     pthread_mutex_unlock(&g_globalLocker);
 
-                    if(slavesAddedCount > 0)
+                    if(mastersAddedCount > 0)
                     {
-                        for(i = 0; i < slavesAddedCount; i++)
+                        for(i = 0; i < mastersAddedCount; i++)
                         {
-                            w1_reg_num__to_string(slavesAdded + i, idString);
-                            Debug("w1(1-wire) slave[%s] added during searching...\n", idString);
+                            Debug("w1(1-wire) master[%d] added on during searching...\n", mastersAdded[i]);
 
-                            if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
-                                g_userCallbacks->slave_added_callback(slavesAdded[i]);
+                            if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
+                                g_userCallbacks->master_added_callback(mastersAdded[i]);
                         }
                     }
-                    if(slavesRemovedCount > 0)
+                    if(mastersRemovedCount > 0)
                     {
-                        for(j = 0; j < slavesRemovedCount; j++)
+                        for(j = 0; j < mastersRemovedCount; j++)
                         {
-                            w1_reg_num__to_string(slavesRemoved + j, idString);
-                            Debug("w1(1-wire) slave[%s] removed during searching...\n", idString);
+                            Debug("w1(1-wire) master[%d] removed during searching...\n", mastersRemoved[j]);
 
-                            if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
-                                g_userCallbacks->slave_removed_callback(slavesRemoved[j]);
+                            if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
+                                g_userCallbacks->master_removed_callback(mastersRemoved[j]);
                         }
                     }
+
                 }
-                else
+
+                for(i = 0; i < g_mastersCount; i++)
                 {
-                    Debug("w1 slaves searching failed on master[%d]...\n", g_masterId);
+                    currentMaster = g_masterIDs[i];
+
+                    slavesSearchedCount = 0;
+                    slavesAddedCount = 0;
+                    slavesRemovedCount = 0;
+                    slavesKeptCount = 0;
+
+                    //Search Slaves...
+                    if(w1_master_search(currentMaster, slavesSearched, slavesSearchedCount))
+                    {
+                        Debug("%d w1 slaves searched for master[%d]!\n", slavesSearchedCount, currentMaster);
+
+                        {
+                            pthread_mutex_lock(&g_globalLocker);
+
+                            w1_compare_slaves(g_slavesIDs[i], g_slavesCount[i], slavesSearched, slavesSearchedCount,
+                                              slavesAdded, &slavesAddedCount, slavesRemoved, &slavesRemovedCount,
+                                              slavesKept, &slavesKeptCount);
+
+                            g_slavesCount[i] = slavesKeptCount + slavesAddedCount;
+
+                            memcpy(g_slavesIDs[i], slavesKept, sizeof(w1_slave_rn) * slavesKeptCount);
+                            memcpy(g_slavesIDs[i] + slavesKeptCount, slavesAdded, sizeof(w1_slave_rn) * slavesAddedCount);
+
+                            pthread_mutex_unlock(&g_globalLocker);
+                        }
+
+
+                        if(slavesAddedCount > 0)
+                        {
+                            for(j = 0; j < slavesAddedCount; j++)
+                            {
+                                w1_reg_num__to_string(slavesAdded + j, idString);
+                                Debug("w1(1-wire) slave[%s] added on master[%d] during searching...\n", idString, currentMaster);
+
+                                if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
+                                    g_userCallbacks->slave_added_callback(currentMaster, slavesAdded[j]);
+                            }
+                        }
+                        if(slavesRemovedCount > 0)
+                        {
+                            for(j = 0; j < slavesRemovedCount; j++)
+                            {
+                                w1_reg_num__to_string(slavesRemoved + j, idString);
+                                Debug("w1(1-wire) slave[%s] removed from master[%d] during searching...\n", idString, currentMaster);
+
+                                if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
+                                    g_userCallbacks->slave_removed_callback(currentMaster, slavesRemoved[j]);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
+                    }
                 }
+
             }
+            else
+            {
+                Debug("w1 master searching failed...\n");
+            }
+
+
         }
 
         usleep(g_w1SearchingInterval * 1000);   //by microsecond
@@ -620,20 +794,35 @@ static void * w1slaves_searching_loop(void * param)
 }
 
 
+
+static void w1_searching_loop2(void * param)
+{
+    w1_searching_loop(param);
+}
+
+
+
 static void start_searching_thread(void)
 {
     g_w1SearchingThreadStopFlag = 0;
-    g_w1SearchingThreadPauseFalg = 0;
+    g_w1SearchingThreadPauseFlag = 0;
 
     sh_signal_init(&g_w1SearchingThreadStopSignal);
 
+
+	if(NULL == g_userCallbacks->create_thread_cb)
     {
         pthread_attr_t attr;
         pthread_attr_init(&attr);
         pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
         //Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
-        pthread_create(&g_w1SearchingThread, &attr, w1slaves_searching_loop, NULL);
+        pthread_create(&g_w1SearchingThread, &attr, w1_searching_loop, NULL);
+    }
+	else
+    {
+        //g_w1SearchingThread = sh_create_thread("w1_netlink_searching", w1_searching_loop, NULL);
+        g_w1SearchingThread = g_userCallbacks->create_thread_cb("w1_netlink_searching", w1_searching_loop2, NULL);
     }
 }
 
@@ -641,7 +830,7 @@ static void start_searching_thread(void)
 static void stop_searching_thread(void)
 {
     g_w1SearchingThreadStopFlag = 1;
-    g_w1SearchingThreadPauseFalg = 1;
+    g_w1SearchingThreadPauseFlag = 1;
 
     {
         sh_signal_timedwait(&g_w1SearchingThreadStopSignal, 5000);
@@ -761,22 +950,37 @@ BOOL w1_netlink_userservice_start()
 
     start_receiving_thread();
 
+    int i = 0;
+    int j = 0;
+    w1_master_id masterId = 0;
+
     //List Masters...
-    w1_master_id mastersListed[3];   //usually 1
-    int mastersListedCount = 0;
+    g_mastersCount = 0;
 
-    //Search masters...
-    w1_list_masters(mastersListed, &mastersListedCount);
-    if(mastersListedCount > 0)
+    for(i = 0; i < MAX_MASTER_COUNT; i++)
     {
-        g_masterId = mastersListed[0];
-
-        if(g_masterId > 0)
-        {
-            //Search Slaves...
-            w1_master_search(g_masterId, g_slavesIDs, &g_slavesCount);
-        }
+        g_slavesCount[i] = 0;
     }
+
+    /*
+    w1_list_masters(g_masterIDs, &g_mastersCount);
+
+    Debug("%d w1 masters listed!\n", g_mastersCount);
+
+    if(g_mastersCount > 0)
+    {
+        for(i = 0; i < g_mastersCount; i++)
+        {
+            masterId = g_masterIDs[i];
+
+            //Search Slaves...
+            w1_master_search(masterId, g_slavesIDs[i], (g_slavesCount + i));
+
+            Debug("%d w1 slaves searched for master[%d]!\n", g_slavesCount[i], masterId);
+        }
+
+    }
+    */
 
     start_searching_thread();
 
@@ -815,36 +1019,20 @@ void w1_netlink_userservice_stop()
 
 }
 
-/**
- * DONOT invoke this method unless userspace service is started...
-**/
-static w1_master_id get_current_w1_master()
-{
-    return g_masterId;  //needs locker???
-}
 
-/**
- * DONOT invoke this method unless userspace service is started...
-**/
-static void get_current_w1_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
-{
-    if(g_slavesCount > 0)
-    {
-        *slaveCount = g_slavesCount;
-        memcpy(slaveIDs, g_slavesIDs, sizeof(w1_slave_rn) * g_slavesCount);
-    }
-}
+
+
 
 /**
  * Pause w1 searching thread, so that it won't interfere the transaction.
 **/
 BOOL pause_w1_searching_thread()
 {
-    if(1 == g_w1SearchingThreadPauseFalg)
+    if(1 == g_w1SearchingThreadPauseFlag)
         return FALSE;
 
     pthread_mutex_lock(&g_globalLocker);
-    g_w1SearchingThreadPauseFalg = 1;   //needs locker???
+    g_w1SearchingThreadPauseFlag = 1;   //needs locker???
     pthread_mutex_unlock(&g_globalLocker);
 
     return TRUE;
@@ -856,7 +1044,7 @@ BOOL pause_w1_searching_thread()
 void wakeup_w1_searching_thread()
 {
     pthread_mutex_lock(&g_globalLocker);
-    g_w1SearchingThreadPauseFalg = 0;   //needs locker???
+    g_w1SearchingThreadPauseFlag = 0;   //needs locker???
     pthread_mutex_unlock(&g_globalLocker);
 }
 
@@ -1265,12 +1453,12 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
 
 // implement ======================================================================
 
-static BOOL w1_master_begin_exclusive(w1_master_id masterId)
+static BOOL w1_master_begin_exclusive()
 {
     return pause_w1_searching_thread();
 }
 
-static void w1_master_end_exclusive(w1_master_id masterId)
+static void w1_master_end_exclusive()
 {
     wakeup_w1_searching_thread();
 }
@@ -1282,12 +1470,12 @@ struct w1_user_service w1_netlink_userservice =
     .start = w1_netlink_userservice_start,
     .stop = w1_netlink_userservice_stop,
 
-    .get_current_master = get_current_w1_master,
-    .get_current_slaves = get_current_w1_slaves,
+    //.get_current_master = get_current_w1_master,
+    //.get_current_slaves = get_current_w1_slaves,
     .begin_exclusive = w1_master_begin_exclusive,
     .end_exclusive = w1_master_end_exclusive,
 
-    //.list_masters = w1_list_masters,
+    .list_masters = w1_list_masters,
     .search_slaves = w1_master_search,
     .master_reset = w1_master_reset,
     .master_read = w1_master_read,
