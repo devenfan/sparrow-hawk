@@ -62,6 +62,8 @@ import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
 import android.location.ILocationManager;
 import android.location.LocationManager;
+import android.onewire.IOneWireService;
+import android.onewire.OneWireManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.IConnectivityManager;
@@ -156,6 +158,7 @@ class ApplicationContext extends Context {
     private static ConnectivityManager sConnectivityManager;
     private static WifiManager sWifiManager;
     private static LocationManager sLocationManager;
+    private static OneWireManager sOneWireManager;
     private static final HashMap<File, SharedPreferencesImpl> sSharedPrefs =
             new HashMap<File, SharedPreferencesImpl>();
 
@@ -875,6 +878,8 @@ class ApplicationContext extends Context {
             return AccessibilityManager.getInstance(this);
         } else if (LOCATION_SERVICE.equals(name)) {
             return getLocationManager();
+        } else if (ONEWIRE_SERVICE.equals(name)) {
+            return getOneWireManager();
         } else if (SEARCH_SERVICE.equals(name)) {
             return getSearchManager();
         } else if (SENSOR_SERVICE.equals(name)) {
@@ -1017,6 +1022,17 @@ class ApplicationContext extends Context {
             }
         }
         return sLocationManager;
+    }
+
+    private OneWireManager getOneWireManager() {
+        synchronized (sSync) {
+            if (sOneWireManager == null) {
+                IBinder b = ServiceManager.getService(ONEWIRE_SERVICE);
+                IOneWireManager service = IOneWireManager.Stub.asInterface(b);
+                sOneWireManager = new OneWireManager(service);
+            }
+        }
+        return sOneWireManager;
     }
 
     private SearchManager getSearchManager() {

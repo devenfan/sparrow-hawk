@@ -282,6 +282,13 @@ class ServerThread extends Thread {
             }
 
             try {
+                Log.i(TAG, "OneWire(1-Wire or w1) Service");
+                ServiceManager.addService(Context.ONEWIRE_SERVICE, new OneWireService(context));
+            } catch (Throwable e) {
+                Log.e(TAG, "Failure starting OneWireService", e);
+            }
+
+            try {
                 Log.i(TAG, "Search Service");
                 ServiceManager.addService( Context.SEARCH_SERVICE, new SearchManagerService(context) );
             } catch (Throwable e) {

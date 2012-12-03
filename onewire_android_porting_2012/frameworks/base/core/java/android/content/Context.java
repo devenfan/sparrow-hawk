@@ -1053,6 +1053,8 @@ public abstract class Context {
      *  <dt> {@link #LOCATION_SERVICE} ("location")
      *  <dd> A {@link android.location.LocationManager} for controlling location
      *   (e.g., GPS) updates.
+     *  <dt> {@link #ONEWIRE_SERVICE} ("onewire")
+     *  <dd> A {@link android.onewire.OneWireManager} for controlling 1-Wire updates.
      *  <dt> {@link #SEARCH_SERVICE} ("search")
      *  <dd> A {@link android.app.SearchManager} for handling search.
      *  <dt> {@link #VIBRATOR_SERVICE} ("vibrator")
@@ -1094,6 +1096,8 @@ public abstract class Context {
      * @see android.app.KeyguardManager
      * @see #LOCATION_SERVICE
      * @see android.location.LocationManager
+     * @see #ONEWIRE_SERVICE
+     * @see android.onewire.OneWireManager
      * @see #SEARCH_SERVICE
      * @see android.app.SearchManager
      * @see #SENSOR_SERVICE
@@ -1200,6 +1204,15 @@ public abstract class Context {
      * @see android.location.LocationManager
      */
     public static final String LOCATION_SERVICE = "location";
+    /**
+     * Use with {@link #getSystemService} to retrieve a {@link
+     * android.onewire.OneWireManager} for controlling 1-Wire
+     * updates.
+     *
+     * @see #getSystemService
+     * @see android.onewire.OneWireManager
+     */
+    public static final String ONEWIRE_SERVICE = "onewire";
     /**
      * Use with {@link #getSystemService} to retrieve a {@link
      * android.app.SearchManager} for handling searches.
