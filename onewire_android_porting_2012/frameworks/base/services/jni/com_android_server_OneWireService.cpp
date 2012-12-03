@@ -442,11 +442,11 @@ static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobje
     			if(masterCount > MAX_MASTER_COUNT)
     				masterCount = MAX_MASTER_COUNT;
 
-    			jint* i = env->GetIntArrayElements(masterIDs, NULL);
+    			jint* p = env->GetIntArrayElements(masterIDs, NULL);
 
-    			memcpy(i, masters, sizeof(w1_master_id) * masterCount);
+    			memcpy(p, masters, sizeof(w1_master_id) * masterCount);
 
-    			env->ReleaseIntArrayElements(masterIDs, i, 0);
+    			env->ReleaseIntArrayElements(masterIDs, p, 0);
     		}
     	}
     	else
@@ -485,11 +485,11 @@ static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobj
                 if(slaveCount > MAX_SLAVE_COUNT)
                     slaveCount = MAX_SLAVE_COUNT;
 
-                jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
+                jlong* p = env->GetLongArrayElements(slaveRNs, NULL);
 
-                memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
+                memcpy(p, slaves, sizeof(w1_slave_rn) * slaveCount);
 
-                env->ReleaseLongArrayElements(slaveRNs, l, 0);
+                env->ReleaseLongArrayElements(slaveRNs, p, 0);
             }
         }
         else

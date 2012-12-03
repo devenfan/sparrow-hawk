@@ -39,6 +39,9 @@ interface IOneWireService
     void removeOneWireListener(in IOneWireListener listener);
 
 
+    void oneWireCallbackFinished(in IOneWireListener listener);
+
+
     boolean begnExclusive();
 
 
@@ -55,13 +58,13 @@ interface IOneWireService
 
 
     //dataOutLen is equal to dataInlen
-    boolean touch(in OneWireMasterID masterId, in byte[] dataIn, int dataInLen, out byte[] dataOut);
+    byte[] touch(in OneWireMasterID masterId, in byte[] dataIn, int dataInLen);
 
 
-    boolean read(in OneWireMasterID masterId, int readLen, out byte[] dataReadOut);
+    byte[] read(in OneWireMasterID masterId, int readLen);
 
 
-    boolean write(in OneWireMasterID masterId, int writeLen, in byte[] dataWriteIn);
+    boolean write(in OneWireMasterID masterId, in byte[] dataWriteIn);
 
 
 }

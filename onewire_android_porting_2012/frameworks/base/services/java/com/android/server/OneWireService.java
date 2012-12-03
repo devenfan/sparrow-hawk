@@ -63,7 +63,7 @@ public class OneWireService extends IOneWireService.Stub {
     // wakelock variables
     private final static String WAKELOCK_KEY = "OneWireService";
     private PowerManager.WakeLock mWakeLock = null;
-    private int mPendingBroadcasts;
+    private int mPendingBroadcasts = 0;
 	
 	/**
      * Object used internally for synchronization
@@ -268,6 +268,7 @@ public class OneWireService extends IOneWireService.Stub {
 
 	//It will be invoked by upper layer...
 	public void oneWireCallbackFinished(IOneWireListener listener) {
+		
         //Do not use getReceiver here as that will add the IOneWireListener to
         //the receiver list if it is not found.  
         //If it is not found then the ListenerWrapper was removed when 
@@ -284,13 +285,35 @@ public class OneWireService extends IOneWireService.Stub {
         }
     }
 	
+	
+	private void addReceiver(ListenerWrapper receiver) {
+		if (LOCAL_LOGV) {
+            Log.v(TAG, "addReceiver: receiver = " + receiver);
+        }
+        
+		if(mReceivers.get(receiver.mKey) == null) {
+
+			mReceivers.put(receiver.mKey, receiver);
+			
+			try {
+	        	receiver.getListener().asBinder().linkToDeath(receiver, 0);
+	        } catch (RemoteException e) {
+	            Log.e(TAG, "linkToDeath failed:", e);
+	        }
+			
+		} else {
+        	log("receiver already in the list...");
+        }
+        
+	}
+	
 	private void removeReceiver(ListenerWrapper receiver) {
         if (LOCAL_LOGV) {
-            Log.v(TAG, "removeReceiver: listener = " + receiver);
+            Log.v(TAG, "removeReceiver: receiver = " + receiver);
         }
-
+        
         // so wakelock calls will succeed
-        final int callingUid = Binder.getCallingUid();
+        //final int callingUid = Binder.getCallingUid();
         long identity = Binder.clearCallingIdentity();
         try {
             if (mReceivers.remove(receiver.mKey) != null) {
@@ -301,6 +324,8 @@ public class OneWireService extends IOneWireService.Stub {
                         receiver.mPendingBroadcasts = 0;
                     }
                 }
+            } else {
+            	log("receiver not in the list...");
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -411,6 +436,28 @@ public class OneWireService extends IOneWireService.Stub {
 		}
 			
 	}
+	
+	
+    private void addListener(IOneWireListener listener) {
+    	
+        IBinder binder = listener.asBinder();
+        
+        ListenerWrapper receiver = mReceivers.get(binder);
+
+        if(receiver == null)
+        	addReceiver(new ListenerWrapper(listener));
+    }
+    
+    private void removeListener(IOneWireListener listener) {
+
+        IBinder binder = listener.asBinder();
+        
+        ListenerWrapper receiver = mReceivers.get(binder);
+
+        if(receiver != null)
+        	removeReceiver(receiver);
+    }
+	
 
 	// Inner Thread --------------------------------------------------------
 	
@@ -440,7 +487,7 @@ public class OneWireService extends IOneWireService.Stub {
             if (mPendingBroadcasts++ == 0) {
                 try {
                     mWakeLock.acquire();
-                    log("Acquired wakelock");
+                    log("Acquired wakelock: " + WAKELOCK_KEY);
                 } catch (Exception e) {
                     // This is to catch a runtime exception thrown when we try to release an
                     // already released lock.
@@ -457,7 +504,7 @@ public class OneWireService extends IOneWireService.Stub {
                     // Release wake lock
                     if (mWakeLock.isHeld()) {
                         mWakeLock.release();
-                        log("Released wakelock");
+                        log("Released wakelock: " + WAKELOCK_KEY);
                     } else {
                         log("Can't release wakelock again!");
                     }
@@ -471,9 +518,13 @@ public class OneWireService extends IOneWireService.Stub {
     }
 
 
-    private void log(String log) {
+    private void log(String... log) {
+    	String logs = "";
+    	for(String s : log) {
+    		logs += s;
+    	}
         if (Log.isLoggable(TAG, Log.VERBOSE)) {
-            Log.d(TAG, log);
+            Log.d(TAG, logs);
         }
     }
 
@@ -491,6 +542,8 @@ public class OneWireService extends IOneWireService.Stub {
     	Log.i(TAG, "class_init_native... ");
     }
 
+	
+	
     public static boolean isSupported(){
     	return native_is_supported();
     }
@@ -501,7 +554,16 @@ public class OneWireService extends IOneWireService.Stub {
 	@Override
 	public void addOneWireListener(IOneWireListener listener)
 			throws RemoteException {
-		// TODO Auto-generated method stub
+		
+		try {
+            synchronized (mLock) {
+            	addListener(listener);
+            }
+        } catch (SecurityException se) {
+            throw se;
+        } catch (Exception e) {
+            Log.e(TAG, "addOneWireListener got exception:", e);
+        }
 		
 	}
 
@@ -509,68 +571,128 @@ public class OneWireService extends IOneWireService.Stub {
 	@Override
 	public void removeOneWireListener(IOneWireListener listener)
 			throws RemoteException {
-		// TODO Auto-generated method stub
 		
+		try {
+            synchronized (mLock) {
+            	removeListener(listener);
+            }
+        } catch (SecurityException se) {
+            throw se;
+        } catch (Exception e) {
+            Log.e(TAG, "removeOneWireListener got exception:", e);
+        }
 	}
 
 
 	@Override
 	public boolean begnExclusive() throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		 synchronized (mLock) {
+			 return native_begin_exclusive();
+		 }
 	}
 
 
 	@Override
 	public void endExclusive() throws RemoteException {
-		// TODO Auto-generated method stub
-		
+		 synchronized (mLock) {
+			 native_end_exclusive();
+		 }
 	}
 
 
 	@Override
 	public OneWireMasterID[] listMasters() throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+
+		//it's impossible that to have more than 10 masters on one system
+		int[] masterIDs = new int[10];	
+		int masterCount = 0;
+		OneWireMasterID[] result = null;
+
+		synchronized (mLock) {
+			masterCount = native_list_masters(masterIDs);
+		}
+		
+		if(masterCount > 0) {
+			result = new OneWireMasterID[masterCount];
+			for(int i = 0; i < masterCount; i++){
+				result[i] = new OneWireMasterID(masterIDs[i]);
+			}
+		}
+		
+		return result;
 	}
 
 
 	@Override
 	public OneWireSlaveID[] searchSlaves(OneWireMasterID masterId)
 			throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		
+		//it's impossible that to have more than 100 salves on one master
+		long[] slaveIDs = new long[100];	
+		int slaveCount = 0;
+		OneWireSlaveID[] result = null;
+
+		synchronized (mLock) {
+			slaveCount = native_search_slaves(masterId.getId(), slaveIDs);
+		}
+		
+		if(slaveCount > 0) {
+			result = new OneWireSlaveID[slaveCount];
+			for(int i = 0; i < slaveCount; i++){
+				result[i] = new OneWireSlaveID(slaveIDs[i]);
+			}
+		}
+		
+		return result;
 	}
 
 
 	@Override
 	public boolean reset(OneWireMasterID masterId) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		
+		synchronized (mLock) {
+			return native_master_reset(masterId.getId());
+		}
 	}
 
 
 	@Override
-	public boolean touch(OneWireMasterID masterId, byte[] dataIn,
-			int dataInLen, byte[] dataOut) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+	public byte[] touch(OneWireMasterID masterId, byte[] dataIn,
+			int dataInLen) throws RemoteException {
+		
+		boolean success = false;
+		
+		byte[] dataOut = new byte[dataInLen];
+		
+		synchronized (mLock) {
+			success = native_master_touch(masterId.getId(), dataIn, dataInLen, dataOut);
+		}
+		
+		return success ? dataOut : null;
 	}
 
 
 	@Override
-	public boolean read(OneWireMasterID masterId, int readLen,
-			byte[] dataReadOut) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+	public byte[] read(OneWireMasterID masterId, int readLen) throws RemoteException {
+
+		boolean success = false;
+		
+		byte[] dataReadOut = new byte[readLen];
+		
+		synchronized (mLock) {
+			success = native_master_read(masterId.getId(), readLen, dataReadOut);
+		}
+		
+		return success ? dataReadOut : null;
 	}
 
 
 	@Override
-	public boolean write(OneWireMasterID masterId, int writeLen,
-			byte[] dataWriteIn) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean write(OneWireMasterID masterId, byte[] dataWriteIn) throws RemoteException {
+
+		synchronized (mLock) {
+			return native_master_write(masterId.getId(), dataWriteIn.length, dataWriteIn);
+		}
 	}
 
 
@@ -660,9 +782,9 @@ public class OneWireService extends IOneWireService.Stub {
 
     private native void native_stop();
 
-    private native boolean native_begin_exclusive(int masterId);
+    private native boolean native_begin_exclusive();
 
-    private native void native_end_exclusive(int masterId);
+    private native void native_end_exclusive();
 
     //return the master count...
     private native int native_list_masters(int[] masterIDs);

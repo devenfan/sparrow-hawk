@@ -7,12 +7,12 @@ package android.onewire;
  */
 public interface OneWireListener {
 	
-	void oneWireMasterAdded(OneWireMasterID master);
+	void onOneWireMasterAdded(OneWireMasterID master);
 
-	void oneWireMasterRemoved(OneWireMasterID master);
+	void onOneWireMasterRemoved(OneWireMasterID master);
 
-	void oneWireSlaveAdded(OneWireMasterID master, OneWireSlaveID slaveOfTheMaster);
+	void onOneWireSlaveAdded(OneWireMasterID master, OneWireSlaveID slaveOfTheMaster);
 
-	void oneWireSlaveRemoved(OneWireMasterID master, OneWireSlaveID slaveOfTheMaster);
+	void onOneWireSlaveRemoved(OneWireMasterID master, OneWireSlaveID slaveOfTheMaster);
 
 }

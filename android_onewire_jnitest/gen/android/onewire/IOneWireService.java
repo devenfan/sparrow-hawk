@@ -64,6 +64,15 @@ this.removeOneWireListener(_arg0);
 reply.writeNoException();
 return true;
 }
+case TRANSACTION_oneWireCallbackFinished:
+{
+data.enforceInterface(DESCRIPTOR);
+android.onewire.IOneWireListener _arg0;
+_arg0 = android.onewire.IOneWireListener.Stub.asInterface(data.readStrongBinder());
+this.oneWireCallbackFinished(_arg0);
+reply.writeNoException();
+return true;
+}
 case TRANSACTION_begnExclusive:
 {
 data.enforceInterface(DESCRIPTOR);
@@ -131,18 +140,9 @@ byte[] _arg1;
 _arg1 = data.createByteArray();
 int _arg2;
 _arg2 = data.readInt();
-byte[] _arg3;
-int _arg3_length = data.readInt();
-if ((_arg3_length<0)) {
-_arg3 = null;
-}
-else {
-_arg3 = new byte[_arg3_length];
-}
-boolean _result = this.touch(_arg0, _arg1, _arg2, _arg3);
+byte[] _result = this.touch(_arg0, _arg1, _arg2);
 reply.writeNoException();
-reply.writeInt(((_result)?(1):(0)));
-reply.writeByteArray(_arg3);
+reply.writeByteArray(_result);
 return true;
 }
 case TRANSACTION_read:
@@ -157,18 +157,9 @@ _arg0 = null;
 }
 int _arg1;
 _arg1 = data.readInt();
-byte[] _arg2;
-int _arg2_length = data.readInt();
-if ((_arg2_length<0)) {
-_arg2 = null;
-}
-else {
-_arg2 = new byte[_arg2_length];
-}
-boolean _result = this.read(_arg0, _arg1, _arg2);
+byte[] _result = this.read(_arg0, _arg1);
 reply.writeNoException();
-reply.writeInt(((_result)?(1):(0)));
-reply.writeByteArray(_arg2);
+reply.writeByteArray(_result);
 return true;
 }
 case TRANSACTION_write:
@@ -181,11 +172,9 @@ _arg0 = android.onewire.OneWireMasterID.CREATOR.createFromParcel(data);
 else {
 _arg0 = null;
 }
-int _arg1;
-_arg1 = data.readInt();
-byte[] _arg2;
-_arg2 = data.createByteArray();
-boolean _result = this.write(_arg0, _arg1, _arg2);
+byte[] _arg1;
+_arg1 = data.createByteArray();
+boolean _result = this.write(_arg0, _arg1);
 reply.writeNoException();
 reply.writeInt(((_result)?(1):(0)));
 return true;
@@ -231,6 +220,21 @@ try {
 _data.writeInterfaceToken(DESCRIPTOR);
 _data.writeStrongBinder((((listener!=null))?(listener.asBinder()):(null)));
 mRemote.transact(Stub.TRANSACTION_removeOneWireListener, _data, _reply, 0);
+_reply.readException();
+}
+finally {
+_reply.recycle();
+_data.recycle();
+}
+}
+@Override public void oneWireCallbackFinished(android.onewire.IOneWireListener listener) throws android.os.RemoteException
+{
+android.os.Parcel _data = android.os.Parcel.obtain();
+android.os.Parcel _reply = android.os.Parcel.obtain();
+try {
+_data.writeInterfaceToken(DESCRIPTOR);
+_data.writeStrongBinder((((listener!=null))?(listener.asBinder()):(null)));
+mRemote.transact(Stub.TRANSACTION_oneWireCallbackFinished, _data, _reply, 0);
 _reply.readException();
 }
 finally {
@@ -336,11 +340,11 @@ return _result;
 }
 //dataOutLen is equal to dataInlen
 
-@Override public boolean touch(android.onewire.OneWireMasterID masterId, byte[] dataIn, int dataInLen, byte[] dataOut) throws android.os.RemoteException
+@Override public byte[] touch(android.onewire.OneWireMasterID masterId, byte[] dataIn, int dataInLen) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 android.os.Parcel _reply = android.os.Parcel.obtain();
-boolean _result;
+byte[] _result;
 try {
 _data.writeInterfaceToken(DESCRIPTOR);
 if ((masterId!=null)) {
@@ -352,16 +356,9 @@ _data.writeInt(0);
 }
 _data.writeByteArray(dataIn);
 _data.writeInt(dataInLen);
-if ((dataOut==null)) {
-_data.writeInt(-1);
-}
-else {
-_data.writeInt(dataOut.length);
-}
 mRemote.transact(Stub.TRANSACTION_touch, _data, _reply, 0);
 _reply.readException();
-_result = (0!=_reply.readInt());
-_reply.readByteArray(dataOut);
+_result = _reply.createByteArray();
 }
 finally {
 _reply.recycle();
@@ -369,11 +366,11 @@ _data.recycle();
 }
 return _result;
 }
-@Override public boolean read(android.onewire.OneWireMasterID masterId, int readLen, byte[] dataReadOut) throws android.os.RemoteException
+@Override public byte[] read(android.onewire.OneWireMasterID masterId, int readLen) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 android.os.Parcel _reply = android.os.Parcel.obtain();
-boolean _result;
+byte[] _result;
 try {
 _data.writeInterfaceToken(DESCRIPTOR);
 if ((masterId!=null)) {
@@ -384,16 +381,9 @@ else {
 _data.writeInt(0);
 }
 _data.writeInt(readLen);
-if ((dataReadOut==null)) {
-_data.writeInt(-1);
-}
-else {
-_data.writeInt(dataReadOut.length);
-}
 mRemote.transact(Stub.TRANSACTION_read, _data, _reply, 0);
 _reply.readException();
-_result = (0!=_reply.readInt());
-_reply.readByteArray(dataReadOut);
+_result = _reply.createByteArray();
 }
 finally {
 _reply.recycle();
@@ -401,7 +391,7 @@ _data.recycle();
 }
 return _result;
 }
-@Override public boolean write(android.onewire.OneWireMasterID masterId, int writeLen, byte[] dataWriteIn) throws android.os.RemoteException
+@Override public boolean write(android.onewire.OneWireMasterID masterId, byte[] dataWriteIn) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 android.os.Parcel _reply = android.os.Parcel.obtain();
@@ -415,7 +405,6 @@ masterId.writeToParcel(_data, 0);
 else {
 _data.writeInt(0);
 }
-_data.writeInt(writeLen);
 _data.writeByteArray(dataWriteIn);
 mRemote.transact(Stub.TRANSACTION_write, _data, _reply, 0);
 _reply.readException();
@@ -430,17 +419,19 @@ return _result;
 }
 static final int TRANSACTION_addOneWireListener = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
 static final int TRANSACTION_removeOneWireListener = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
-static final int TRANSACTION_begnExclusive = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
-static final int TRANSACTION_endExclusive = (android.os.IBinder.FIRST_CALL_TRANSACTION + 3);
-static final int TRANSACTION_listMasters = (android.os.IBinder.FIRST_CALL_TRANSACTION + 4);
-static final int TRANSACTION_searchSlaves = (android.os.IBinder.FIRST_CALL_TRANSACTION + 5);
-static final int TRANSACTION_reset = (android.os.IBinder.FIRST_CALL_TRANSACTION + 6);
-static final int TRANSACTION_touch = (android.os.IBinder.FIRST_CALL_TRANSACTION + 7);
-static final int TRANSACTION_read = (android.os.IBinder.FIRST_CALL_TRANSACTION + 8);
-static final int TRANSACTION_write = (android.os.IBinder.FIRST_CALL_TRANSACTION + 9);
+static final int TRANSACTION_oneWireCallbackFinished = (android.os.IBinder.FIRST_CALL_TRANSACTION + 2);
+static final int TRANSACTION_begnExclusive = (android.os.IBinder.FIRST_CALL_TRANSACTION + 3);
+static final int TRANSACTION_endExclusive = (android.os.IBinder.FIRST_CALL_TRANSACTION + 4);
+static final int TRANSACTION_listMasters = (android.os.IBinder.FIRST_CALL_TRANSACTION + 5);
+static final int TRANSACTION_searchSlaves = (android.os.IBinder.FIRST_CALL_TRANSACTION + 6);
+static final int TRANSACTION_reset = (android.os.IBinder.FIRST_CALL_TRANSACTION + 7);
+static final int TRANSACTION_touch = (android.os.IBinder.FIRST_CALL_TRANSACTION + 8);
+static final int TRANSACTION_read = (android.os.IBinder.FIRST_CALL_TRANSACTION + 9);
+static final int TRANSACTION_write = (android.os.IBinder.FIRST_CALL_TRANSACTION + 10);
 }
 public void addOneWireListener(android.onewire.IOneWireListener listener) throws android.os.RemoteException;
 public void removeOneWireListener(android.onewire.IOneWireListener listener) throws android.os.RemoteException;
+public void oneWireCallbackFinished(android.onewire.IOneWireListener listener) throws android.os.RemoteException;
 public boolean begnExclusive() throws android.os.RemoteException;
 public void endExclusive() throws android.os.RemoteException;
 public android.onewire.OneWireMasterID[] listMasters() throws android.os.RemoteException;
@@ -448,7 +439,7 @@ public android.onewire.OneWireSlaveID[] searchSlaves(android.onewire.OneWireMast
 public boolean reset(android.onewire.OneWireMasterID masterId) throws android.os.RemoteException;
 //dataOutLen is equal to dataInlen
 
-public boolean touch(android.onewire.OneWireMasterID masterId, byte[] dataIn, int dataInLen, byte[] dataOut) throws android.os.RemoteException;
-public boolean read(android.onewire.OneWireMasterID masterId, int readLen, byte[] dataReadOut) throws android.os.RemoteException;
-public boolean write(android.onewire.OneWireMasterID masterId, int writeLen, byte[] dataWriteIn) throws android.os.RemoteException;
+public byte[] touch(android.onewire.OneWireMasterID masterId, byte[] dataIn, int dataInLen) throws android.os.RemoteException;
+public byte[] read(android.onewire.OneWireMasterID masterId, int readLen) throws android.os.RemoteException;
+public boolean write(android.onewire.OneWireMasterID masterId, byte[] dataWriteIn) throws android.os.RemoteException;
 }
