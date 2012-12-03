@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: F:\\ARM_BOARD_ANDROID\\GitHub\\android-ibutton-git\\android_onewire_jnitest\\src\\android\\onewire\\IOneWireListener.aidl
+ * Original file: F:\\ARM_BOARD_ANDROID\\GitHub\\android-ibutton-git\\android_onewire_jnitest\\frameworks-base\\onewire\\java\\android\\onewire\\IOneWireListener.aidl
  */
 package android.onewire;
 /**
