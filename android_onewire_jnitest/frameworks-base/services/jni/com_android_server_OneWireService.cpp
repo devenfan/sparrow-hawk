@@ -217,7 +217,7 @@ w1_user_callbacks sW1UserCallbacks =
 
 //--------------------------------------------------------------------------------
 
-static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, jclass clazz)
+static void android_onewire_OneWireService_class_init_native(JNIEnv* env, jclass clazz)
 {
     int err;
     hw_module_t* module;
@@ -238,7 +238,7 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
 
     if (err == 0)
     {
-        LOGI("w1 hal module found!!!");
+        LOGI("OneWire(1-Wire or w1) HAL module found!!!");
 
         hw_device_t* device;
         err = module->methods->open(module, ONEWIRE_HARDWARE_MODULE_ID, &device);
@@ -249,49 +249,49 @@ static void android_onewire_OneWireNativeService_class_init_native(JNIEnv* env, 
         }
         else
         {
-            LOGE("Cannot open w1 hal device!!! Error[%d]", err);
+            LOGE("Cannot open OneWire(1-Wire or w1) HAL device!!! Error[%d]", err);
         }
     }
     else
     {
-        LOGE("w1 hal module not found!!! Error[%d]", err);
+        LOGE("OneWire(1-Wire or w1) HAL module not found!!! Error[%d]", err);
     }
 
 #endif
 
     if(NULL == sOneWireInterface)
     {
-        LOGE("Error! w1 Stub operations not found!");
+        LOGE("Error! OneWire(1-Wire or w1) Stub operations not found!");
     }
     else
     {
-        LOGI("Good! w1 Stub operations found!");
+        LOGI("Good! OneWire(1-Wire or w1) Stub operations found!");
     }
 
 }
 
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	is_supported
 */
-static jboolean android_onewire_OneWireNativeService_is_supported(JNIEnv* env, jclass clazz)
+static jboolean android_onewire_OneWireService_is_supported(JNIEnv* env, jclass clazz)
 {
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
 
     return (sOneWireInterface != NULL);
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	start
 */
-static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject obj)
+static jboolean android_onewire_OneWireService_start(JNIEnv* env, jobject obj)
 {
     // this must be set before calling into the HAL library
     if (!mCallbacksObj)
@@ -303,7 +303,7 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
         return JNI_FALSE;
     }
 
@@ -313,15 +313,15 @@ static jboolean android_onewire_OneWireNativeService_start(JNIEnv* env, jobject 
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	stop
 */
-static void android_onewire_OneWireNativeService_stop(JNIEnv* env, jobject obj)
+static void android_onewire_OneWireService_stop(JNIEnv* env, jobject obj)
 {
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
         return;
     }
 
@@ -329,15 +329,15 @@ static void android_onewire_OneWireNativeService_stop(JNIEnv* env, jobject obj)
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	get_current_master
 
-static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env, jobject obj)
+static jint android_onewire_OneWireService_get_current_master(JNIEnv* env, jobject obj)
 {
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
         return 0;
     }
 
@@ -350,18 +350,18 @@ static jint android_onewire_OneWireNativeService_get_current_master(JNIEnv* env,
 */
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	get_current_slaves
 
-static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env, jobject obj, jlongArray slaveRNs)
+static jint android_onewire_OneWireService_get_current_slaves(JNIEnv* env, jobject obj, jlongArray slaveRNs)
 {
     jint slaveCount = 0;
     w1_slave_rn slaves[MAX_SLAVE_COUNT];
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
         return 0;
     }
 
@@ -383,15 +383,15 @@ static jint android_onewire_OneWireNativeService_get_current_slaves(JNIEnv* env,
 */
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	begin_exclusive
 */
-static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env, jobject obj)
+static jboolean android_onewire_OneWireService_begin_exclusive(JNIEnv* env, jobject obj)
 {
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
         return JNI_FALSE;
     }
 
@@ -402,15 +402,15 @@ static jboolean android_onewire_OneWireNativeService_begin_exclusive(JNIEnv* env
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	end_exclusive
 */
-static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobject obj)
+static void android_onewire_OneWireService_end_exclusive(JNIEnv* env, jobject obj)
 {
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
 
     //w1_master_id idOut;
@@ -420,18 +420,18 @@ static void android_onewire_OneWireNativeService_end_exclusive(JNIEnv* env, jobj
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	list_masters
 */
-static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobject obj, jintArray masterIDs)
+static jint android_onewire_OneWireService_list_masters(JNIEnv* env, jobject obj, jintArray masterIDs)
 {
     jint masterCount = 0;
     w1_master_id masters[MAX_MASTER_COUNT];
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
     else
     {
@@ -451,7 +451,7 @@ static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobje
     	}
     	else
     	{
-            LOGE("w1 Stub error: list_masters failed!");
+            LOGE("OneWire(1-Wire or w1) Stub error: list_masters failed!");
     	}
     }
 
@@ -459,11 +459,11 @@ static jint android_onewire_OneWireNativeService_list_masters(JNIEnv* env, jobje
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	search_slaves
 */
-static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobject obj,
+static jint android_onewire_OneWireService_search_slaves(JNIEnv* env, jobject obj,
         jint masterId, jlongArray slaveRNs)
 {
     jint slaveCount = 0;
@@ -474,7 +474,7 @@ static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobj
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
     else
     {
@@ -494,7 +494,7 @@ static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobj
         }
         else
     	{
-            LOGE("w1 Stub error: search_slaves failed!");
+            LOGE("OneWire(1-Wire or w1) Stub error: search_slaves failed!");
     	}
     }
 
@@ -502,11 +502,11 @@ static jint android_onewire_OneWireNativeService_search_slaves(JNIEnv* env, jobj
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	master_reset
 */
-static jboolean android_onewire_OneWireNativeService_master_reset(JNIEnv* env, jobject obj, jint masterId)
+static jboolean android_onewire_OneWireService_master_reset(JNIEnv* env, jobject obj, jint masterId)
 {
     jboolean result = JNI_FALSE;
 
@@ -515,7 +515,7 @@ static jboolean android_onewire_OneWireNativeService_master_reset(JNIEnv* env, j
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
     else
     {
@@ -525,11 +525,11 @@ static jboolean android_onewire_OneWireNativeService_master_reset(JNIEnv* env, j
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	master_touch
 */
-static jboolean android_onewire_OneWireNativeService_master_touch(JNIEnv* env, jobject obj,
+static jboolean android_onewire_OneWireService_master_touch(JNIEnv* env, jobject obj,
         jint masterId, jbyteArray dataIn, jint dataInLen, jbyteArray dataOut)
 {
     jboolean result = JNI_FALSE;
@@ -540,7 +540,7 @@ static jboolean android_onewire_OneWireNativeService_master_touch(JNIEnv* env, j
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
     else
     {
@@ -560,11 +560,11 @@ static jboolean android_onewire_OneWireNativeService_master_touch(JNIEnv* env, j
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	master_read
 */
-static jboolean android_onewire_OneWireNativeService_master_read(JNIEnv* env, jobject obj,
+static jboolean android_onewire_OneWireService_master_read(JNIEnv* env, jobject obj,
         jint masterId, jint readLen, jbyteArray dataReadOut)
 {
     jboolean result = JNI_FALSE;
@@ -574,7 +574,7 @@ static jboolean android_onewire_OneWireNativeService_master_read(JNIEnv* env, jo
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
     else
     {
@@ -588,11 +588,11 @@ static jboolean android_onewire_OneWireNativeService_master_read(JNIEnv* env, jo
 }
 
 /**
- * Package Name: 	see - register_android_server_onewire_OneWireNativeService()
- * Class Name: 		OneWireNativeService
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
  * Method Name:  	master_write
 */
-static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, jobject obj,
+static jboolean android_onewire_OneWireService_master_write(JNIEnv* env, jobject obj,
         jint masterId, jint writeLen, jbyteArray dataWriteIn)
 {
     jboolean result = JNI_FALSE;
@@ -602,7 +602,7 @@ static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, j
 
     if(!sOneWireInterface)
     {
-        LOGE("w1 Stub operations not exist!");
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
     }
     else
     {
@@ -622,34 +622,34 @@ static jboolean android_onewire_OneWireNativeService_master_write(JNIEnv* env, j
 static JNINativeMethod sMethods[] =
 {
     /* name, 						signature, 				funcPtr */
-    {"class_init_native", 			"()V", 					(void*)android_onewire_OneWireNativeService_class_init_native},
-    {"native_is_supported", 		"()Z", 					(void*)android_onewire_OneWireNativeService_is_supported},
-    {"native_start", 				"()Z", 					(void*)android_onewire_OneWireNativeService_start},
-    {"native_stop", 				"()V", 					(void*)android_onewire_OneWireNativeService_stop},
+    {"class_init_native", 			"()V", 					(void*)android_onewire_OneWireService_class_init_native},
+    {"native_is_supported", 		"()Z", 					(void*)android_onewire_OneWireService_is_supported},
+    {"native_start", 				"()Z", 					(void*)android_onewire_OneWireService_start},
+    {"native_stop", 				"()V", 					(void*)android_onewire_OneWireService_stop},
 
-    //{"native_get_current_master", 	"()I", 					(void*)android_onewire_OneWireNativeService_get_current_master},
-    //{"native_get_current_slaves", 	"([J)I", 				(void*)android_onewire_OneWireNativeService_get_current_slaves},
-    //{"native_begin_exclusive", 		"(I)Z", 					(void*)android_onewire_OneWireNativeService_begin_exclusive},
-    //{"native_end_exclusive", 		"(I)V", 					(void*)android_onewire_OneWireNativeService_end_exclusive},
-    {"native_begin_exclusive", 		"()Z", 					(void*)android_onewire_OneWireNativeService_begin_exclusive},
-    {"native_end_exclusive", 		"()V", 					(void*)android_onewire_OneWireNativeService_end_exclusive},
+    //{"native_get_current_master", 	"()I", 					(void*)android_onewire_OneWireService_get_current_master},
+    //{"native_get_current_slaves", 	"([J)I", 					(void*)android_onewire_OneWireService_get_current_slaves},
+    //{"native_begin_exclusive", 		"(I)Z", 					(void*)android_onewire_OneWireService_begin_exclusive},
+    //{"native_end_exclusive", 		"(I)V", 					(void*)android_onewire_OneWireService_end_exclusive},
+    {"native_begin_exclusive", 		"()Z", 					(void*)android_onewire_OneWireService_begin_exclusive},
+    {"native_end_exclusive", 		"()V", 					(void*)android_onewire_OneWireService_end_exclusive},
 
-    {"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireNativeService_list_masters},
-    {"native_search_slaves", 		"(I[J)I", 				(void*)android_onewire_OneWireNativeService_search_slaves},
-    {"native_master_reset", 		"(I)Z", 				(void*)android_onewire_OneWireNativeService_master_reset},
-    {"native_master_touch", 		"(I[BI[B)Z", 			(void*)android_onewire_OneWireNativeService_master_touch},
-    {"native_master_read", 			"(II[B)Z", 				(void*)android_onewire_OneWireNativeService_master_read},
-    {"native_master_write", 		"(II[B)Z", 				(void*)android_onewire_OneWireNativeService_master_write},
+    {"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireService_list_masters},
+    {"native_search_slaves", 		"(I[J)I", 				(void*)android_onewire_OneWireService_search_slaves},
+    {"native_master_reset", 		"(I)Z", 				(void*)android_onewire_OneWireService_master_reset},
+    {"native_master_touch", 		"(I[BI[B)Z", 			(void*)android_onewire_OneWireService_master_touch},
+    {"native_master_read", 			"(II[B)Z", 				(void*)android_onewire_OneWireService_master_read},
+    {"native_master_write", 		"(II[B)Z", 				(void*)android_onewire_OneWireService_master_write},
 
 };
 
 
 
 
-int register_android_server_onewire_OneWireNativeService(JNIEnv* env)
+int register_android_server_onewire_OneWireService(JNIEnv* env)
 {
     return jniRegisterNativeMethods(env, "com/android/server/OneWireService", sMethods, NELEM(sMethods));
-    //return jniRegisterNativeMethods(env, "net/sh/android/onewire/legacy/OneWireNativeService", sMethods, NELEM(sMethods));
+    //return jniRegisterNativeMethods(env, "net/sh/android/onewire/legacy/OneWireService", sMethods, NELEM(sMethods));
 }
 
 
