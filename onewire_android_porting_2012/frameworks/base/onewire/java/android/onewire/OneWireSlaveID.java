@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import net.sh.android.onewire.ConvertCodec;
 
 public class OneWireSlaveID implements Parcelable {
 

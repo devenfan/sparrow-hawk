@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="src" path="frameworks-base/onewire/java"/>
 	<classpathentry excluding="com/android/server/AlarmManagerService.java|com/android/server/BatteryService.java|com/android/server/HardwareService.java|com/android/server/NotificationManagerService.java|com/android/server/SensorService.java|com/android/server/PowerManagerService.java|com/android/server/SystemServer.java" kind="src" path="frameworks-base/services/java"/>

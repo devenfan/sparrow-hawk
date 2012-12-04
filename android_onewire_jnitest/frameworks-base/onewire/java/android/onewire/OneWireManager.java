@@ -93,7 +93,6 @@ public class OneWireManager {
     		
             if (looper == null) {
                 mListenerHandler = new Handler() {
-                    @Override
                     public void handleMessage(Message msg) {
                         _handleMessage(msg);
                     }
@@ -145,7 +144,6 @@ public class OneWireManager {
             }
         }
     	
-		@Override
 		public void onOneWireMasterAdded(OneWireMasterID master)
 				throws RemoteException {
 			
@@ -156,7 +154,6 @@ public class OneWireManager {
             
 		}
 
-		@Override
 		public void onOneWireMasterRemoved(OneWireMasterID master)
 				throws RemoteException {
 			
@@ -166,7 +163,6 @@ public class OneWireManager {
             mListenerHandler.sendMessage(msg);
 		}
 
-		@Override
 		public void onOneWireSlaveAdded(OneWireMasterID master,
 				OneWireSlaveID slaveOfTheMaster) throws RemoteException {
 
@@ -176,7 +172,6 @@ public class OneWireManager {
             mListenerHandler.sendMessage(msg);
 		}
 
-		@Override
 		public void onOneWireSlaveRemoved(OneWireMasterID master,
 				OneWireSlaveID slaveOfTheMaster) throws RemoteException {
 

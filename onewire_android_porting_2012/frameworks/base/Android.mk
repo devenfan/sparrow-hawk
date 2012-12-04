@@ -169,8 +169,8 @@ LOCAL_SRC_FILES += \
 # FRAMEWORKS_BASE_JAVA_SRC_DIRS comes from build/core/pathmap.mk
 LOCAL_AIDL_INCLUDES += $(FRAMEWORKS_BASE_JAVA_SRC_DIRS)
 
-# ADD ONEWIRE AIDL DIR 
-LOCAL_AIDL_INCLUDES += frameworks/base/onewire/java
+# ADD ONEWIRE AIDL, below is useless, must change build/core/pathmap.mk...
+#LOCAL_AIDL_INCLUDES += frameworks/base/onewire/java
 
 LOCAL_INTERMEDIATE_SOURCES := \
 			$(framework-res-source-path)/android/R.java \
