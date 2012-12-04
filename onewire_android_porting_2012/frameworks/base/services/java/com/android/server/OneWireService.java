@@ -550,8 +550,6 @@ public class OneWireService extends IOneWireService.Stub {
     
     
     
-
-	@Override
 	public void addOneWireListener(IOneWireListener listener)
 			throws RemoteException {
 		
@@ -568,7 +566,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public void removeOneWireListener(IOneWireListener listener)
 			throws RemoteException {
 		
@@ -584,7 +581,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public boolean begnExclusive() throws RemoteException {
 		 synchronized (mLock) {
 			 return native_begin_exclusive();
@@ -592,7 +588,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public void endExclusive() throws RemoteException {
 		 synchronized (mLock) {
 			 native_end_exclusive();
@@ -600,7 +595,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public OneWireMasterID[] listMasters() throws RemoteException {
 
 		//it's impossible that to have more than 10 masters on one system
@@ -623,7 +617,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public OneWireSlaveID[] searchSlaves(OneWireMasterID masterId)
 			throws RemoteException {
 		
@@ -647,7 +640,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public boolean reset(OneWireMasterID masterId) throws RemoteException {
 		
 		synchronized (mLock) {
@@ -656,7 +648,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public byte[] touch(OneWireMasterID masterId, byte[] dataIn,
 			int dataInLen) throws RemoteException {
 		
@@ -672,7 +663,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public byte[] read(OneWireMasterID masterId, int readLen) throws RemoteException {
 
 		boolean success = false;
@@ -687,7 +677,6 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	@Override
 	public boolean write(OneWireMasterID masterId, byte[] dataWriteIn) throws RemoteException {
 
 		synchronized (mLock) {
