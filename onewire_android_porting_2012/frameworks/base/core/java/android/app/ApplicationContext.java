@@ -1028,7 +1028,7 @@ class ApplicationContext extends Context {
         synchronized (sSync) {
             if (sOneWireManager == null) {
                 IBinder b = ServiceManager.getService(ONEWIRE_SERVICE);
-                IOneWireManager service = IOneWireManager.Stub.asInterface(b);
+                IOneWireService service = IOneWireService.Stub.asInterface(b);
                 sOneWireManager = new OneWireManager(service);
             }
         }
