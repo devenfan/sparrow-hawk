@@ -89,6 +89,7 @@ static const onewire_interface sW1HalInterface =
 	w1hal_int_begin_exclusive_action,
 	w1hal_int_end_exclusive_action,
 
+	w1hal_int_list_masters,
     w1hal_int_search_slaves,
     w1hal_int_master_reset,
 
