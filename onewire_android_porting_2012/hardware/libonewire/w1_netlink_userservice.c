@@ -102,7 +102,7 @@ static struct cn_msg * g_outMsg;            //the out message
 #define MAX_MASTER_COUNT   10
 #define MAX_SLAVE_COUNT   100
 
-static w1_master_id     g_masterIDs[MAX_MASTER_COUNT];
+static w1_master_id     g_mastersIDs[MAX_MASTER_COUNT];
 static int              g_mastersCount;
 static w1_slave_rn      g_slavesIDs[MAX_MASTER_COUNT][MAX_SLAVE_COUNT];
 static int              g_slavesCount[MAX_MASTER_COUNT];
@@ -508,7 +508,7 @@ static void w1_compare_masters(w1_master_id * mastersOld, int mastersOldCount,
 
         if(j == mastersOldCount)
         {
-            //not found in slavesOld, means slavesNew[i] is newly added
+            //not found in mastersOld, means mastersNew[i] is newly added
             mastersAdded[added++] = mastersNew[i];
         }
     }
@@ -519,7 +519,7 @@ static void w1_compare_masters(w1_master_id * mastersOld, int mastersOldCount,
         {
             for(j = 0; j < kept; j++)
             {
-                if(mastersOld[i] == slavesKept[j])
+                if(mastersOld[i] == mastersKept[j])
                 {
                     break;
                 }
@@ -527,7 +527,7 @@ static void w1_compare_masters(w1_master_id * mastersOld, int mastersOldCount,
 
             if(j == kept)
             {
-                //not found in slavesKept, means slavesOld[i] is removed
+                //not found in mastersKept, means mastersOld[i] is removed
                 mastersRemoved[removed++] = mastersOld[i];
             }
         }
@@ -676,7 +676,7 @@ static void * w1_searching_loop(void * param)
 
             if(w1_list_masters(mastersSearched, &mastersSearchedCount))
             {
-                Debug("%d w1 masters listed during the searching!\n", mastersSearched);
+                Debug("%d w1 masters listed during the searching!\n", mastersSearchedCount);
 
                 {
                     pthread_mutex_lock(&g_globalLocker);
@@ -717,7 +717,7 @@ static void * w1_searching_loop(void * param)
 
                 for(i = 0; i < g_mastersCount; i++)
                 {
-                    currentMaster = g_masterIDs[i];
+                    currentMaster = g_mastersIDs[i];
 
                     slavesSearchedCount = 0;
                     slavesAddedCount = 0;
@@ -725,7 +725,7 @@ static void * w1_searching_loop(void * param)
                     slavesKeptCount = 0;
 
                     //Search Slaves...
-                    if(w1_master_search(currentMaster, slavesSearched, slavesSearchedCount))
+                    if(w1_master_search(currentMaster, slavesSearched, &slavesSearchedCount))
                     {
                         Debug("%d w1 slaves searched for master[%d]!\n", slavesSearchedCount, currentMaster);
 
@@ -963,7 +963,7 @@ BOOL w1_netlink_userservice_start()
     }
 
     /*
-    w1_list_masters(g_masterIDs, &g_mastersCount);
+    w1_list_masters(g_mastersIDs, &g_mastersCount);
 
     Debug("%d w1 masters listed!\n", g_mastersCount);
 
@@ -971,7 +971,7 @@ BOOL w1_netlink_userservice_start()
     {
         for(i = 0; i < g_mastersCount; i++)
         {
-            masterId = g_masterIDs[i];
+            masterId = g_mastersIDs[i];
 
             //Search Slaves...
             w1_master_search(masterId, g_slavesIDs[i], (g_slavesCount + i));
