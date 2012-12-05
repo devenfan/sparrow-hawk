@@ -858,8 +858,14 @@ void w1_netlink_userservice_init(w1_user_callbacks * w1UserCallbacks)
 {
     g_userCallbacks = w1UserCallbacks;
 
-    Debug("w1(1-wire) netlink service init %s...\n", 
-		((NULL == g_userCallbacks) ? "without callbacks" : "with callbacks)");
+	if(NULL == g_userCallbacks)
+	{
+		Debug("w1(1-wire) netlink service init without callbacks...\n");
+	}
+	else
+	{
+		Debug("w1(1-wire) netlink service init with callbacks...\n");
+	}
 }
 
 /**

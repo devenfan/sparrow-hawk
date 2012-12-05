@@ -157,9 +157,9 @@ static void master_removed_callback(w1_master_id masterId)
     jint id;
     convert_master_id_to_jint(&masterId, &id);
 
-	LOGI("OneWire(1-Wire or w1) callback: slave_removed_callback");
+	LOGI("OneWire(1-Wire or w1) callback: master_removed_callback");
 	
-    env->CallVoidMethod(mCallbacksObj, master_removed_callback, id);
+    env->CallVoidMethod(mCallbacksObj, method_masterRemoved, id);
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
