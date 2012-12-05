@@ -136,6 +136,9 @@ static void master_added_callback(w1_master_id masterId)
 
     jint id;
     convert_master_id_to_jint(&masterId, &id);
+
+	LOGI("OneWire(1-Wire or w1) callback: master_added_callback");
+	
     env->CallVoidMethod(mCallbacksObj, method_masterAdded, id);
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
@@ -153,7 +156,10 @@ static void master_removed_callback(w1_master_id masterId)
 
     jint id;
     convert_master_id_to_jint(&masterId, &id);
-    env->CallVoidMethod(mCallbacksObj, method_masterRemoved, id);
+
+	LOGI("OneWire(1-Wire or w1) callback: slave_removed_callback");
+	
+    env->CallVoidMethod(mCallbacksObj, master_removed_callback, id);
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
 }
@@ -174,6 +180,8 @@ static void slave_added_callback(w1_master_id masterId, w1_slave_rn slaveRN)
     convert_master_id_to_jint(&masterId, &mid);
     convert_slave_id_to_jlong(&slaveRN, &rid);
 
+	LOGI("OneWire(1-Wire or w1) callback: slave_added_callback");
+
     env->CallVoidMethod(mCallbacksObj, method_slaveAdded, mid, rid);
 
     checkAndClearExceptionFromCallback(env, __FUNCTION__);
@@ -193,6 +201,8 @@ static void slave_removed_callback(w1_master_id masterId, w1_slave_rn slaveRN)
     jlong rid;
     convert_master_id_to_jint(&masterId, &mid);
     convert_slave_id_to_jlong(&slaveRN, &rid);
+
+	LOGI("OneWire(1-Wire or w1) callback: slave_removed_callback");
 
     env->CallVoidMethod(mCallbacksObj, method_slaveRemoved, mid, rid);
 

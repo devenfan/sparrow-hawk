@@ -381,7 +381,7 @@ static void * socketmsg_receiving_loop(void * param)
         }
         else
         {
-            Debug(">>>>>>>>>> RECV: socketmsg received, which size is %d \n", ret);
+            //Debug(">>>>>>>>>> RECV: socketmsg received, which size is %d \n", ret);
             on_w1_netlinkmsg_received((struct cn_msg *)NLMSG_DATA(nlMsgRecv));
         }
     }
@@ -676,7 +676,7 @@ static void * w1_searching_loop(void * param)
 
             if(w1_list_masters(mastersSearched, &mastersSearchedCount))
             {
-                Debug("%d w1 masters listed during the searching!\n", mastersSearchedCount);
+            	//Debug("%d w1 masters listed during the searching!\n", mastersSearchedCount);
 
                 {
                     pthread_mutex_lock(&g_globalLocker);
@@ -704,15 +704,16 @@ static void * w1_searching_loop(void * param)
                     }
                     if(mastersRemovedCount > 0)
                     {
-                        for(j = 0; j < mastersRemovedCount; j++)
+                        for(i = 0; i < mastersRemovedCount; i++)
                         {
-                            Debug("w1(1-wire) master[%d] removed during searching...\n", mastersRemoved[j]);
+                            Debug("w1(1-wire) master[%d] removed during searching...\n", mastersRemoved[i]);
+
+							//TODO Remove all the slaves on this master...
 
                             if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
-                                g_userCallbacks->master_removed_callback(mastersRemoved[j]);
+                                g_userCallbacks->master_removed_callback(mastersRemoved[i]);
                         }
                     }
-
                 }
 
                 for(i = 0; i < g_mastersCount; i++)
@@ -818,11 +819,15 @@ static void start_searching_thread(void)
 
         //Unless we need to use the 4rd argument in the callback, the 4th argument can be NULL
         pthread_create(&g_w1SearchingThread, &attr, w1_searching_loop, NULL);
+
+		Debug("w1(1-wire) slaves searching created by linux pthread...\n");
     }
 	else
     {
         //g_w1SearchingThread = sh_create_thread("w1_netlink_searching", w1_searching_loop, NULL);
         g_w1SearchingThread = g_userCallbacks->create_thread_cb("w1_netlink_searching", w1_searching_loop2, NULL);
+
+		Debug("w1(1-wire) slaves searching created by android runtime...\n");
     }
 }
 
@@ -852,6 +857,9 @@ static void stop_searching_thread(void)
 void w1_netlink_userservice_init(w1_user_callbacks * w1UserCallbacks)
 {
     g_userCallbacks = w1UserCallbacks;
+
+    Debug("w1(1-wire) netlink service init %s...\n", 
+		((NULL == g_userCallbacks) ? "without callbacks" : "with callbacks)");
 }
 
 /**
