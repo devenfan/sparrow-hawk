@@ -1,0 +1,10 @@
+<resources>
+
+    <string name="app_name">android_onewire_service_test</string>
+    
+	<string name="hello">Hello World, Android_onewire_jnitestActivity!</string>
+	
+    <string name="strStatus">Service Status...</string>
+
+
+</resources>

@@ -108,7 +108,7 @@ public abstract class UEventObserver {
 				
                 if (len > 0) {
 
-					Log.d(TAG, ">>>>>>>> UEventObserver jni: got a event!!!");
+					//Log.d(TAG, ">>>>>>>> UEventObserver jni: got a event!!!");
 					
                     String bufferStr = new String(buffer, 0, len);  // easier to search a String
                     synchronized (mObservers) {
