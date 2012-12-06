@@ -348,6 +348,9 @@ public class OneWireService extends IOneWireService.Stub {
         @Override
         public void handleMessage(Message msg) {
             try {
+            	
+            	Log.i(TAG, "Begin in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
+            	
 				switch(msg.what){
 					case MESSAGE_ONEWIRE_MASTER_ADDED:
 						master = (OneWireMasterID) msg.obj;						
@@ -366,6 +369,9 @@ public class OneWireService extends IOneWireService.Stub {
 						handleOneWireSlaveAddedOrRemoved(wrapper.master, wrapper.slaveOfTheMaster, false);
 						break;
 				};
+
+            	Log.i(TAG, "End in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
+            	
             } catch (Exception e) {
                 // Log, don't crash!
                 Log.e(TAG, "Exception in OneWireMessageHandler.handleMessage:", e);
@@ -747,7 +753,7 @@ public class OneWireService extends IOneWireService.Stub {
      * */
     private void slaveRemoved(int masterId, long slaveRN){
 
-    	Log.i(TAG, "OneWire Event [slaveAdded] raised from navice code!");
+    	Log.i(TAG, "OneWire Event [slaveRemoved] raised from navice code!");
 
     	OneWireMasterID master = new OneWireMasterID(masterId);
     	OneWireSlaveID slaveOfTheMaster = new OneWireSlaveID(slaveRN);
@@ -756,7 +762,7 @@ public class OneWireService extends IOneWireService.Stub {
 
 		//oneWireMessageHandler.removeMessages(MESSAGE_ONEWIRE_SLAVE_REMOVED, wrapper);
 		
-        Message m = Message.obtain(oneWireMessageHandler, MESSAGE_ONEWIRE_SLAVE_REMOVED, slaveOfTheMaster);
+        Message m = Message.obtain(oneWireMessageHandler, MESSAGE_ONEWIRE_SLAVE_REMOVED, wrapper);
 		
         oneWireMessageHandler.sendMessage(m);
     }
