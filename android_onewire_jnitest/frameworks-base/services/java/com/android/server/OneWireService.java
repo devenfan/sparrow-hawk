@@ -389,9 +389,9 @@ public class OneWireService extends IOneWireService.Stub {
 	
 		ArrayList<ListenerWrapper> deadReceivers = null;
 
-		ListenerWrapper[] listeners = null;
-		
-		for(ListenerWrapper receiver : mReceivers.values().toArray(listeners)) {
+		for(Object receiverObj : mReceivers.values().toArray()) {
+			
+			ListenerWrapper receiver = (ListenerWrapper)receiverObj;
 			
 			if (!receiver.callOneWireMasterAddedOrRemoved(master, isAddedOrRemoved)) {
 				
@@ -416,9 +416,10 @@ public class OneWireService extends IOneWireService.Stub {
 	
 		ArrayList<ListenerWrapper> deadReceivers = null;
 
-		ListenerWrapper[] listeners = null;
-
-		for(ListenerWrapper receiver : mReceivers.values().toArray(listeners)) {
+		for(Object receiverObj : mReceivers.values().toArray()) {
+			
+			ListenerWrapper receiver = (ListenerWrapper)receiverObj;
+			
 			if (!receiver.callOneWireSlaveAddedOrRemoved(master, slaveOfTheMaster, isAddedOrRemoved)) {
 				
 				Log.w(TAG, "RemoteException callOneWireSlaveAddedOrRemoved on " + receiver);
