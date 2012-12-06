@@ -7,7 +7,7 @@
 #define LOG_NDEBUG 0
 
 #ifndef LOG_TAG
-#define LOG_TAG "unknown"
+#define LOG_TAG "unknown_tag"
 #endif
 
 
@@ -29,8 +29,6 @@
 #define android_debug(format, args...)                                  \
 {                                                                       \
     LOGD(format, ##args);                                               \
-    printf("[%s]: \t", LOG_TAG);                                        \
-    printf(format, ##args);                                             \
 }
 
 #endif
