@@ -349,7 +349,7 @@ public class OneWireService extends IOneWireService.Stub {
         public void handleMessage(Message msg) {
             try {
             	
-            	Log.i(TAG, "Begin in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
+            	//Log.i(TAG, "Begin in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
             	
 				switch(msg.what){
 					case MESSAGE_ONEWIRE_MASTER_ADDED:
@@ -370,7 +370,7 @@ public class OneWireService extends IOneWireService.Stub {
 						break;
 				};
 
-            	Log.i(TAG, "End in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
+            	//Log.i(TAG, "End in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
             	
             } catch (Exception e) {
                 // Log, don't crash!
@@ -610,7 +610,13 @@ public class OneWireService extends IOneWireService.Stub {
 		OneWireMasterID[] result = null;
 
 		synchronized (mLock) {
-			masterCount = native_list_masters(masterIDs);
+			
+			if(native_begin_exclusive()) {
+				
+				masterCount = native_list_masters(masterIDs);
+				
+				native_end_exclusive();
+			}
 		}
 		
 		if(masterCount > 0) {
