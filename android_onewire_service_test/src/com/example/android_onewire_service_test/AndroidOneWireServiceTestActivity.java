@@ -25,8 +25,8 @@ public class AndroidOneWireServiceTestActivity extends Activity {
 	TextView _txtLog;
 	TextView _txtStatus;
 	Button _btnTest1;
-	Button _btnTest2;
-	Button _btnTest3;
+//	Button _btnTest2;
+//	Button _btnTest3;
 	
 	OneWireManager oneWireManager;
 	
@@ -78,8 +78,8 @@ public class AndroidOneWireServiceTestActivity extends Activity {
         _txtLog = (TextView) findViewById(R.id.txtLog);
         _txtStatus = (TextView) findViewById(R.id.txtStatus);
         _btnTest1 = (Button) findViewById(R.id.btnTest1);
-        _btnTest2 = (Button) findViewById(R.id.btnTest2);
-        _btnTest3 = (Button) findViewById(R.id.btnTest3);
+//        _btnTest2 = (Button) findViewById(R.id.btnTest2);
+//        _btnTest3 = (Button) findViewById(R.id.btnTest3);
         
         
         _btnTest1.setOnClickListener(new View.OnClickListener() {  

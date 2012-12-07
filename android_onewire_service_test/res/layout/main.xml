@@ -17,18 +17,6 @@
         android:layout_height="wrap_content"
         android:text="Test1" />
 
-    <Button
-        android:id="@+id/btnTest2"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Test2" />
-
-    <Button
-        android:id="@+id/btnTest3"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Test3" />
-
     <TextView
         android:id="@+id/txtLog"
         android:layout_width="fill_parent"
