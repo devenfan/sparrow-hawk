@@ -673,7 +673,7 @@ static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
 static void * w1_searching_loop(void * param)
 {
 
-	int          newMastersCount;
+	int          newMastersCount = 0;
 	w1_master_id newMastersIDs[MAX_MASTER_COUNT];
 	w1_slave_rn  newSlavesIDs[MAX_MASTER_COUNT][MAX_SLAVE_COUNT];
 	int          newSlavesCount[MAX_MASTER_COUNT];
@@ -706,7 +706,7 @@ static void * w1_searching_loop(void * param)
     char idString[20];
     memset(idString, 0, 20);
 
-    Debug("w1(1-wire) slaves searching thread started!\n");
+    Debug("w1(1-wire) searching thread started!\n");
 
     while(!g_w1SearchingThreadStopFlag)
     {
@@ -824,13 +824,13 @@ static void * w1_searching_loop(void * param)
 								else
 			                    {
 			                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
-									goto nextRound;
+									//goto nextRound;
 			                    }
 							}
 							else
 							{
 								Debug("w1(1-wire) master[%d] judged to be kept, but it dosen't exist in the global list!");
-								goto nextRound;
+								//goto nextRound;
 							}
 							
                         }
@@ -874,7 +874,7 @@ static void * w1_searching_loop(void * param)
 							else
 		                    {
 		                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
-								goto nextRound;
+								//goto nextRound;
 		                    }
                         }
                     }
@@ -900,14 +900,14 @@ static void * w1_searching_loop(void * param)
 
         }
 
-nextRound;
+nextRound:
 
         usleep(g_w1SearchingInterval * 1000);   //by microsecond
 
 		
     }
 
-    Debug("w1(1-wire) slaves searching thread stopped!\n");
+    Debug("w1(1-wire) searching thread stopped!\n");
 
     sh_signal_notify(&g_w1SearchingThreadStopSignal);
 
@@ -1329,7 +1329,8 @@ static BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //Debug("Before sh_signal_wait...\n");
 
     //waiting for the ack message
-    if(sh_signal_timedwait(&g_waitAckMsgSignal, WAIT_ACK_TIMEOUT) != 0)
+    //if(sh_signal_timedwait(&g_waitAckMsgSignal, WAIT_ACK_TIMEOUT) != 0)
+    if(sh_signal_wait(&g_waitAckMsgSignal) != 0)
     {
         Error("Cannot wait signal during %d ms! This command[%x,%x] is failed!", 
 			WAIT_ACK_TIMEOUT, w1MsgType, w1CmdType);
