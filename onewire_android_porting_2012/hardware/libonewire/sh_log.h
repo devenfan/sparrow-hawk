@@ -20,6 +20,15 @@
     __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, format, ##args);    \
     printf("[%s]: \t", LOG_TAG);                                        \
     printf(format, ##args);                                             \
+    printf("\n");														\
+}
+
+#define android_error(format, args...)                                  \
+{                                                                       \
+    __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, format, ##args);    \
+    printf("[%s]: \t", LOG_TAG);                                        \
+    printf(format, ##args);                                             \
+    printf("\n");														\
 }
 
 #else  //#ifdef ANDROID_PLATFORM
@@ -29,6 +38,17 @@
 #define android_debug(format, args...)                                  \
 {                                                                       \
     LOGD(format, ##args);                                               \
+    printf("[%s]: \t", LOG_TAG);                                        \
+    printf(format, ##args);                                             \
+    printf("\n");														\
+}
+
+#define android_error(format, args...)                                  \
+{                                                                       \
+    LOGE(format, ##args);                                               \
+    printf("[%s]: \t", LOG_TAG);                                        \
+    printf(format, ##args);                                             \
+    printf("\n");														\
 }
 
 #endif
