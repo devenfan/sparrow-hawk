@@ -57,6 +57,8 @@
  * 1. To support multi-masters, interface has been changed.
  * 2. Inside w1 searching thread, masters & slaves all should been found.
  *
+ * Deven # 2012-12-06:
+ * 1. Inside log, "signal during -5160 ms! This command is failed!" keep showing, I think maybe ACK_TIME is used by other headers.
  *
 */
 
@@ -97,7 +99,7 @@ static sh_signal_ctrl g_waitAckMsgSignal;   //the ack signal
 static struct cn_msg * g_ackMsg;            //the ack message
 static struct cn_msg * g_outMsg;            //the out message
 
-#define ACK_TIMEOUT    5000     //TIMEOUT for waiting ACK, by milliSeconds...
+#define WAIT_ACK_TIMEOUT    3000     //TIMEOUT for waiting ACK, by milliSeconds...
 
 #define MAX_MASTER_COUNT   10
 #define MAX_SLAVE_COUNT   100
@@ -111,7 +113,7 @@ static pthread_t        g_w1SearchingThread;
 static int              g_w1SearchingThreadStopFlag = 0;
 static int              g_w1SearchingThreadPauseFlag = 0;
 static sh_signal_ctrl   g_w1SearchingThreadStopSignal;
-static int              g_w1SearchingInterval = 1000; //by millisecond
+static int              g_w1SearchingInterval = 3000; 	//by millisecond
 
 /* ----------------------------------------------------------------------- */
 /* ------------------------------- log ------------------------------------ */
@@ -1209,9 +1211,10 @@ static BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //Debug("Before sh_signal_wait...\n");
 
     //waiting for the ack message
-    if(sh_signal_timedwait(&g_waitAckMsgSignal, ACK_TIMEOUT) != 0)
+    if(sh_signal_timedwait(&g_waitAckMsgSignal, WAIT_ACK_TIMEOUT) != 0)
     {
-        Debug("Cannot wait signal during %d ms! This command is failed!", ACK_TIMEOUT);
+        Debug("Cannot wait signal during %d ms! This command[%d,%d] is failed!", 
+			WAIT_ACK_TIMEOUT, w1MsgType, w1CmdType);
         succeed = FALSE;
         goto End;
     }
