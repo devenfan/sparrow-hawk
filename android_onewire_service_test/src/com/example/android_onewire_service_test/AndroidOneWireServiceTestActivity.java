@@ -52,25 +52,25 @@ public class AndroidOneWireServiceTestActivity extends Activity {
 			@Override
 			public void onOneWireSlaveRemoved(OneWireMasterID paramOneWireMasterID,
 					OneWireSlaveID paramOneWireSlaveID) {
-				_txtLog.append("oneWireSlaveRemoved: slave[" + 
+				ShowText("oneWireSlaveRemoved: slave[" + 
 					paramOneWireSlaveID + "] on master[" + paramOneWireMasterID + "] \n");
 			}
 			
 			@Override
 			public void onOneWireSlaveAdded(OneWireMasterID paramOneWireMasterID,
 					OneWireSlaveID paramOneWireSlaveID) {
-				_txtLog.append("onOneWireSlaveAdded: slave[" + 
+				ShowText("onOneWireSlaveAdded: slave[" + 
 						paramOneWireSlaveID + "] on master[" + paramOneWireMasterID + "] \n");
 			}
 			
 			@Override
 			public void onOneWireMasterRemoved(OneWireMasterID paramOneWireMasterID) {
-				_txtLog.append("onOneWireMasterRemoved: master[" + paramOneWireMasterID + "] \n");
+				ShowText("onOneWireMasterRemoved: master[" + paramOneWireMasterID + "] \n");
 			}
 			
 			@Override
 			public void onOneWireMasterAdded(OneWireMasterID paramOneWireMasterID) {
-				_txtLog.append("onOneWireMasterAdded: master[" + paramOneWireMasterID + "] \n");
+				ShowText("onOneWireMasterAdded: master[" + paramOneWireMasterID + "] \n");
 			}
 		});
         
@@ -86,13 +86,16 @@ public class AndroidOneWireServiceTestActivity extends Activity {
         	
             public void onClick(View v) {  
             	
-            	_txtStatus.setText("List Masters: " + Arrays.toString(oneWireManager.listMasters()));
+            	ShowText("List Masters: " + Arrays.toString(oneWireManager.listMasters()));
             }  
             
          }); 
     }
     
-    
+    private void ShowText(String str){
+    	_txtLog.append(str + "\n");
+    	_txtStatus.setText(str);
+    }
     
 	public static boolean runRootCommand(String command) {
 		

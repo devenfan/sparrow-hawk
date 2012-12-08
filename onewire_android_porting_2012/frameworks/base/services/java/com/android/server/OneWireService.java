@@ -46,11 +46,9 @@ import android.util.PrintWriterPrinter;
 public class OneWireService extends IOneWireService.Stub {
 
     private static final String TAG = OneWireService.class.getSimpleName();
-	private static final boolean LOCAL_LOGV = false;
 
-    private static final boolean DEBUG = false;
-    private static final boolean VERBOSE = false;
-
+	private static final boolean LOCAL_LOGV = true;
+	private static final boolean LOCAL_LOGD = true;
 
 
 	// Variables --------------------------------------------------------------
@@ -178,9 +176,8 @@ public class OneWireService extends IOneWireService.Stub {
         }
 
 		public void binderDied() {
-            if (LOCAL_LOGV) {
-                Log.v(TAG, "Location listener died");
-            }
+
+            logV(TAG, "IOneWireListener died");
 			
             synchronized (mLock) {
                 OneWireService.this.removeReceiver(this);
@@ -287,9 +284,8 @@ public class OneWireService extends IOneWireService.Stub {
 	
 	
 	private void addReceiver(ListenerWrapper receiver) {
-		if (LOCAL_LOGV) {
-            Log.v(TAG, "addReceiver: receiver = " + receiver);
-        }
+		
+        logV(TAG, "addReceiver: receiver = " + receiver);
         
 		if(mReceivers.get(receiver.mKey) == null) {
 
@@ -302,15 +298,15 @@ public class OneWireService extends IOneWireService.Stub {
 	        }
 			
 		} else {
-        	log("receiver already in the list...");
+			
+        	logV("receiver already in the list...");
         }
         
 	}
 	
 	private void removeReceiver(ListenerWrapper receiver) {
-        if (LOCAL_LOGV) {
-            Log.v(TAG, "removeReceiver: receiver = " + receiver);
-        }
+
+		logV(TAG, "removeReceiver: receiver = " + receiver);
         
         // so wakelock calls will succeed
         //final int callingUid = Binder.getCallingUid();
@@ -325,7 +321,7 @@ public class OneWireService extends IOneWireService.Stub {
                     }
                 }
             } else {
-            	log("receiver not in the list...");
+            	logV("receiver not in the list...");
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -349,7 +345,7 @@ public class OneWireService extends IOneWireService.Stub {
         public void handleMessage(Message msg) {
             try {
             	
-            	Log.i(TAG, "Begin in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
+            	//Log.i(TAG, "Begin in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
             	
 				switch(msg.what){
 					case MESSAGE_ONEWIRE_MASTER_ADDED:
@@ -370,7 +366,7 @@ public class OneWireService extends IOneWireService.Stub {
 						break;
 				};
 
-            	Log.i(TAG, "End in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
+            	//Log.i(TAG, "End in OneWireMessageHandler.handleMessage: " + msg.what + "|" + msg.obj);
             	
             } catch (Exception e) {
                 // Log, don't crash!
@@ -494,7 +490,7 @@ public class OneWireService extends IOneWireService.Stub {
             if (mPendingBroadcasts++ == 0) {
                 try {
                     mWakeLock.acquire();
-                    log("Acquired wakelock: " + WAKELOCK_KEY);
+                    logD("Acquired wakelock: " + WAKELOCK_KEY);
                 } catch (Exception e) {
                     // This is to catch a runtime exception thrown when we try to release an
                     // already released lock.
@@ -511,9 +507,9 @@ public class OneWireService extends IOneWireService.Stub {
                     // Release wake lock
                     if (mWakeLock.isHeld()) {
                         mWakeLock.release();
-                        log("Released wakelock: " + WAKELOCK_KEY);
+                        logD("Released wakelock: " + WAKELOCK_KEY);
                     } else {
-                        log("Can't release wakelock again!");
+                        logD("Can't release wakelock again!");
                     }
                 } catch (Exception e) {
                     // This is to catch a runtime exception thrown when we try to release an
@@ -525,12 +521,23 @@ public class OneWireService extends IOneWireService.Stub {
     }
 
 
-    private void log(String... log) {
+	private void logV(String... log) {
     	String logs = "";
     	for(String s : log) {
     		logs += s;
     	}
-        if (Log.isLoggable(TAG, Log.VERBOSE)) {
+        //if (Log.isLoggable(TAG, Log.VERBOSE)) {
+		if(LOCAL_LOGV) {
+            Log.d(TAG, logs);
+        }
+    }
+
+    private void logD(String... log) {
+    	String logs = "";
+    	for(String s : log) {
+    		logs += s;
+    	}
+		if(LOCAL_LOGD) {
             Log.d(TAG, logs);
         }
     }
@@ -608,10 +615,26 @@ public class OneWireService extends IOneWireService.Stub {
 		int[] masterIDs = new int[10];	
 		int masterCount = 0;
 		OneWireMasterID[] result = null;
-
+		
+		logD("listMasters begin...");
+		
 		synchronized (mLock) {
-			masterCount = native_list_masters(masterIDs);
+			
+			if(native_begin_exclusive()) {
+				
+				logD("begin_exclusive...");
+				
+				masterCount = native_list_masters(masterIDs);
+				
+				logD("native_list_masters... masterCount is " + masterCount);
+				
+				native_end_exclusive();
+				
+				logD("end_exclusive...");
+			}
 		}
+		
+		logD("listMasters end...");
 		
 		if(masterCount > 0) {
 			result = new OneWireMasterID[masterCount];

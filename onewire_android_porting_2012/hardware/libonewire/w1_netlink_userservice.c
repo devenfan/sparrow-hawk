@@ -710,6 +710,9 @@ static void * w1_searching_loop(void * param)
 
     while(!g_w1SearchingThreadStopFlag)
     {
+
+		pthread_mutex_lock(&g_globalLocker);
+	
         if(!g_w1SearchingThreadPauseFlag)
         {
         
@@ -759,7 +762,6 @@ static void * w1_searching_loop(void * param)
 							else
 							{
 								Debug("w1(1-wire) master[%d] judged to be removed, but it dosen't exist in the global list!");
-								goto nextRound;
 							}
 
                             if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
@@ -824,13 +826,11 @@ static void * w1_searching_loop(void * param)
 								else
 			                    {
 			                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
-									//goto nextRound;
 			                    }
 							}
 							else
 							{
 								Debug("w1(1-wire) master[%d] judged to be kept, but it dosen't exist in the global list!");
-								//goto nextRound;
 							}
 							
                         }
@@ -874,20 +874,19 @@ static void * w1_searching_loop(void * param)
 							else
 		                    {
 		                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
-								//goto nextRound;
 		                    }
                         }
                     }
 
 					//copy new list into the global list
-					pthread_mutex_lock(&g_globalLocker);
+					//pthread_mutex_lock(&g_globalLocker);
 
 					g_mastersCount = newMastersCount;
 					memcpy(g_mastersIDs, newMastersIDs, sizeof(w1_master_id) * newMastersCount);
 					memcpy(g_slavesCount, newSlavesCount, sizeof(int) * newMastersCount);
 					memcpy(g_slavesIDs, newSlavesIDs, sizeof(w1_slave_rn) * MAX_SLAVE_COUNT * newMastersCount);
 
-					pthread_mutex_unlock(&g_globalLocker);
+					//pthread_mutex_unlock(&g_globalLocker);
 					
                 //}
 
@@ -897,10 +896,9 @@ static void * w1_searching_loop(void * param)
                 Debug("w1 master searching failed...\n");
             }
 
+			pthread_mutex_unlock(&g_globalLocker);
 
         }
-
-nextRound:
 
         usleep(g_w1SearchingInterval * 1000);   //by microsecond
 
@@ -1563,10 +1561,16 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
 
     struct w1_netlink_msg * w1msgRecv = NULL;
 
+	Debug("w1_list_masters 1");
+
     succeed = transact_w1_msg(W1_LIST_MASTERS, 0, NULL, 0, NULL, 0, &w1msgRecv);
+
+	Debug("w1_list_masters 2 with flag[%d]", succeed);
 
     if(succeed)
         succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
+
+	Debug("w1_list_masters 3 with flag[%d]", w1msgRecv->status);
 
     if(succeed)
     {
