@@ -150,6 +150,17 @@ static int              g_w1SearchingInterval = 1000; 	//by millisecond
 /* ----------------------------------------------------------------------- */
 
 
+static void lock()
+{
+	pthread_mutex_lock(&g_globalLocker);
+}
+
+static void unlock()
+{
+	pthread_mutex_unlock(&g_globalLocker);
+}
+
+
 int generate_w1_global_sequence(void);
 
 /**
@@ -191,6 +202,8 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount);
  * Synchronized method, search all the slaves on this master.
 **/
 BOOL w1_master_search(w1_master_id masterId, w1_slave_rn * slaves, int * pSlaveCount);
+
+
 
 
 /* ------------------------------------------------------------------------- */
@@ -700,6 +713,9 @@ static void * w1_searching_loop(void * param)
     int slavesRemovedCount = 0;
     int slavesKeptCount = 0;
 
+	BOOL mastersChanged = FALSE;
+	BOOL slavesChanged = FALSE;
+	
     int i, j, k;
 	int index, index2;
 
@@ -711,19 +727,27 @@ static void * w1_searching_loop(void * param)
     while(!g_w1SearchingThreadStopFlag)
     {
 
-		pthread_mutex_lock(&g_globalLocker);
+		//pthread_mutex_lock(&g_globalLocker);
 	
         if(!g_w1SearchingThreadPauseFlag)
         {
         
-            //List Masters...
             mastersSearchedCount = 0;
             mastersAddedCount = 0;
             mastersRemovedCount = 0;
             mastersKeptCount = 0;
 
+			slavesSearchedCount = 0;
+    		slavesAddedCount = 0;
+    		slavesRemovedCount = 0;
+    		slavesKeptCount = 0;
+			
+			mastersChanged = FALSE;
+			slavesChanged = FALSE;
+
             if(w1_list_masters(mastersSearched, &mastersSearchedCount))
             {
+			
             	//Debug("%d w1 masters listed during the searching!\n", mastersSearchedCount);
             	//{
 
@@ -740,6 +764,9 @@ static void * w1_searching_loop(void * param)
 					//process removed masters...
 					if(mastersRemovedCount > 0)
                     {
+
+						mastersChanged = TRUE;
+				
                         for(i = 0; i < mastersRemovedCount; i++)
                         {
                             Debug("w1(1-wire) master[%d] removed during searching... so as the slaves on it...\n", mastersRemoved[i]);
@@ -771,6 +798,54 @@ static void * w1_searching_loop(void * param)
                     }
 
 
+					//process added masters...
+					if(mastersAddedCount > 0)
+                    {
+
+						mastersChanged = TRUE;
+					
+                        for(i = 0; i < mastersAddedCount; i++)
+                        {
+								
+                            Debug("w1(1-wire) master[%d] added on during searching...\n", mastersAdded[i]);
+
+                            if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
+                                g_userCallbacks->master_added_callback(mastersAdded[i]);
+
+							
+							currentMaster = mastersAdded[i];
+
+							index2 = find_master_index(currentMaster, newMastersIDs, newMastersCount);
+
+							//Search Slaves...
+		                    if(w1_master_search(currentMaster, slavesSearched, &slavesSearchedCount))
+		                    {
+							
+								newSlavesCount[index2] = slavesSearchedCount;
+								
+								memcpy(newSlavesIDs[index2], slavesSearched, sizeof(w1_slave_rn) * slavesSearchedCount);
+
+								if(slavesSearchedCount > 0)
+								{
+									
+									for(j = 0; j < slavesSearchedCount; j++)
+									{
+										w1_reg_num__to_string(slavesSearched + j, idString);
+										Debug("w1(1-wire) slave[%s] added on master[%d] during searching...\n", idString, currentMaster);
+
+										if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
+											g_userCallbacks->slave_added_callback(currentMaster, slavesSearched[j]);
+									}
+								}
+
+							}
+							else
+		                    {
+		                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
+		                    }
+                        }
+                    }
+
 					//process kept masters...
 					if(mastersKeptCount > 0)
 					{
@@ -790,6 +865,7 @@ static void * w1_searching_loop(void * param)
 								//Search Slaves...
 			                    if(w1_master_search(currentMaster, slavesSearched, &slavesSearchedCount))
 			                    {
+								
 									w1_compare_slaves(g_slavesIDs[index], g_slavesCount[index], slavesSearched, slavesSearchedCount,
                                               slavesAdded, &slavesAddedCount, slavesRemoved, &slavesRemovedCount,
                                               slavesKept, &slavesKeptCount);
@@ -797,7 +873,7 @@ static void * w1_searching_loop(void * param)
 									newSlavesCount[index2] = slavesKeptCount + slavesAddedCount;
                             		memcpy(newSlavesIDs[index2], slavesKept, sizeof(w1_slave_rn) * slavesKeptCount);
                             		memcpy(newSlavesIDs[index2] + slavesKeptCount, slavesAdded, sizeof(w1_slave_rn) * slavesAddedCount);
-
+									
 									if(slavesAddedCount > 0)
 			                        {
 			                            for(j = 0; j < slavesAddedCount; j++)
@@ -836,56 +912,18 @@ static void * w1_searching_loop(void * param)
                         }
 					}
 					
-					//process added masters...
-					if(mastersAddedCount > 0)
-                    {
-                        for(i = 0; i < mastersAddedCount; i++)
-                        {
-                            Debug("w1(1-wire) master[%d] added on during searching...\n", mastersAdded[i]);
-
-                            if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
-                                g_userCallbacks->master_added_callback(mastersAdded[i]);
-
-							
-							currentMaster = mastersAdded[i];
-
-							index2 = find_master_index(currentMaster, newMastersIDs, newMastersCount);
-
-							//Search Slaves...
-		                    if(w1_master_search(currentMaster, slavesSearched, &slavesSearchedCount))
-		                    {
-								newSlavesCount[index2] = slavesSearchedCount;
-								
-								memcpy(newSlavesIDs[index2], slavesSearched, sizeof(w1_slave_rn) * slavesSearchedCount);
-
-								if(slavesSearchedCount > 0)
-								{
-									for(j = 0; j < slavesSearchedCount; j++)
-									{
-										w1_reg_num__to_string(slavesSearched + j, idString);
-										Debug("w1(1-wire) slave[%s] added on master[%d] during searching...\n", idString, currentMaster);
-
-										if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
-											g_userCallbacks->slave_added_callback(currentMaster, slavesSearched[j]);
-									}
-								}
-
-							}
-							else
-		                    {
-		                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
-		                    }
-                        }
-                    }
+					
 
 					//copy new list into the global list
 					//pthread_mutex_lock(&g_globalLocker);
 
-					g_mastersCount = newMastersCount;
-					memcpy(g_mastersIDs, newMastersIDs, sizeof(w1_master_id) * newMastersCount);
-					memcpy(g_slavesCount, newSlavesCount, sizeof(int) * newMastersCount);
-					memcpy(g_slavesIDs, newSlavesIDs, sizeof(w1_slave_rn) * MAX_SLAVE_COUNT * newMastersCount);
-
+					if(mastersChanged)
+					{
+						g_mastersCount = newMastersCount;
+						memcpy(g_mastersIDs, newMastersIDs, sizeof(w1_master_id) * newMastersCount);
+						memcpy(g_slavesCount, newSlavesCount, sizeof(int) * newMastersCount);
+						memcpy(g_slavesIDs, newSlavesIDs, sizeof(w1_slave_rn) * MAX_SLAVE_COUNT * newMastersCount);
+					}
 					//pthread_mutex_unlock(&g_globalLocker);
 					
                 //}
@@ -896,7 +934,7 @@ static void * w1_searching_loop(void * param)
                 Debug("w1 master searching failed...\n");
             }
 
-			pthread_mutex_unlock(&g_globalLocker);
+			//pthread_mutex_unlock(&g_globalLocker);
 
         }
 
@@ -1163,9 +1201,9 @@ BOOL pause_w1_searching_thread()
     if(1 == g_w1SearchingThreadPauseFlag)
         return FALSE;
 
-    pthread_mutex_lock(&g_globalLocker);
+    //pthread_mutex_lock(&g_globalLocker);
     g_w1SearchingThreadPauseFlag = 1;   //needs locker???
-    pthread_mutex_unlock(&g_globalLocker);
+    //pthread_mutex_unlock(&g_globalLocker);
 
     return TRUE;
 }
@@ -1175,9 +1213,9 @@ BOOL pause_w1_searching_thread()
 **/
 void wakeup_w1_searching_thread()
 {
-    pthread_mutex_lock(&g_globalLocker);
+    //pthread_mutex_lock(&g_globalLocker);
     g_w1SearchingThreadPauseFlag = 0;   //needs locker???
-    pthread_mutex_unlock(&g_globalLocker);
+    //pthread_mutex_unlock(&g_globalLocker);
 }
 
 
@@ -1188,9 +1226,11 @@ void wakeup_w1_searching_thread()
 int generate_w1_global_sequence(void)
 {
     int ret = 0;
-    pthread_mutex_lock(&g_globalLocker);
+    lock();
+    //pthread_mutex_lock(&g_globalLocker);
     ret = g_globalSeq++;
-    pthread_mutex_unlock(&g_globalLocker);
+    //pthread_mutex_unlock(&g_globalLocker);
+    unlock();
     return ret;
 }
 
@@ -1272,13 +1312,19 @@ static BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
 
     //check busy or not
     BOOL isBusy = FALSE;
-    pthread_mutex_lock(&g_globalLocker);
+	lock();
+    //pthread_mutex_lock(&g_globalLocker);
     if(g_isProcessing)
         isBusy = TRUE;              //already busy
     else
         g_isProcessing = TRUE;   //mark busy
-    pthread_mutex_unlock(&g_globalLocker);
-    if(isBusy) return FALSE;        //busy
+    //pthread_mutex_unlock(&g_globalLocker);
+    unlock();
+    if(isBusy)
+    {
+    	Debug("transact_w1_msg failed because of busy...");
+		return FALSE;        //busy
+    }
 
     //declaration
     BOOL succeed = FALSE;
@@ -1327,8 +1373,8 @@ static BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //Debug("Before sh_signal_wait...\n");
 
     //waiting for the ack message
-    //if(sh_signal_timedwait(&g_waitAckMsgSignal, WAIT_ACK_TIMEOUT) != 0)
-    if(sh_signal_wait(&g_waitAckMsgSignal) != 0)
+    if(sh_signal_timedwait(&g_waitAckMsgSignal, WAIT_ACK_TIMEOUT) != 0)
+    //if(sh_signal_wait(&g_waitAckMsgSignal) != 0)
     {
         Error("Cannot wait signal during %d ms! This command[%x,%x] is failed!", 
 			WAIT_ACK_TIMEOUT, w1MsgType, w1CmdType);
