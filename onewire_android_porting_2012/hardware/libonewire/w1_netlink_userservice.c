@@ -713,8 +713,7 @@ static void * w1_searching_loop(void * param)
     int slavesRemovedCount = 0;
     int slavesKeptCount = 0;
 
-	BOOL mastersChanged = FALSE;
-	BOOL slavesChanged = FALSE;
+	BOOL hasChanged = FALSE;
 	
     int i, j, k;
 	int index, index2;
@@ -742,8 +741,7 @@ static void * w1_searching_loop(void * param)
     		slavesRemovedCount = 0;
     		slavesKeptCount = 0;
 			
-			mastersChanged = FALSE;
-			slavesChanged = FALSE;
+			hasChanged = FALSE;
 
             if(w1_list_masters(mastersSearched, &mastersSearchedCount))
             {
@@ -765,7 +763,7 @@ static void * w1_searching_loop(void * param)
 					if(mastersRemovedCount > 0)
                     {
 
-						mastersChanged = TRUE;
+						hasChanged = TRUE;
 				
                         for(i = 0; i < mastersRemovedCount; i++)
                         {
@@ -802,7 +800,7 @@ static void * w1_searching_loop(void * param)
 					if(mastersAddedCount > 0)
                     {
 
-						mastersChanged = TRUE;
+						hasChanged = TRUE;
 					
                         for(i = 0; i < mastersAddedCount; i++)
                         {
@@ -873,6 +871,8 @@ static void * w1_searching_loop(void * param)
 									newSlavesCount[index2] = slavesKeptCount + slavesAddedCount;
                             		memcpy(newSlavesIDs[index2], slavesKept, sizeof(w1_slave_rn) * slavesKeptCount);
                             		memcpy(newSlavesIDs[index2] + slavesKeptCount, slavesAdded, sizeof(w1_slave_rn) * slavesAddedCount);
+
+									hasChanged = TRUE;
 									
 									if(slavesAddedCount > 0)
 			                        {
@@ -917,7 +917,7 @@ static void * w1_searching_loop(void * param)
 					//copy new list into the global list
 					//pthread_mutex_lock(&g_globalLocker);
 
-					if(mastersChanged)
+					if(hasChanged)
 					{
 						g_mastersCount = newMastersCount;
 						memcpy(g_mastersIDs, newMastersIDs, sizeof(w1_master_id) * newMastersCount);
