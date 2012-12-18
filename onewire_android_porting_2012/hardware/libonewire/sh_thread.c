@@ -151,7 +151,7 @@ int sh_signal_notify(sh_signal_ctrl * signal)
 
 
 
-int sh_locker_init(sh_lock_ctrl * locker)
+int sh_locker_init(sh_locker_ctrl * locker)
 {
 	if(NULL == locker)	return E_NULL_POINTER;
 
@@ -169,7 +169,7 @@ int sh_locker_init(sh_lock_ctrl * locker)
 }
 
 
-int sh_locker_destroy(sh_lock_ctrl * locker)
+int sh_locker_destroy(sh_locker_ctrl * locker)
 {
 	if(NULL == locker) return E_NULL_POINTER;
 
@@ -184,18 +184,18 @@ int sh_locker_destroy(sh_lock_ctrl * locker)
 }
 
 
-int sh_locker_lock(sh_lock_ctrl * locker)
+int sh_locker_lock(sh_locker_ctrl * locker)
 {
 	return pthread_mutex_lock(&(locker->mutex));
 }
 
 
-int sh_locker_trylock(sh_lock_ctrl * locker)
+int sh_locker_trylock(sh_locker_ctrl * locker)
 {
 	return pthread_mutex_trylock(&(locker->mutex));
 }
 
-int sh_locker_unlock(sh_lock_ctrl * locker)
+int sh_locker_unlock(sh_locker_ctrl * locker)
 {
     return pthread_mutex_unlock(&(locker->mutex));
 }
