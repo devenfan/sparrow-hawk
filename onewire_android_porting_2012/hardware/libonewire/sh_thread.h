@@ -33,6 +33,15 @@ typedef struct sh_signal_ctrl {
 } sh_signal_ctrl;
 
 
+/**
+ * To make the mutex more available.
+ */
+typedef struct sh_locker_ctrl {
+    pthread_mutexattr_t mutex_attr;
+	pthread_mutex_t mutex;
+} sh_lock_ctrl;
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +61,23 @@ int sh_signal_timedwait(sh_signal_ctrl * signal, int milliseconds);
 
 
 int sh_signal_notify(sh_signal_ctrl * signal);
+
+
+
+int sh_locker_init(sh_lock_ctrl * locker);
+
+
+int sh_locker_destroy(sh_lock_ctrl * locker);
+
+
+int sh_locker_lock(sh_lock_ctrl * locker);
+
+
+int sh_locker_trylock(sh_lock_ctrl * locker);
+
+
+int sh_locker_unlock(sh_lock_ctrl * locker);
+
 
 
 #ifdef __cplusplus

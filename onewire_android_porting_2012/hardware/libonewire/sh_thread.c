@@ -147,3 +147,62 @@ int sh_signal_notify(sh_signal_ctrl * signal)
 }
 
 
+
+
+
+
+int sh_locker_init(sh_lock_ctrl * locker)
+{
+	if(NULL == locker)	return E_NULL_POINTER;
+
+	pthread_mutexattr_init(&(locker->mutex_attr));
+	
+    //Add recursive attribute
+    pthread_mutexattr_settype(&(locker->mutex_attr), PTHREAD_MUTEX_RECURSIVE_NP);
+
+	if(0 != pthread_mutex_init(&(locker->mutex), &(locker->mutex_attr)))
+	{
+		return E_CANNOT_INIT;
+	}
+
+	return E_OK;
+}
+
+
+int sh_locker_destroy(sh_lock_ctrl * locker)
+{
+	if(NULL == locker) return E_NULL_POINTER;
+
+	int ret = E_OK;
+
+	if(0 != pthread_mutex_destroy(&(locker->mutex)))
+	{
+		ret = E_CANNOT_DESTROY;
+	}
+
+	return ret;
+}
+
+
+int sh_locker_lock(sh_lock_ctrl * locker)
+{
+	return pthread_mutex_lock(&(locker->mutex));
+}
+
+
+int sh_locker_trylock(sh_lock_ctrl * locker)
+{
+	return pthread_mutex_trylock(&(locker->mutex));
+}
+
+int sh_locker_unlock(sh_lock_ctrl * locker)
+{
+    return pthread_mutex_unlock(&(locker->mutex));
+}
+
+
+
+
+
+
+

@@ -73,7 +73,8 @@
 static const int g_group = W1_GROUP;
 
 static int g_globalSeq = 1;
-static pthread_mutex_t g_globalLocker;
+//static pthread_mutex_t g_globalLocker;
+static sh_locker_ctrl g_globalLocker;
 
 static int g_w1NetlinkSocket;				//SOCKET
 static struct sockaddr_nl g_bindAddr;		//socket bind address
@@ -152,12 +153,14 @@ static int              g_w1SearchingInterval = 1000; 	//by millisecond
 
 static void lock()
 {
-	pthread_mutex_lock(&g_globalLocker);
+	//pthread_mutex_lock(&g_globalLocker);
+	sh_locker_lock(&g_globalLocker);
 }
 
 static void unlock()
 {
-	pthread_mutex_unlock(&g_globalLocker);
+	//pthread_mutex_unlock(&g_globalLocker);
+	sh_locker_unlock(&g_globalLocker);
 }
 
 
@@ -1033,7 +1036,8 @@ BOOL w1_netlink_userservice_start()
 
     Debug("w1(1-wire) netlink service starting...\n");
 
-    pthread_mutex_init(&g_globalLocker, NULL);
+    //pthread_mutex_init(&g_globalLocker, NULL);
+    sh_locker_init(&g_globalLocker);
 
     //open socket
     g_w1NetlinkSocket = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
@@ -1183,7 +1187,8 @@ void w1_netlink_userservice_stop()
     free(g_outMsg);
     free(g_ackMsg);
 
-    pthread_mutex_destroy(&g_globalLocker);
+    //pthread_mutex_destroy(&g_globalLocker);
+    sh_locker_destroy(&g_globalLocker);
 
     Debug("w1(1-wire) netlink userspace service stopped!\n");
 
@@ -1201,9 +1206,9 @@ BOOL pause_w1_searching_thread()
     if(1 == g_w1SearchingThreadPauseFlag)
         return FALSE;
 
-    //pthread_mutex_lock(&g_globalLocker);
+    lock();
     g_w1SearchingThreadPauseFlag = 1;   //needs locker???
-    //pthread_mutex_unlock(&g_globalLocker);
+    unlock();
 
     return TRUE;
 }
@@ -1213,9 +1218,9 @@ BOOL pause_w1_searching_thread()
 **/
 void wakeup_w1_searching_thread()
 {
-    //pthread_mutex_lock(&g_globalLocker);
+    lock();
     g_w1SearchingThreadPauseFlag = 0;   //needs locker???
-    //pthread_mutex_unlock(&g_globalLocker);
+    unlock();
 }
 
 
@@ -1227,9 +1232,7 @@ int generate_w1_global_sequence(void)
 {
     int ret = 0;
     lock();
-    //pthread_mutex_lock(&g_globalLocker);
     ret = g_globalSeq++;
-    //pthread_mutex_unlock(&g_globalLocker);
     unlock();
     return ret;
 }
@@ -1312,14 +1315,14 @@ static BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
 
     //check busy or not
     BOOL isBusy = FALSE;
+
 	lock();
-    //pthread_mutex_lock(&g_globalLocker);
     if(g_isProcessing)
         isBusy = TRUE;              //already busy
     else
         g_isProcessing = TRUE;   //mark busy
-    //pthread_mutex_unlock(&g_globalLocker);
     unlock();
+	
     if(isBusy)
     {
     	Debug("transact_w1_msg failed because of busy...");
