@@ -1617,10 +1617,13 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
 	Debug("w1_list_masters 2 with flag[%d]", succeed);
 
     if(succeed)
+    {
         succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
-	Debug("w1_list_masters 3 with flag[%d]", w1msgRecv->status);
-
+		//if unsucceed, cannot use pointer w1msgRecv, otherwise the system will reset by "signal 11 (SIGSEGV)"
+		Debug("w1_list_masters 3 with flag[%d]", w1msgRecv->status);
+    }
+	
     if(succeed)
     {
         //It will return the w1msg with master IDs (w1msg->data)
@@ -1633,9 +1636,13 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
         {
             memcpy(masters, w1msgRecv->data, (*pMasterCount) * sizeof(w1_master_id));
         }
+
+		Debug("w1_list_masters 4 with master count[%d]", *pMasterCount);
     }
 
     if(!w1msgRecv) free(w1msgRecv);
+
+	Debug("w1_list_masters 5 with flag[%p]", w1msgRecv);
 
     return succeed;
 }
