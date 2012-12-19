@@ -105,7 +105,7 @@ static struct cn_msg * g_ackMsg;            //the ack message
 static struct cn_msg * g_outMsg;            //the out message
 
 
-#define WAIT_ACK_TIMEOUT    3000     //TIMEOUT for waiting ACK, by milliSeconds...
+#define WAIT_ACK_TIMEOUT    9000     //TIMEOUT for waiting ACK, by milliSeconds...
 
 
 #ifndef MAX_MASTER_COUNT
