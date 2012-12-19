@@ -129,7 +129,7 @@ static pthread_t        g_w1SearchingThread;
 static int              g_w1SearchingThreadStopFlag = 0;
 static int              g_w1SearchingThreadPauseFlag = 0;
 static sh_signal_ctrl   g_w1SearchingThreadStopSignal;
-static int              g_w1SearchingInterval = 1000; 	//by millisecond
+static int              g_w1SearchingInterval = 3000; 	//by millisecond
 
 /* ----------------------------------------------------------------------- */
 /* ------------------------------- log ------------------------------------ */
@@ -162,6 +162,8 @@ static void unlock()
 	//pthread_mutex_unlock(&g_globalLocker);
 	sh_locker_unlock(&g_globalLocker);
 }
+
+
 
 
 int generate_w1_global_sequence(void);
@@ -813,6 +815,7 @@ static void * w1_searching_loop(void * param)
                             if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
                                 g_userCallbacks->master_added_callback(mastersAdded[i]);
 
+							sleep(1); //let the 1-Wire bus have a break
 							
 							currentMaster = mastersAdded[i];
 
@@ -852,6 +855,8 @@ static void * w1_searching_loop(void * param)
 					{
 						for(i = 0; i < mastersKeptCount; i++)
                         {
+							sleep(1); //let the 1-Wire bus have a break
+							
                             Debug("w1(1-wire) master[%d] kept during searching... now search slaves on it...\n", mastersKept[i]);
 
 							currentMaster = mastersKept[i];
