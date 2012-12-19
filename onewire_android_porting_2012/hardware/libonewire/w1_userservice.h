@@ -74,6 +74,12 @@ typedef struct w1_user_service {
     BOOL (*start)();
 
     void (*stop)();
+	
+
+	BOOL (*is_debug_enabled)();
+
+	void (*set_debug_enabled)(BOOL enableOrNot);
+	
 
     BOOL (*begin_exclusive)();  //exclusive for all the w1 masters
 

@@ -103,9 +103,11 @@ static BOOL g_isProcessing;                 //indicate if it's processing now
 static sh_signal_ctrl g_waitAckMsgSignal;   //the ack signal
 static struct cn_msg * g_ackMsg;            //the ack message
 static struct cn_msg * g_outMsg;            //the out message
+   
 
-
-#define WAIT_ACK_TIMEOUT    9000     //TIMEOUT for waiting ACK, by milliSeconds...
+//TIMEOUT for waiting ACK, by milliSeconds...
+//Couldn't less than 3000~4000,  otherwise w1_master_search will not work...
+static int              WAIT_ACK_TIMEOUT  =  9000;  
 
 
 #ifndef MAX_MASTER_COUNT
@@ -129,7 +131,13 @@ static pthread_t        g_w1SearchingThread;
 static int              g_w1SearchingThreadStopFlag = 0;
 static int              g_w1SearchingThreadPauseFlag = 0;
 static sh_signal_ctrl   g_w1SearchingThreadStopSignal;
-static int              g_w1SearchingInterval = 3000; 	//by millisecond
+static int              g_w1SearchingInterval = 1000; 	//by millisecond
+
+static BOOL             g_debug_enabled = TRUE;
+
+
+
+
 
 /* ----------------------------------------------------------------------- */
 /* ------------------------------- log ------------------------------------ */
@@ -141,7 +149,10 @@ static int              g_w1SearchingInterval = 3000; 	//by millisecond
 #define  LOG_TAG   "w1_netlink_userservice"
 #include "sh_log.h"
 
-#define Debug(format, args...)    android_debug(format, ##args)
+#define Debug(format, args...)    { 		\
+	if(g_debug_enabled) 					\
+		android_debug(format, ##args)		\
+}
 
 #define Error(format, args...)    android_error(format, ##args)
 
@@ -1717,6 +1728,17 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
 
 // implement ======================================================================
 
+
+static BOOL w1_is_debug_enabled()
+{
+	return g_debug_enabled;
+}
+
+static void w1_set_debug_enabled(BOOL enableOrNot)
+{
+	g_debug_enabled = enableOrNot;
+}
+
 static BOOL w1_master_begin_exclusive()
 {
     return pause_w1_searching_thread();
@@ -1733,6 +1755,9 @@ struct w1_user_service w1_netlink_userservice =
     .init = w1_netlink_userservice_init,
     .start = w1_netlink_userservice_start,
     .stop = w1_netlink_userservice_stop,
+
+	.is_debug_enabled = w1_is_debug_enabled;
+	.set_debug_enabled = w1_set_debug_enabled;
 
     //.get_current_master = get_current_w1_master,
     //.get_current_slaves = get_current_w1_slaves,
