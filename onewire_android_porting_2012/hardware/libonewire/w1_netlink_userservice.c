@@ -1756,8 +1756,8 @@ struct w1_user_service w1_netlink_userservice =
     .start = w1_netlink_userservice_start,
     .stop = w1_netlink_userservice_stop,
 
-	.is_debug_enabled = w1_is_debug_enabled;
-	.set_debug_enabled = w1_set_debug_enabled;
+	.is_debug_enabled = w1_is_debug_enabled,
+	.set_debug_enabled = w1_set_debug_enabled,
 
     //.get_current_master = get_current_w1_master,
     //.get_current_slaves = get_current_w1_slaves,
