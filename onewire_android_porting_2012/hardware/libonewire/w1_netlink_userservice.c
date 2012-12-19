@@ -1442,6 +1442,11 @@ BOOL w1_master_search(w1_master_id masterId, w1_slave_rn * slaves, int * pSlaveC
     BOOL succeed = FALSE;
     BOOL isSearchAlarm = FALSE;
 
+	w1_slave_rn slavesSearched[MAX_SLAVE_COUNT];
+	int slavesSearchedCount = 0;
+	w1_slave_rn * p = NULL;
+	int i, j;
+	
     //struct w1_netlink_msg ** ppRecvMsg = malloc(sizeof(struct w1_netlink_msg *));
 
     struct w1_netlink_msg * w1msgRecv = NULL;
@@ -1449,25 +1454,58 @@ BOOL w1_master_search(w1_master_id masterId, w1_slave_rn * slaves, int * pSlaveC
     //struct w1_netlink_msg * w1cmdRecv = NULL; //issue here!!!! Wrong declaration!!!!
     struct w1_netlink_cmd * w1cmdRecv = NULL;
 
+
+	Debug("w1_master_search begin");
+
+
     succeed = transact_w1_msg(W1_MASTER_CMD, (isSearchAlarm ? W1_CMD_ALARM_SEARCH : W1_CMD_SEARCH),
                               (BYTE *)&masterId, sizeof(w1_master_id), NULL, 0, &w1msgRecv);
 
     if(succeed)
         succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
+	Debug("w1_master_search with flag[%d]", succeed);
+
     if(succeed)
     {
         w1cmdRecv = (struct w1_netlink_cmd *)(w1msgRecv->data);
 
-        *pSlaveCount = w1cmdRecv->len / sizeof(w1_slave_rn);
+		slavesSearchedCount = w1cmdRecv->len / sizeof(w1_slave_rn);
+        //*pSlaveCount = w1cmdRecv->len / sizeof(w1_slave_rn);
 
-        if(*pSlaveCount > 0)
+		
+		Debug("w1_master_search with slave count[%d]", slavesSearchedCount);
+
+        if(slavesSearchedCount > 0)
         {
-            memcpy(slaves, w1cmdRecv->data, (*pSlaveCount) * sizeof(w1_slave_rn));
+        	p = w1cmdRecv->data;
+			
+            //filter invalid salve rn
+            for(i = 0, j = 0; i < slavesSearchedCount; i++)
+			{
+				if((p + i)->id != 0)
+				{
+					slavesSearched[j++] = *(p + i);
+				}
+			}
+
+			*pSlaveCount = j;
+			
+            memcpy(slaves, slavesSearched, (*pSlaveCount) * sizeof(w1_slave_rn));
         }
+		else
+		{
+			*pSlaveCount = 0;
+		}
+		
+		Debug("w1_master_search with valid slave count[%d]", *pSlaveCount);
+		
     }
 
     if(!w1msgRecv) free(w1msgRecv);
+
+	Debug("w1_master_search end");
+	
 
     return succeed;
 }
@@ -1612,21 +1650,26 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
     if(NULL == pMasterCount) return FALSE;
 
     BOOL succeed = FALSE;
+	
+	w1_master_id mastersListed[MAX_MASTER_COUNT];
+	int mastersListedCount = 0;
+	w1_master_id * p = NULL;
+	int i, j;
 
     struct w1_netlink_msg * w1msgRecv = NULL;
 
-	Debug("w1_list_masters 1");
+	Debug("w1_list_masters begin");
 
     succeed = transact_w1_msg(W1_LIST_MASTERS, 0, NULL, 0, NULL, 0, &w1msgRecv);
 
-	Debug("w1_list_masters 2 with flag[%d]", succeed);
+	Debug("w1_list_masters 1 with flag[%d]", succeed);
 
     if(succeed)
     {
         succeed = (0 == w1msgRecv->status) ? TRUE : FALSE;
 
 		//if unsucceed, cannot use pointer w1msgRecv, otherwise the system will reset by "signal 11 (SIGSEGV)"
-		Debug("w1_list_masters 3 with flag[%d]", w1msgRecv->status);
+		Debug("w1_list_masters 2 with flag[%d]", w1msgRecv->status);
     }
 	
     if(succeed)
@@ -1635,19 +1678,39 @@ BOOL w1_list_masters(w1_master_id * masters, int * pMasterCount)
         //It is processed inside [w1_process_command_root] of w1_netlink.c
         //If w1msg sent back one by one, then the ack will begin with 1, plus 1 by 1, and end with 0
         //Here we consider it will send all IDs back inside one w1msg.
-        *pMasterCount = w1msgRecv->len / sizeof(w1_master_id);
-
-        if(*pMasterCount > 0)
+        mastersListedCount = w1msgRecv->len / sizeof(w1_master_id);
+		
+		Debug("w1_list_masters 3 with master count[%d]", mastersListedCount);
+		
+        if(mastersListedCount > 0)
         {
-            memcpy(masters, w1msgRecv->data, (*pMasterCount) * sizeof(w1_master_id));
-        }
+        	p = w1msgRecv->data;
+			
+            //filter invalid master id
+            for(i = 0, j = 0; i < mastersListedCount; i++)
+			{
+				if(*(p + i) > 0)
+				{
+					mastersListed[j++] = *(p + i);
+				}
+			}
 
-		Debug("w1_list_masters 4 with master count[%d]", *pMasterCount);
+			*pMasterCount = j;
+			memcpy(masters, mastersListed, (*pMasterCount) * sizeof(w1_master_id));
+			//memcpy(masters, w1msgRecv->data, (*pMasterCount) * sizeof(w1_master_id));
+        }
+		else
+		{
+			*pMasterCount = 0;	
+		}
+		
+		Debug("w1_list_masters 4 with valid master count[%d]", *pMasterCount);
+
     }
 
     if(!w1msgRecv) free(w1msgRecv);
 
-	Debug("w1_list_masters 5 with flag[%p]", w1msgRecv);
+	Debug("w1_list_masters end");
 
     return succeed;
 }
