@@ -34,7 +34,12 @@
         }
 #endif
 
-#define w1debug(trace)		printk(KERN_DEBUG "%s\n", (trace))
+
+#define w1_log_str(str)		printk(KERN_DEBUG "%s\n", (str))
+
+#define w1_log_msgsend(msg)     printk(KERN_DEBUG "SEND a w1 msg[%d, %d]\n", (msg)->type, (((struct w1_netlink_cmd *)((msg)->data))->cmd))
+
+#define w1_log_msgrecv(msg)  	printk(KERN_DEBUG "RECV a w1 msg[%d, %d]\n", (msg)->type, (((struct w1_netlink_cmd *)((msg)->data))->cmd))
 
 #endif /* __W1_LOG_H */
 

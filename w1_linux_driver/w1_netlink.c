@@ -19,6 +19,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+
+#define DEBUG
+
+
 #include <linux/skbuff.h>
 #include <linux/netlink.h>
 #include <linux/connector.h>
@@ -44,8 +48,9 @@ void w1_netlink_send(struct w1_master *dev, struct w1_netlink_msg *msg)
 
 	memcpy(w, msg, sizeof(struct w1_netlink_msg));
 
-	printk(KERN_DEBUG "Real w1_netlink_send: seq[%d], ack[%d], len[%d]\n", m->seq, m->ack, m->len);
+	//printk(KERN_DEBUG "Real w1_netlink_send: seq[%d], ack[%d], len[%d]\n", m->seq, m->ack, m->len);
 
+	w1_log_msgsend(w);
 	cn_netlink_send(m, 0, GFP_KERNEL);
 }
 
@@ -70,6 +75,7 @@ static void w1_send_slave(struct w1_master *dev, u64 rn)
 	}
 
 	msg->ack++;
+	w1_log_msgsend(hdr);
 	cn_netlink_send(msg, 0, GFP_KERNEL);
 
 	msg->len = sizeof(struct w1_netlink_msg) + sizeof(struct w1_netlink_cmd);
@@ -90,6 +96,7 @@ static int w1_process_search_command(struct w1_master *dev, struct cn_msg *msg,
 	w1_search_devices(dev, search_type, w1_send_slave);
 
 	msg->ack = 0;
+	w1_log_msgsend(hdr);
 	cn_netlink_send(msg, 0, GFP_KERNEL); //we will finally send msg in this line!
 
 	dev->priv = NULL;
@@ -130,6 +137,7 @@ static int w1_send_read_reply(struct cn_msg *msg, struct w1_netlink_msg *hdr,
 
 	memcpy(c->data, cmd->data, c->len);
 
+	w1_log_msgsend(h);
 	err = cn_netlink_send(cm, 0, GFP_KERNEL);
 
 	kfree(data);
@@ -255,6 +263,7 @@ static int w1_process_command_root(struct cn_msg *msg, struct w1_netlink_msg *mc
 	mutex_lock(&w1_mlock);
 	list_for_each_entry(m, &w1_masters, w1_master_entry) {
 		if (cn->len + sizeof(*id) > PAGE_SIZE - sizeof(struct cn_msg)) {
+			w1_log_msgsend(w);
 			cn_netlink_send(cn, 0, GFP_KERNEL);
 			cn->ack++;
 			cn->len = sizeof(struct w1_netlink_msg);
@@ -268,6 +277,7 @@ static int w1_process_command_root(struct cn_msg *msg, struct w1_netlink_msg *mc
 		id++;
 	}
 	cn->ack = 0;
+	w1_log_msgsend(w);
 	cn_netlink_send(cn, 0, GFP_KERNEL);
 	mutex_unlock(&w1_mlock);
 
@@ -303,6 +313,7 @@ static int w1_netlink_send_error(struct cn_msg *rcmsg, struct w1_netlink_msg *rm
 		cmsg->len += sizeof(*cmd);
 	}
 
+	w1_log_msgsend(msg);
 	error = cn_netlink_send(cmsg, 0, GFP_KERNEL);
 	kfree(cmsg);
 
@@ -318,7 +329,7 @@ static void w1_cn_callback(void *data)
 	struct w1_master *dev;
 	int err = 0;
 
-	//w1debug("w1_cn_callback got data...");
+	//w1_log_str("w1_cn_callback got data...");
 
 	while (msg->len && !err) {
 		struct w1_reg_num id;
@@ -328,6 +339,8 @@ static void w1_cn_callback(void *data)
 		dev = NULL;
 		sl = NULL;
 		cmd = NULL;
+
+		w1_log_msgrecv(m);
 
 		memcpy(&id, m->id.id, sizeof(id));
 #if 0
@@ -426,7 +439,7 @@ int w1_init_netlink(void)
 {
 	struct cb_id w1_id = {.idx = CN_W1_IDX, .val = CN_W1_VAL};
 
-	w1debug("Real w1_init_netlink...");
+	w1_log_str("Real w1_init_netlink...");
 
 	return cn_add_callback(&w1_id, "w1", &w1_cn_callback);
 }
@@ -435,21 +448,24 @@ void w1_fini_netlink(void)
 {
 	struct cb_id w1_id = {.idx = CN_W1_IDX, .val = CN_W1_VAL};
 
+	w1_log_str("Real w1_fini_netlink...");
+
 	cn_del_callback(&w1_id);
 }
 #else
 void w1_netlink_send(struct w1_master *dev, struct w1_netlink_msg *msg)
 {
-	w1debug("Mock w1_netlink_send...");
+	w1_log_str("Mock w1_netlink_send...");
 }
 
 int w1_init_netlink(void)
 {
-	w1debug("Mock w1_init_netlink...");
+	w1_log_str("Mock w1_init_netlink...");
 	return 0;
 }
 
 void w1_fini_netlink(void)
 {
+	w1_log_str("Mock w1_fini_netlink...");
 }
 #endif
