@@ -151,7 +151,7 @@ static BOOL             g_debug_enabled = TRUE;
 
 #define Debug(format, args...)    { 		\
 	if(g_debug_enabled) 					\
-		android_debug(format, ##args)		\
+		android_debug(format, ##args);		\
 }
 
 #define Error(format, args...)    android_error(format, ##args)
@@ -620,6 +620,7 @@ static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
     {
         *slavesAddedCount = 0;
         *slavesRemovedCount = 0;
+		*slavesKeptCount = 0;
         return;
     }
 
@@ -631,6 +632,8 @@ static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
         {
             slavesAdded[i] = slavesNew[i];
         }
+		*slavesKeptCount = 0;
+		*slavesRemovedCount = 0;
         return;
     }
 
@@ -642,6 +645,8 @@ static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
         {
             slavesRemoved[i] = slavesOld[i];
         }
+		*slavesAddedCount = 0;
+		*slavesKeptCount = 0;
         return;
     }
 
@@ -667,6 +672,8 @@ static void w1_compare_slaves(w1_slave_rn * slavesOld, int slavesOldCount,
             slavesAdded[added++] = slavesNew[i];
         }
     }
+
+	//Now added & kept already calculated...
 
     if(slavesOldCount > kept)
     {
@@ -763,136 +770,150 @@ static void * w1_searching_loop(void * param)
             {
 			
             	//Debug("%d w1 masters listed during the searching!\n", mastersSearchedCount);
-            	//{
 
-                    w1_compare_masters(g_mastersIDs, g_mastersCount, mastersSearched, mastersSearchedCount,
-                                      mastersAdded, &mastersAddedCount, mastersRemoved, &mastersRemovedCount,
-                                      mastersKept, &mastersKeptCount);
+                w1_compare_masters(g_mastersIDs, g_mastersCount, mastersSearched, mastersSearchedCount,
+                                  mastersAdded, &mastersAddedCount, mastersRemoved, &mastersRemovedCount,
+                                  mastersKept, &mastersKeptCount);
 
 
-                    newMastersCount = mastersKeptCount + mastersAddedCount;
-                    memcpy(newMastersIDs, mastersKept, sizeof(w1_master_id) * mastersKeptCount);
-                    memcpy(newMastersIDs + mastersKeptCount, mastersAdded, sizeof(w1_master_id) * mastersAddedCount);
-					
-
-					//process removed masters...
-					if(mastersRemovedCount > 0)
-                    {
-
-						hasChanged = TRUE;
+                newMastersCount = mastersKeptCount + mastersAddedCount;
+                memcpy(newMastersIDs, mastersKept, sizeof(w1_master_id) * mastersKeptCount);
+                memcpy(newMastersIDs + mastersKeptCount, mastersAdded, sizeof(w1_master_id) * mastersAddedCount);
 				
-                        for(i = 0; i < mastersRemovedCount; i++)
-                        {
-                            Debug("w1(1-wire) master[%d] removed during searching... so as the slaves on it...\n", mastersRemoved[i]);
 
-							currentMaster = mastersRemoved[i];
-							
-							index = find_master_index(currentMaster, g_mastersIDs, g_mastersCount);
+				//process removed masters...
+				if(mastersRemovedCount > 0)
+                {
 
-							if(index >= 0)
+					hasChanged = TRUE;
+			
+                    for(i = 0; i < mastersRemovedCount; i++)
+                    {
+                        Debug("w1(1-wire) master[%d] removed during searching... so as the slaves on it...\n", mastersRemoved[i]);
+
+						currentMaster = mastersRemoved[i];
+						
+						index = find_master_index(currentMaster, g_mastersIDs, g_mastersCount);
+
+						if(index >= 0)
+						{
+							for(j = 0; j < g_slavesCount[index]; j++)
 							{
-								for(j = 0; j < g_slavesCount[index]; j++)
-								{
-									w1_reg_num__to_string(g_slavesIDs[index] + j, idString);
-									Debug("w1(1-wire) slave[%s] removed on master[%d] due to master removing...\n", idString, currentMaster);
+								w1_reg_num__to_string(g_slavesIDs[index] + j, idString);
+								Debug("w1(1-wire) slave[%s] removed on master[%d] due to master removing...\n", idString, currentMaster);
 
-									if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
-                                    	g_userCallbacks->slave_removed_callback(currentMaster, g_slavesIDs[index][j]);
+								if(g_userCallbacks != NULL && g_userCallbacks->slave_removed_callback != NULL)
+                                	g_userCallbacks->slave_removed_callback(currentMaster, g_slavesIDs[index][j]);
+							}
+						}
+						else
+						{
+							Debug("w1(1-wire) master[%d] judged to be removed, but it dosen't exist in the global list!");
+						}
+
+                        if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
+                            g_userCallbacks->master_removed_callback(mastersRemoved[i]);
+						
+                    }
+                }
+
+
+				//process added masters...
+				if(mastersAddedCount > 0)
+                {
+
+					hasChanged = TRUE;
+				
+                    for(i = 0; i < mastersAddedCount; i++)
+                    {
+							
+                        Debug("w1(1-wire) master[%d] added on during searching...\n", mastersAdded[i]);
+
+                        if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
+                            g_userCallbacks->master_added_callback(mastersAdded[i]);
+
+						sleep(1); //let the 1-Wire bus have a break
+						
+						currentMaster = mastersAdded[i];
+
+						index2 = find_master_index(currentMaster, newMastersIDs, newMastersCount);
+
+						//Search Slaves...
+	                    if(w1_master_search(currentMaster, slavesSearched, &slavesSearchedCount))
+	                    {
+						
+							newSlavesCount[index2] = slavesSearchedCount;
+							
+							memcpy(newSlavesIDs[index2], slavesSearched, sizeof(w1_slave_rn) * slavesSearchedCount);
+
+							if(slavesSearchedCount > 0)
+							{
+								
+								for(j = 0; j < slavesSearchedCount; j++)
+								{
+									w1_reg_num__to_string(slavesSearched + j, idString);
+									Debug("w1(1-wire) slave[%s] added on master[%d] during searching...\n", idString, currentMaster);
+
+									if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
+										g_userCallbacks->slave_added_callback(currentMaster, slavesSearched[j]);
 								}
 							}
-							else
-							{
-								Debug("w1(1-wire) master[%d] judged to be removed, but it dosen't exist in the global list!");
-							}
 
-                            if(g_userCallbacks != NULL && g_userCallbacks->master_removed_callback != NULL)
-                                g_userCallbacks->master_removed_callback(mastersRemoved[i]);
-							
-                        }
+						}
+						else
+	                    {
+	                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
+	                    }
                     }
+                }
 
-
-					//process added masters...
-					if(mastersAddedCount > 0)
+				//process kept masters...
+				if(mastersKeptCount > 0)
+				{
+					for(i = 0; i < mastersKeptCount; i++)
                     {
+						sleep(1); //let the 1-Wire bus have a break
+						
+                        Debug("w1(1-wire) master[%d] kept during searching... now search slaves on it...\n", mastersKept[i]);
 
-						hasChanged = TRUE;
-					
-                        for(i = 0; i < mastersAddedCount; i++)
-                        {
-								
-                            Debug("w1(1-wire) master[%d] added on during searching...\n", mastersAdded[i]);
+						currentMaster = mastersKept[i];
+						
+						index = find_master_index(currentMaster, g_mastersIDs, g_mastersCount);
+						index2 = find_master_index(currentMaster, newMastersIDs, newMastersCount);
+						
+						if(index == index2)
+						{
+							Debug("w1(1-wire) master[%d]'s index[%d] not changed! \n", mastersKept[i], index
+						}
+						else
+						{
+							Debug("w1(1-wire) master[%d]'s old index is %d, new index is %d \n", mastersKept[i], index, index2);
+						}
 
-                            if(g_userCallbacks != NULL && g_userCallbacks->master_added_callback != NULL)
-                                g_userCallbacks->master_added_callback(mastersAdded[i]);
-
-							sleep(1); //let the 1-Wire bus have a break
-							
-							currentMaster = mastersAdded[i];
-
-							index2 = find_master_index(currentMaster, newMastersIDs, newMastersCount);
-
+						if(index >= 0)
+						{
 							//Search Slaves...
 		                    if(w1_master_search(currentMaster, slavesSearched, &slavesSearchedCount))
 		                    {
-							
-								newSlavesCount[index2] = slavesSearchedCount;
-								
-								memcpy(newSlavesIDs[index2], slavesSearched, sizeof(w1_slave_rn) * slavesSearchedCount);
 
-								if(slavesSearchedCount > 0)
+								Debug("w1(1-wire) master[%d] search: %d slaves found! \n", currentMaster, slavesSearchedCount);
+							
+								w1_compare_slaves(g_slavesIDs[index], g_slavesCount[index], slavesSearched, slavesSearchedCount,
+                                          slavesAdded, &slavesAddedCount, slavesRemoved, &slavesRemovedCount,
+                                          slavesKept, &slavesKeptCount);
+
+								Debug("w1(1-wire) master[%d]: before %d slaves, now %d slaves added, %d slaves kept, %d slaves removed! \n", 
+									g_slavesCount[index], slavesAddedCount, slavesKeptCount, slavesRemovedCount);
+
+								if(slavesAddedCount > 0 || slavesRemovedCount > 0)
 								{
-									
-									for(j = 0; j < slavesSearchedCount; j++)
-									{
-										w1_reg_num__to_string(slavesSearched + j, idString);
-										Debug("w1(1-wire) slave[%s] added on master[%d] during searching...\n", idString, currentMaster);
-
-										if(g_userCallbacks != NULL && g_userCallbacks->slave_added_callback != NULL)
-											g_userCallbacks->slave_added_callback(currentMaster, slavesSearched[j]);
-									}
-								}
-
-							}
-							else
-		                    {
-		                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
-		                    }
-                        }
-                    }
-
-					//process kept masters...
-					if(mastersKeptCount > 0)
-					{
-						for(i = 0; i < mastersKeptCount; i++)
-                        {
-							sleep(1); //let the 1-Wire bus have a break
-							
-                            Debug("w1(1-wire) master[%d] kept during searching... now search slaves on it...\n", mastersKept[i]);
-
-							currentMaster = mastersKept[i];
-							
-							index = find_master_index(currentMaster, g_mastersIDs, g_mastersCount);
-							index2 = find_master_index(currentMaster, newMastersIDs, newMastersCount);
-
-							Debug("w1(1-wire) master[%d]'s old index is %d, new index is %d \n", mastersKept[i], index, index2);
-
-							if(index >= 0)
-							{
-								//Search Slaves...
-			                    if(w1_master_search(currentMaster, slavesSearched, &slavesSearchedCount))
-			                    {
 								
-									w1_compare_slaves(g_slavesIDs[index], g_slavesCount[index], slavesSearched, slavesSearchedCount,
-                                              slavesAdded, &slavesAddedCount, slavesRemoved, &slavesRemovedCount,
-                                              slavesKept, &slavesKeptCount);
-
-									newSlavesCount[index2] = slavesKeptCount + slavesAddedCount;
-                            		memcpy(newSlavesIDs[index2], slavesKept, sizeof(w1_slave_rn) * slavesKeptCount);
-                            		memcpy(newSlavesIDs[index2] + slavesKeptCount, slavesAdded, sizeof(w1_slave_rn) * slavesAddedCount);
-
 									hasChanged = TRUE;
-									
+										
+									newSlavesCount[index2] = slavesKeptCount + slavesAddedCount;
+	                        		memcpy(newSlavesIDs[index2], slavesKept, sizeof(w1_slave_rn) * slavesKeptCount);
+	                        		memcpy(newSlavesIDs[index2] + slavesKeptCount, slavesAdded, sizeof(w1_slave_rn) * slavesAddedCount);
+
 									if(slavesAddedCount > 0)
 			                        {
 			                            for(j = 0; j < slavesAddedCount; j++)
@@ -916,36 +937,38 @@ static void * w1_searching_loop(void * param)
 			                                    g_userCallbacks->slave_removed_callback(currentMaster, slavesRemoved[j]);
 			                            }
 			                        }
-							
 								}
-								else
-			                    {
-			                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
-			                    }
+								
 							}
 							else
-							{
-								Debug("w1(1-wire) master[%d] judged to be kept, but it dosen't exist in the global list!");
-							}
-							
-                        }
-					}
-					
-					
+		                    {
+		                        Debug("w1 slaves searching failed on master[%d]...\n", currentMaster);
+		                    }
+						}
+						else
+						{
+							Debug("w1(1-wire) master[%d] judged to be kept, but it dosen't exist in the global list! Why???");
+						}
+						
+                    }
+				}
+				
+				
 
-					//copy new list into the global list
-					//pthread_mutex_lock(&g_globalLocker);
+				//copy new list into the global list
+				//pthread_mutex_lock(&g_globalLocker);
+				lock();
 
-					if(hasChanged)
-					{
-						g_mastersCount = newMastersCount;
-						memcpy(g_mastersIDs, newMastersIDs, sizeof(w1_master_id) * newMastersCount);
-						memcpy(g_slavesCount, newSlavesCount, sizeof(int) * newMastersCount);
-						memcpy(g_slavesIDs, newSlavesIDs, sizeof(w1_slave_rn) * MAX_SLAVE_COUNT * newMastersCount);
-					}
-					//pthread_mutex_unlock(&g_globalLocker);
-					
-                //}
+				if(hasChanged)
+				{
+					g_mastersCount = newMastersCount;
+					memcpy(g_mastersIDs, newMastersIDs, sizeof(w1_master_id) * newMastersCount);
+					memcpy(g_slavesCount, newSlavesCount, sizeof(int) * newMastersCount);
+					memcpy(g_slavesIDs, newSlavesIDs, sizeof(w1_slave_rn) * MAX_SLAVE_COUNT * newMastersCount);
+				}
+				
+				//pthread_mutex_unlock(&g_globalLocker);
+				unlock();
 
             }
             else
@@ -1750,6 +1773,24 @@ static void w1_master_end_exclusive()
 }
 
 
+static void w1_get_current_masters(w1_master_id * masterIDs, int * masterCount)
+{
+	lock();
+	
+	if(g_mastersCount > 0)
+	{
+		*masterCount = g_mastersCount;
+		memcpy(masterIDs, g_mastersIDs, sizeof(w1_master_id) * g_mastersCount);
+	}
+	else
+	{
+		*masterCount = 0;
+	}	
+					
+	unlock();
+}
+
+
 struct w1_user_service w1_netlink_userservice =
 {
     .init = w1_netlink_userservice_init,
@@ -1758,11 +1799,13 @@ struct w1_user_service w1_netlink_userservice =
 
 	.is_debug_enabled = w1_is_debug_enabled,
 	.set_debug_enabled = w1_set_debug_enabled,
+    
+    .begin_exclusive = w1_master_begin_exclusive,
+    .end_exclusive = w1_master_end_exclusive,
 
     //.get_current_master = get_current_w1_master,
     //.get_current_slaves = get_current_w1_slaves,
-    .begin_exclusive = w1_master_begin_exclusive,
-    .end_exclusive = w1_master_end_exclusive,
+    .get_current_masters = w1_get_current_masters,
 
     .list_masters = w1_list_masters,
     .search_slaves = w1_master_search,

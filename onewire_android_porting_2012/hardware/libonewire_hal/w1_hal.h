@@ -55,17 +55,18 @@ typedef struct onewire_device_operations {
 
     void (*stop)();
 
-    /** Get current master.
-    w1_master_id (*get_current_master)(); */
+	BOOL (*is_debug_enabled)();
 
-    /** Get current slaves.
-    void (*get_current_slaves)(w1_slave_rn * slaveIDs, int * slaveCount); */
+	void (*set_debug_enabled)(BOOL enableOrDisable);
 
     /** Begin exclusive action. */
     BOOL (*begin_exclusive)();
 
     /** End exclusive action. */
     void (*end_exclusive)();
+
+	/** Get all the Masters in the memory */
+	void (*get_current_masters)(w1_master_id * masters, int * pMasterCount);
 
     /** List all the Masters */
     BOOL (*list_masters)(w1_master_id * masters, int * pMasterCount);

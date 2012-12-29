@@ -595,7 +595,21 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
-	public boolean begnExclusive() throws RemoteException {
+	public boolean isDebugEnabled() throws RemoteException {
+		 synchronized (mLock) {
+			 return native_is_debug_enabled();
+		 }
+	}
+
+
+	public void setDebugEnabled(boolean enabled) throws RemoteException {
+		 synchronized (mLock) {
+			 native_set_debug_enabled(enabled);
+		 }
+	}
+	
+
+	public boolean beginExclusive() throws RemoteException {
 		 synchronized (mLock) {
 			 return native_begin_exclusive();
 		 }
@@ -609,6 +623,33 @@ public class OneWireService extends IOneWireService.Stub {
 	}
 
 
+
+
+	public OneWireMasterID[] getCurrentMasters() throws RemoteException {
+
+		//it's impossible that to have more than 10 masters on one system
+		int[] masterIDs = new int[10];	
+		int masterCount = 0;
+		OneWireMasterID[] result = null;
+		
+		synchronized (mLock) {
+			
+			masterCount = native_get_current_masters(masterIDs);
+				
+			logD("native_get_current_masters... masterCount is " + masterCount);
+		}
+		
+		if(masterCount > 0) {
+			result = new OneWireMasterID[masterCount];
+			for(int i = 0; i < masterCount; i++){
+				result[i] = new OneWireMasterID(masterIDs[i]);
+			}
+		}
+		
+		return result;
+	}
+	
+
 	public OneWireMasterID[] listMasters() throws RemoteException {
 
 		//it's impossible that to have more than 10 masters on one system
@@ -616,25 +657,16 @@ public class OneWireService extends IOneWireService.Stub {
 		int masterCount = 0;
 		OneWireMasterID[] result = null;
 		
-		logD("listMasters begin...");
+		//logD("listMasters begin...");
 		
 		synchronized (mLock) {
 			
-			if(native_begin_exclusive()) {
+			masterCount = native_list_masters(masterIDs);
 				
-				logD("begin_exclusive...");
-				
-				masterCount = native_list_masters(masterIDs);
-				
-				logD("native_list_masters... masterCount is " + masterCount);
-				
-				native_end_exclusive();
-				
-				logD("end_exclusive...");
-			}
+			logD("native_list_masters... masterCount is " + masterCount);
 		}
 		
-		logD("listMasters end...");
+		//logD("listMasters end...");
 		
 		if(masterCount > 0) {
 			result = new OneWireMasterID[masterCount];
@@ -801,9 +833,20 @@ public class OneWireService extends IOneWireService.Stub {
 
     private native void native_stop();
 
+	
+    private native boolean native_is_debug_enabled();
+
+    private native void native_set_debug_enabled(boolean enabled);
+	
+
     private native boolean native_begin_exclusive();
 
     private native void native_end_exclusive();
+
+
+    //return the master count...
+    private native int native_get_current_masters(int[] masterIDs);
+
 
     //return the master count...
     private native int native_list_masters(int[] masterIDs);

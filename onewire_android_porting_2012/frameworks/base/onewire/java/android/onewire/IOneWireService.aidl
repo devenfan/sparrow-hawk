@@ -42,11 +42,21 @@ interface IOneWireService
     void oneWireCallbackFinished(in IOneWireListener listener);
 
 
-    boolean begnExclusive();
+	boolean isDebugEnabled();
+
+
+	void setDebugEnabled(boolean enabled);
+	
+
+    boolean beginExclusive();
 
 
     void endExclusive();
 
+
+
+    OneWireMasterID[] getCurrentMasters();
+    
 
     OneWireMasterID[] listMasters();
 

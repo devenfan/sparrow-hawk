@@ -89,9 +89,8 @@ typedef struct w1_user_service {
 
     //void (*end_exclusive)(w1_master_id masterId); //exclusive for one w1 master
 
-    //w1_master_id (*get_current_master)();	//support only one w1 master
 
-    //void (*get_current_slaves)(w1_slave_rn * slaveIDs, int * slaveCount);	//support only one w1 master
+	void (*get_current_masters)(w1_master_id * masterIDs, int * masterCount); //support multi masters
 
     BOOL (*list_masters)(w1_master_id * masterIDs, int * masterCount);
 

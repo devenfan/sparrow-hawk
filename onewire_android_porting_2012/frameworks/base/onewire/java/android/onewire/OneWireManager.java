@@ -232,13 +232,33 @@ public class OneWireManager {
     }
 
 
-    
-	public boolean begnExclusive() {
+
+	public boolean isDebugEnabled() {
 		
 		try {
-            return mService.begnExclusive();
+            return mService.isDebugEnabled();
         } catch (RemoteException ex) {
-            Log.e(TAG, "begnExclusive: RemoteException", ex);
+            Log.e(TAG, "isDebugEnabled: RemoteException", ex);
+            return false;
+        }
+	}
+
+    public void setDebugEnabled(boolean enabled) {
+
+		try {
+            mService.setDebugEnabled(enabled);
+        } catch (RemoteException ex) {
+            Log.e(TAG, "setDebugEnabled: RemoteException", ex);
+        }
+    }
+
+    
+	public boolean beginExclusive() {
+		
+		try {
+            return mService.beginExclusive();
+        } catch (RemoteException ex) {
+            Log.e(TAG, "beginExclusive: RemoteException", ex);
             return false;
         }
 	}
@@ -249,6 +269,16 @@ public class OneWireManager {
             mService.endExclusive();
         } catch (RemoteException ex) {
             Log.e(TAG, "endExclusive: RemoteException", ex);
+        }
+    }
+    
+    public OneWireMasterID[] getCurrentMasters() {
+    	
+    	try {
+            return mService.getCurrentMasters();
+        } catch (RemoteException ex) {
+            Log.e(TAG, "getCurrentMasters: RemoteException", ex);
+            return null;
         }
     }
     

@@ -341,56 +341,38 @@ static void android_onewire_OneWireService_stop(JNIEnv* env, jobject obj)
 /**
  * Package Name: 	see - register_android_server_onewire_OneWireService()
  * Class Name: 		OneWireService
- * Method Name:  	get_current_master
+ * Method Name:  	is_debug_enabled
+*/
 
-static jint android_onewire_OneWireService_get_current_master(JNIEnv* env, jobject obj)
+static jboolean android_onewire_OneWireService_is_debug_enabled(JNIEnv* env, jobject obj)
 {
     if(!sOneWireInterface)
     {
         LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
-        return 0;
+        return JNI_FALSE;
     }
 
-    jint idOut = 0;
-    w1_master_id master = sOneWireInterface->get_current_master();
-    convert_master_id_to_jint(&master, &idOut);
-
-    return idOut;
+    return sOneWireInterface->is_debug_enabled();
 }
-*/
+
 
 /**
  * Package Name: 	see - register_android_server_onewire_OneWireService()
  * Class Name: 		OneWireService
- * Method Name:  	get_current_slaves
+ * Method Name:  	set_debug_enabled
+*/
 
-static jint android_onewire_OneWireService_get_current_slaves(JNIEnv* env, jobject obj, jlongArray slaveRNs)
+static void android_onewire_OneWireService_set_debug_enabled(JNIEnv* env, jobject obj, jboolean enabled)
 {
-    jint slaveCount = 0;
-    w1_slave_rn slaves[MAX_SLAVE_COUNT];
-
     if(!sOneWireInterface)
     {
         LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
-        return 0;
+        return;
     }
 
-    sOneWireInterface->get_current_slaves(slaves, &slaveCount);
-    if(slaveCount > 0)
-    {
-        if(slaveCount > MAX_SLAVE_COUNT)
-            slaveCount = MAX_SLAVE_COUNT;
-
-        jlong* l = env->GetLongArrayElements(slaveRNs, NULL);
-
-        memcpy(l, slaves, sizeof(w1_slave_rn) * slaveCount);
-
-        env->ReleaseLongArrayElements(slaveRNs, l, 0);
-    }
-
-    return slaveCount;
+    sOneWireInterface->set_debug_enabled(enabled);
 }
-*/
+
 
 /**
  * Package Name: 	see - register_android_server_onewire_OneWireService()
@@ -428,6 +410,46 @@ static void android_onewire_OneWireService_end_exclusive(JNIEnv* env, jobject ob
 
     sOneWireInterface->end_exclusive();
 }
+
+
+
+
+/**
+ * Package Name: 	see - register_android_server_onewire_OneWireService()
+ * Class Name: 		OneWireService
+ * Method Name:  	get_current_masters
+*/
+static jint android_onewire_OneWireService_get_current_masters(JNIEnv* env, jobject obj, jintArray masterIDs)
+{
+    jint masterCount = 0;
+    w1_master_id masters[MAX_MASTER_COUNT];
+
+    if(!sOneWireInterface)
+    {
+        LOGE("OneWire(1-Wire or w1) Stub operations not exist!");
+    }
+    else
+    {
+    	sOneWireInterface->get_current_masters(masters, &masterCount);
+		
+    	if(masterCount > 0)
+		{
+			if(masterCount > MAX_MASTER_COUNT)
+				masterCount = MAX_MASTER_COUNT;
+
+			jint* p = env->GetIntArrayElements(masterIDs, NULL);
+
+			memcpy(p, masters, sizeof(w1_master_id) * masterCount);
+
+			env->ReleaseIntArrayElements(masterIDs, p, 0);
+		}
+    	
+    }
+
+    return masterCount;
+}
+
+
 
 /**
  * Package Name: 	see - register_android_server_onewire_OneWireService()
@@ -467,6 +489,10 @@ static jint android_onewire_OneWireService_list_masters(JNIEnv* env, jobject obj
 
     return masterCount;
 }
+
+
+
+
 
 /**
  * Package Name: 	see - register_android_server_onewire_OneWireService()
@@ -637,13 +663,16 @@ static JNINativeMethod sMethods[] =
     {"native_start", 				"()Z", 					(void*)android_onewire_OneWireService_start},
     {"native_stop", 				"()V", 					(void*)android_onewire_OneWireService_stop},
 
-    //{"native_get_current_master", 	"()I", 					(void*)android_onewire_OneWireService_get_current_master},
-    //{"native_get_current_slaves", 	"([J)I", 					(void*)android_onewire_OneWireService_get_current_slaves},
+    {"native_is_debug_enabled", 	"()Z", 					(void*)android_onewire_OneWireService_is_debug_enabled},
+    {"native_set_debug_enabled", 	"(Z)V", 				(void*)android_onewire_OneWireService_set_debug_enabled},
+    
     //{"native_begin_exclusive", 		"(I)Z", 					(void*)android_onewire_OneWireService_begin_exclusive},
     //{"native_end_exclusive", 		"(I)V", 					(void*)android_onewire_OneWireService_end_exclusive},
     {"native_begin_exclusive", 		"()Z", 					(void*)android_onewire_OneWireService_begin_exclusive},
     {"native_end_exclusive", 		"()V", 					(void*)android_onewire_OneWireService_end_exclusive},
-
+    
+	{"native_get_current_masters", 	"([I)I", 				(void*)android_onewire_OneWireService_get_current_masters},
+	
     {"native_list_masters", 		"([I)I", 				(void*)android_onewire_OneWireService_list_masters},
     {"native_search_slaves", 		"(I[J)I", 				(void*)android_onewire_OneWireService_search_slaves},
     {"native_master_reset", 		"(I)Z", 				(void*)android_onewire_OneWireService_master_reset},

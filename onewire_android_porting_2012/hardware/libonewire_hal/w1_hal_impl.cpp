@@ -49,14 +49,20 @@ static BOOL w1hal_int_start();
 
 static void w1hal_int_stop();
 
+static BOOL w1hal_is_debug_enabled();
 
-static w1_master_id w1hal_int_get_current_master();
+static void w1hal_set_debug_enabled(BOOL enableOrDisable);
 
-static void w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount);
+
+
 
 static BOOL w1hal_int_begin_exclusive_action();
 
 static void w1hal_int_end_exclusive_action();
+
+
+static void w1hal_int_get_current_masters(w1_master_id * masters, int * pMasterCount);
+
 
 
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount);
@@ -84,11 +90,14 @@ static const onewire_interface sW1HalInterface =
 	w1hal_int_start,
     w1hal_int_stop,
 
-	//w1hal_int_get_current_master,
-	//w1hal_int_get_current_slaves,
+	w1hal_is_debug_enabled,
+	w1hal_set_debug_enabled,
+	
 	w1hal_int_begin_exclusive_action,
 	w1hal_int_end_exclusive_action,
 
+	w1hal_int_get_current_masters,
+	
 	w1hal_int_list_masters,
     w1hal_int_search_slaves,
     w1hal_int_master_reset,
@@ -116,17 +125,17 @@ static void w1hal_int_stop()
 {
     w1UserService->stop();
 }
-/*
-static w1_master_id w1hal_int_get_current_master()
+
+static BOOL w1hal_is_debug_enabled()
 {
-    return w1UserService->get_current_master();
+	return w1UserService->is_debug_enabled();
 }
 
-static void w1hal_int_get_current_slaves(w1_slave_rn * slaveIDs, int * slaveCount)
+static void w1hal_set_debug_enabled(BOOL enableOrDisable)
 {
-	w1UserService->get_current_slaves(slaveIDs, slaveCount);
+	w1UserService->set_debug_enabled(enableOrDisable);
 }
-*/
+
 
 static BOOL w1hal_int_begin_exclusive_action()
 {
@@ -138,6 +147,10 @@ static void w1hal_int_end_exclusive_action()
 	w1UserService->end_exclusive();
 }
 
+static void w1hal_int_get_current_masters(w1_master_id * masters, int * pMasterCount)
+{
+	w1UserService->get_current_masters(masters, pMasterCount);
+}
 
 
 static BOOL w1hal_int_list_masters(w1_master_id * masters, int * pMasterCount)
