@@ -288,7 +288,7 @@ public class OneWireManager {
             return mService.listMasters();
         } catch (RemoteException ex) {
             Log.e(TAG, "listMasters: RemoteException", ex);
-			throw new OneWireException(ex.getMessage(), ex);
+			throw new OneWireException("OneWire listMasters failed!");
         }
     }
     
@@ -302,7 +302,7 @@ public class OneWireManager {
             return mService.searchSlaves(masterId);
         } catch (RemoteException ex) {
             Log.e(TAG, "searchSlaves: RemoteException", ex);
-			throw new OneWireException(ex.getMessage(), ex);
+			throw new OneWireException("OneWire searchSlaves failed!");
         }
     }
     
@@ -333,7 +333,7 @@ public class OneWireManager {
             return mService.touch(masterId, dataIn, dataIn.length);
         } catch (RemoteException ex) {
             Log.e(TAG, "touch: RemoteException", ex);
-            throw new OneWireException(ex.getMessage(), ex);
+            throw new OneWireException("OneWire touch failed!");
         }
     }
     
@@ -352,7 +352,7 @@ public class OneWireManager {
             return mService.read(masterId, readLen);
         } catch (RemoteException ex) {
             Log.e(TAG, "read: RemoteException", ex);
-            throw new OneWireException(ex.getMessage(), ex);
+            throw new OneWireException("OneWire read failed!");
         }
     }
     
@@ -369,7 +369,7 @@ public class OneWireManager {
             mService.write(masterId, dataWriteIn);
         } catch (RemoteException ex) {
             Log.e(TAG, "write: RemoteException", ex);
-            throw new OneWireException("OneWire Write(" + dataWriteIn.length + " bytes) Failed!", ex);
+            throw new OneWireException("OneWire write failed!");
         }
     }
     

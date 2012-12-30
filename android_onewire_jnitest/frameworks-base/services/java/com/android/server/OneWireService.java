@@ -668,7 +668,8 @@ public class OneWireService extends IOneWireService.Stub {
 		
 		} catch (OneWireException ex) {
 			
-			throw new RemoteException(ex.getMessage());
+			throw new RemoteException();
+			//throw new RemoteException(ex.getMessage());
 		}
 		
 		if(masterCount > 0) {
@@ -696,8 +697,9 @@ public class OneWireService extends IOneWireService.Stub {
 			}
 			
 		} catch (OneWireException ex) {
-			
-			throw new RemoteException(ex.getMessage());
+
+			throw new RemoteException();
+			//throw new RemoteException(ex.getMessage());
 		}
 		
 		if(slaveCount > 0) {
@@ -731,8 +733,9 @@ public class OneWireService extends IOneWireService.Stub {
 		}
 
 		if(!success) 
-			throw new RemoteException("OneWire Touch(" + dataInLen + " bytes) Failed: " + 
-				ConvertCodec.bytesToHexString(dataIn));
+			throw new RemoteException();
+			//throw new RemoteException("OneWire Touch(" + dataInLen + " bytes) Failed: " + 
+			//	ConvertCodec.bytesToHexString(dataIn));
 		
 		return dataOut;
 	}
@@ -749,7 +752,8 @@ public class OneWireService extends IOneWireService.Stub {
 		}
 		
 		if(!success) 
-			throw new RemoteException("OneWire Read(" + readLen + " bytes) Failed... ");
+			throw new RemoteException();
+			//throw new RemoteException("OneWire Read(" + readLen + " bytes) Failed... ");
 		
 		return dataReadOut;
 	}
