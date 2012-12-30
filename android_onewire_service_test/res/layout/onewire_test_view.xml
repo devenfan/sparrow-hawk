@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="225dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/txtOneWireStatus"
+            android:layout_width="fill_parent"
+            android:layout_height="76dp" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/btnListMasters"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="List Masters" />
+
+            <Button
+                android:id="@+id/btnGetMasters"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Get Masters" />
+
+            <Button
+                android:id="@+id/btnEnableDebug"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Enable Debug" />
+
+            <Button
+                android:id="@+id/btnDisableDebug"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Disable Debug" />
+            
+            
+        </LinearLayout>
+
+        <Spinner
+            android:id="@+id/spinnerMasters"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp" />
+        
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+            
+            <Button
+                android:id="@+id/btnBeginExclusive"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Begin Exclusive" />
+
+            <Button
+                android:id="@+id/btnEndExclusive"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="End Exclusive" />
+
+            <Button
+                android:id="@+id/btnMasterSearch"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Search" />
+
+            <Button
+                android:id="@+id/btnMasterReset"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Reset" />
+        </LinearLayout>
+        
+            <EditText
+                android:id="@+id/txtOneWireInput"
+                android:layout_width="fill_parent"
+                android:layout_height="86dp"
+                android:layout_weight="0.12"
+                android:ems="10" >
+
+                <requestFocus />
+            </EditText>
+        
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/btnMasterRead"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Read" />
+
+            <Button
+                android:id="@+id/btnMasterWrite"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Write" />
+
+            <Button
+                android:id="@+id/btnMasterTouch"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Touch" />
+
+            <Button
+                android:id="@+id/btnClearOneWireInput"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Clear" />
+        </LinearLayout>
+        
+    </LinearLayout>
+
+</ScrollView>
