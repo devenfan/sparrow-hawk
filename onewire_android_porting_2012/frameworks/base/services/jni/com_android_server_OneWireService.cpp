@@ -699,7 +699,8 @@ int register_android_server_onewire_OneWireService(JNIEnv* env)
 
 static void throw_onewire_exception(JNIEnv* env, const char* details)
 {
-	jniThrowException(env, "android/onewire/OneWireException", details);
+	//jniThrowException(env, "android/onewire/OneWireException", details);
+	env->ThrowNew(env->FindClass("android/onewire/OneWireException"), details);
 }
 
 
