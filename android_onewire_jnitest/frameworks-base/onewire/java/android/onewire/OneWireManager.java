@@ -232,13 +232,33 @@ public class OneWireManager {
     }
 
 
-    
-	public boolean begnExclusive() {
+
+	public boolean isDebugEnabled() {
 		
 		try {
-            return mService.begnExclusive();
+            return mService.isDebugEnabled();
         } catch (RemoteException ex) {
-            Log.e(TAG, "begnExclusive: RemoteException", ex);
+            Log.e(TAG, "isDebugEnabled: RemoteException", ex);
+            return false;
+        }
+	}
+
+    public void setDebugEnabled(boolean enabled) {
+
+		try {
+            mService.setDebugEnabled(enabled);
+        } catch (RemoteException ex) {
+            Log.e(TAG, "setDebugEnabled: RemoteException", ex);
+        }
+    }
+
+    
+	public boolean beginExclusive() {
+		
+		try {
+            return mService.beginExclusive();
+        } catch (RemoteException ex) {
+            Log.e(TAG, "beginExclusive: RemoteException", ex);
             return false;
         }
 	}
@@ -252,18 +272,28 @@ public class OneWireManager {
         }
     }
     
-    public OneWireMasterID[] listMasters() {
+    public OneWireMasterID[] getCurrentMasters() {
+    	
+    	try {
+            return mService.getCurrentMasters();
+        } catch (RemoteException ex) {
+            Log.e(TAG, "getCurrentMasters: RemoteException", ex);
+			return null;
+        }
+    }
+    
+    public OneWireMasterID[] listMasters() throws OneWireException {
     	
     	try {
             return mService.listMasters();
         } catch (RemoteException ex) {
             Log.e(TAG, "listMasters: RemoteException", ex);
-            return null;
+			throw new OneWireException(ex.getMessage(), ex);
         }
     }
     
     
-    public OneWireSlaveID[] searchSlaves(OneWireMasterID masterId) {
+    public OneWireSlaveID[] searchSlaves(OneWireMasterID masterId) throws OneWireException {
     	
     	if(masterId == null)
     		throw new IllegalArgumentException("OneWireMasterID cannot be null!");
@@ -272,7 +302,7 @@ public class OneWireManager {
             return mService.searchSlaves(masterId);
         } catch (RemoteException ex) {
             Log.e(TAG, "searchSlaves: RemoteException", ex);
-            return null;
+			throw new OneWireException(ex.getMessage(), ex);
         }
     }
     
@@ -291,7 +321,7 @@ public class OneWireManager {
     }
     
     
-    public byte[] touch(OneWireMasterID masterId, byte[] dataIn) {
+    public byte[] touch(OneWireMasterID masterId, byte[] dataIn) throws OneWireException {
     	
     	if(masterId == null)
     		throw new IllegalArgumentException("masterId cannot be null!");
@@ -303,14 +333,14 @@ public class OneWireManager {
             return mService.touch(masterId, dataIn, dataIn.length);
         } catch (RemoteException ex) {
             Log.e(TAG, "touch: RemoteException", ex);
-            return null;
+            throw new OneWireException(ex.getMessage(), ex);
         }
     }
     
 
     
     
-    public byte[] read(OneWireMasterID masterId, int readLen) {
+    public byte[] read(OneWireMasterID masterId, int readLen) throws OneWireException {
     	
     	if(masterId == null)
     		throw new IllegalArgumentException("masterId cannot be null!");
@@ -322,12 +352,12 @@ public class OneWireManager {
             return mService.read(masterId, readLen);
         } catch (RemoteException ex) {
             Log.e(TAG, "read: RemoteException", ex);
-            return null;
+            throw new OneWireException(ex.getMessage(), ex);
         }
     }
     
     
-    public boolean write(OneWireMasterID masterId, byte[] dataWriteIn) {
+    public void write(OneWireMasterID masterId, byte[] dataWriteIn) throws OneWireException {
     	
     	if(masterId == null)
     		throw new IllegalArgumentException("masterId cannot be null!");
@@ -336,10 +366,10 @@ public class OneWireManager {
     		throw new IllegalArgumentException("dataWriteIn cannot be null or empty!");
     	
     	try {
-            return mService.write(masterId, dataWriteIn);
+            mService.write(masterId, dataWriteIn);
         } catch (RemoteException ex) {
-            Log.e(TAG, "searchSlaves: RemoteException", ex);
-            return false;
+            Log.e(TAG, "write: RemoteException", ex);
+            throw new OneWireException("OneWire Write(" + dataWriteIn.length + " bytes) Failed!", ex);
         }
     }
     

@@ -89,14 +89,14 @@ static void convert_master_id_to_jint(const w1_master_id * idIn, jint * idOut)
 }
 
 
-
+static void throw_onewire_exception(JNIEnv* env, const char* details);
 
 
 static void checkAndClearExceptionFromCallback(JNIEnv* env, const char* methodName)
 {
     if (env->ExceptionCheck())
     {
-        LOGE("w1 exception was thrown by callback '%s'.", methodName);
+        LOGE("OneWire(1-Wire or w1) exception was thrown by callback '%s'.", methodName);
         //LOGE_EX(env);
         env->ExceptionClear();
     }
@@ -484,6 +484,8 @@ static jint android_onewire_OneWireService_list_masters(JNIEnv* env, jobject obj
     	else
     	{
             LOGE("OneWire(1-Wire or w1) Stub error: list_masters failed!");
+
+			throw_onewire_exception(env, "OneWire(1-Wire or w1) Stub error: list_masters failed!");
     	}
     }
 
@@ -531,6 +533,9 @@ static jint android_onewire_OneWireService_search_slaves(JNIEnv* env, jobject ob
         else
     	{
             LOGE("OneWire(1-Wire or w1) Stub error: search_slaves failed!");
+
+			throw_onewire_exception(env, "OneWire(1-Wire or w1) Stub error: search_slaves failed!");
+			
     	}
     }
 
@@ -690,6 +695,14 @@ int register_android_server_onewire_OneWireService(JNIEnv* env)
     return jniRegisterNativeMethods(env, "com/android/server/OneWireService", sMethods, NELEM(sMethods));
     //return jniRegisterNativeMethods(env, "net/sh/android/onewire/legacy/OneWireService", sMethods, NELEM(sMethods));
 }
+
+
+static void throw_onewire_exception(JNIEnv* env, const char* details)
+{
+	jniThrowException(env, "android/onewire/OneWireException", details);
+}
+
+
 
 
 } /* namespace android */

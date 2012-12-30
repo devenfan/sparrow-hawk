@@ -883,7 +883,7 @@ static void * w1_searching_loop(void * param)
 						
 						if(index == index2)
 						{
-							Debug("w1(1-wire) master[%d]'s index[%d] not changed! \n", mastersKept[i], index
+							Debug("w1(1-wire) master[%d]'s index[%d] not changed! \n", mastersKept[i], index);
 						}
 						else
 						{
@@ -903,7 +903,7 @@ static void * w1_searching_loop(void * param)
                                           slavesKept, &slavesKeptCount);
 
 								Debug("w1(1-wire) master[%d]: before %d slaves, now %d slaves added, %d slaves kept, %d slaves removed! \n", 
-									g_slavesCount[index], slavesAddedCount, slavesKeptCount, slavesRemovedCount);
+									currentMaster, g_slavesCount[index], slavesAddedCount, slavesKeptCount, slavesRemovedCount);
 
 								if(slavesAddedCount > 0 || slavesRemovedCount > 0)
 								{

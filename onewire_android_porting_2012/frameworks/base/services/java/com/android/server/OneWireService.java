@@ -657,16 +657,19 @@ public class OneWireService extends IOneWireService.Stub {
 		int masterCount = 0;
 		OneWireMasterID[] result = null;
 		
-		//logD("listMasters begin...");
+		try {
 		
-		synchronized (mLock) {
-			
-			masterCount = native_list_masters(masterIDs);
+			synchronized (mLock) {
 				
+				masterCount = native_list_masters(masterIDs);
+			}
+					
 			logD("native_list_masters... masterCount is " + masterCount);
-		}
 		
-		//logD("listMasters end...");
+		} catch (OneWireException ex) {
+			
+			throw new RemoteException(ex.getMessage());
+		}
 		
 		if(masterCount > 0) {
 			result = new OneWireMasterID[masterCount];
@@ -687,8 +690,14 @@ public class OneWireService extends IOneWireService.Stub {
 		int slaveCount = 0;
 		OneWireSlaveID[] result = null;
 
-		synchronized (mLock) {
-			slaveCount = native_search_slaves(masterId.getId(), slaveIDs);
+		try {
+			synchronized (mLock) {
+				slaveCount = native_search_slaves(masterId.getId(), slaveIDs);
+			}
+			
+		} catch (OneWireException ex) {
+			
+			throw new RemoteException(ex.getMessage());
 		}
 		
 		if(slaveCount > 0) {
@@ -720,8 +729,12 @@ public class OneWireService extends IOneWireService.Stub {
 		synchronized (mLock) {
 			success = native_master_touch(masterId.getId(), dataIn, dataInLen, dataOut);
 		}
+
+		if(!success) 
+			throw new RemoteException("OneWire Touch(" + dataInLen + " bytes) Failed: " + 
+				ConvertCodec.bytesToHexString(dataIn));
 		
-		return success ? dataOut : null;
+		return dataOut;
 	}
 
 
@@ -735,7 +748,10 @@ public class OneWireService extends IOneWireService.Stub {
 			success = native_master_read(masterId.getId(), readLen, dataReadOut);
 		}
 		
-		return success ? dataReadOut : null;
+		if(!success) 
+			throw new RemoteException("OneWire Read(" + readLen + " bytes) Failed... ");
+		
+		return dataReadOut;
 	}
 
 
@@ -849,10 +865,10 @@ public class OneWireService extends IOneWireService.Stub {
 
 
     //return the master count...
-    private native int native_list_masters(int[] masterIDs);
+    private native int native_list_masters(int[] masterIDs) throws OneWireException;
 
     //return the slave count...
-    private native int native_search_slaves(int masterId, long[] slaveRNs);
+    private native int native_search_slaves(int masterId, long[] slaveRNs) throws OneWireException;
 
     private native boolean native_master_reset(int masterId);
 
