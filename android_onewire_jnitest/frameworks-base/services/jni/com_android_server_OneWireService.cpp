@@ -699,7 +699,9 @@ int register_android_server_onewire_OneWireService(JNIEnv* env)
 
 static void throw_onewire_exception(JNIEnv* env, const char* details)
 {
-	jniThrowException(env, "android/onewire/OneWireException", details);
+	//Deven # 2012-12-30: Upper layer cannot receive the OneWireException
+	//jniThrowException(env, "android/onewire/OneWireException", details);
+	env->ThrowNew(env->FindClass("android/onewire/OneWireException"), details);
 }
 
 

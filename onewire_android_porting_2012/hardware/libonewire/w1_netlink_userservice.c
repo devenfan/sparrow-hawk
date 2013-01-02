@@ -1590,7 +1590,6 @@ static BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
     BOOL succeed = FALSE;
 
     struct w1_netlink_msg * w1msgRecv = NULL;
-
     struct w1_netlink_cmd * w1cmdRecv = NULL;
 
     succeed = transact_w1_msg((sizeof(w1_slave_rn) == idLen) ? W1_SLAVE_CMD : W1_MASTER_CMD,

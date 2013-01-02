@@ -9,6 +9,8 @@ public class OneWireSlaveID implements Parcelable {
 
 	public static final int SIZE = 8;
 
+	//little endian: 	low bytes in endian address...  ex. Integer: byte[3] in address[0x10], where byte[0] in address[0x13]
+	//big endian: 		high bytes in endian address... ex. Integer: byte[3] in address[0x13], where byte[0] in address[0x10]
 	private boolean _isLittleEndian; //is little endian or big endian
 	private byte[] _slaveRN; //8 bytes;
 
@@ -18,10 +20,16 @@ public class OneWireSlaveID implements Parcelable {
 	private byte m_CRC;		//1 byte
 	*/
 
-	//public OneWireSlaveID() { }
-
+	/**
+	 * Sample Slave:
+	 * getRN(): 7500000037019424
+	 * Device Address: 7500000037019424 (24 94 01 37 00 00 00 75)
+	 * 
+	 * Linux is Big Endian... Java is Big Endian... But...
+	 * */
 	public OneWireSlaveID(long slaveRN) {
 		byte[] bytes = new byte[8];
+		//from big endian to little endian...
 		for(int i = 0; i < bytes.length; i++){
 			bytes[i] = (byte) (slaveRN >>> (8 * (bytes.length - i - 1)));
 		}
@@ -34,9 +42,9 @@ public class OneWireSlaveID implements Parcelable {
 
 	public byte getFamily() {
 		if (_isLittleEndian) {
-			return _slaveRN[0];
-		} else {
 			return _slaveRN[SIZE - 1];
+		} else {
+			return _slaveRN[0];
 		}
 	}
 
@@ -44,9 +52,19 @@ public class OneWireSlaveID implements Parcelable {
 		return ConvertCodec.bytesToHexString(_slaveRN, 1, 6);
 	}
 
+	public byte getCRC() {
+		if (_isLittleEndian) {
+			return _slaveRN[0];
+		} else {
+			return _slaveRN[SIZE - 1];
+		}
+	}
+	
 	private void setSlaveRN(byte[] slaveRN, boolean isLittleEndian) {
-		//TODO Check slaveRN...
-
+		//TODO Check CRC of slaveRN...
+		if(slaveRN == null || slaveRN.length != 8)
+			throw new IllegalArgumentException("Wrong input of slaveRN! It should be 8 bytes!");
+		
 		//Copy into the memory...
 		_slaveRN = new byte[SIZE];
 		for (int i = 0; i < SIZE; i++) {
@@ -55,6 +73,37 @@ public class OneWireSlaveID implements Parcelable {
 		_isLittleEndian = isLittleEndian;
 	}
 
+	public String getRN() {
+		return ConvertCodec.bytesToHexString(_slaveRN);
+	}
+	
+	public byte[] getLittleEndianBytes(){
+		byte[] ret = new byte[_slaveRN.length];
+		if (_isLittleEndian) {
+			for(int i = 0; i < _slaveRN.length; i++){
+				ret[i] = _slaveRN[i];
+			}
+		} else {
+			for(int i = 0; i < _slaveRN.length; i++){
+				ret[i] = _slaveRN[_slaveRN.length - i - 1];
+			}
+		}
+		return ret;
+	}
+	
+	public byte[] getBigEndianBytes(){
+		byte[] ret = new byte[_slaveRN.length];
+		if (!_isLittleEndian) {
+			for(int i = 0; i < _slaveRN.length; i++){
+				ret[i] = _slaveRN[i];
+			}
+		} else {
+			for(int i = 0; i < _slaveRN.length; i++){
+				ret[i] = _slaveRN[_slaveRN.length - i - 1];
+			}
+		}
+		return ret;
+	}
 
 	// Extras Bundle ------------------------------------------------
 

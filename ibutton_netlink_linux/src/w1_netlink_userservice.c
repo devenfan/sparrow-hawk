@@ -1161,6 +1161,8 @@ static BOOL w1_process_cmd(BYTE * masterOrSlaveId, int idLen, BYTE w1CmdType,
         memcpy(dataOut, w1cmdRecv->data, w1cmdRecv->len);
         //*pDataOut = w1cmdRecv->data; //TODO: Copy out???
         *pDataOutLen = w1cmdRecv->len; //Actually, the number of in & out are exactly the same
+
+		
     }
 
     if(!w1msgRecv) free(w1msgRecv);
