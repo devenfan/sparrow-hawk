@@ -1,8 +1,13 @@
-package com.example.android_onewire_service_test;
+package seu.fan.onewire.test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.example.android_onewire_service_test.R;
+
+import seu.fan.onewire.utils.ConvertCodec;
+
 
 import android.app.Activity;
 import android.content.Context;
@@ -65,11 +70,27 @@ public class OneWireTestView {
 	
 	private TraceListener _tranceListener;
 	
+	private List<OneWireMasterChangedListener> _masterChangedListeners = 
+			new ArrayList<OneWireTestView.OneWireMasterChangedListener>();
+	
+	private List<OneWireSlavesFoundListener> _slavesFoundListeners = 
+			new ArrayList<OneWireTestView.OneWireSlavesFoundListener>();
 	
 	public interface TraceListener {
 		
 		void onTrace(String str);
 	}
+	
+	public interface OneWireMasterChangedListener {
+		
+		void onMasterChanged(OneWireMasterID oldMaster, OneWireMasterID newMaster);
+	}
+	
+	public interface OneWireSlavesFoundListener {
+
+		void onSlavesFound(OneWireSlaveID[] slaves);
+	}
+	
 	
 	
 	public void registerTraceListener(TraceListener tranceListener) {
@@ -78,6 +99,25 @@ public class OneWireTestView {
 	
 	public void unregisterTraceListener() {
 		_tranceListener = null;
+	}
+	
+	
+	public void addOneWireMasterChangedListener(OneWireMasterChangedListener listener) {
+		_masterChangedListeners.add(listener);
+	}
+	
+	public void removeOneWireMasterChangedListener(OneWireMasterChangedListener listener){
+		_masterChangedListeners.remove(listener);
+	}
+
+	
+	
+	public void addOneWireSlavesFoundListener(OneWireSlavesFoundListener listener) {
+		_slavesFoundListeners.add(listener);
+	}
+	
+	public void removeOneWireSlavesFoundListener(OneWireSlavesFoundListener listener){
+		_slavesFoundListeners.remove(listener);
 	}
 	
 	
@@ -107,7 +147,6 @@ public class OneWireTestView {
 		
 		
 		initializeOneWireManager(activity);
-		
 		
 		
 		initializeOneWireButtons();
@@ -171,17 +210,40 @@ public class OneWireTestView {
 					View paramView, int paramInt, long paramLong) {
 				
 				if(_mastersAdapter.getCount() > 0) {
-					_currentMaster = _mastersAdapter.getItem(paramInt);
 					
-					trace("Master Selected: " + _currentMaster);
+					OneWireMasterID oldMaster = _currentMaster;
+					OneWireMasterID newMaster =  _mastersAdapter.getItem(paramInt);
+					
+					if(oldMaster != newMaster){
+						
+						_currentMaster = newMaster;
+						trace("Master Changed to: " + _currentMaster);
+
+						for(OneWireMasterChangedListener listener : _masterChangedListeners) {
+							listener.onMasterChanged(oldMaster, newMaster);
+						}
+						
+					}
+					
 				}
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> paramAdapterView) {
-				_currentMaster = null;
 				
-				trace("Master Selected: NULL");
+				OneWireMasterID oldMaster = _currentMaster;
+				OneWireMasterID newMaster = null;
+				
+				if(oldMaster != newMaster){
+					
+					_currentMaster = newMaster;
+					trace("Master Changed to: NULL");
+
+					for(OneWireMasterChangedListener listener : _masterChangedListeners) {
+						listener.onMasterChanged(oldMaster, newMaster);
+					}
+				}
+				
 			}
 
 		});  
@@ -388,12 +450,112 @@ public class OneWireTestView {
 	
 					String tr = "Search slaves: "
 							+ (slaves == null ? "NULL" : Arrays.toString(slaves));
-	
 					trace(tr);
+					
+					if(slaves != null && slaves.length > 0) {
+						
+						for(OneWireSlavesFoundListener listener : _slavesFoundListeners){
+							listener.onSlavesFound(slaves);
+						}
+					}
 				}
 			}
 
 		});
+		
+		
+		_btnMasterRead.setOnClickListener(new View.OnClickListener() {
+
+			public void onClick(View v) {
+
+				String input = _txtOneWireInput.getText().toString();
+				
+				try {
+					int length = Integer.valueOf(input);
+					
+					if(length > 0) {
+						
+						byte[] dataIn = _oneWireManager.read(_currentMaster, length);
+						
+						String tr = "OneWire read: [" + ConvertCodec.bytesToHexString(dataIn)+  "]";
+		
+						trace(tr);
+					}
+					
+				} catch (Exception ex) {
+					trace(ex.toString());
+					return;
+				}
+				
+			}
+
+		});
+		
+		_btnMasterWrite.setOnClickListener(new View.OnClickListener() {
+
+			public void onClick(View v) {
+
+				String input = _txtOneWireInput.getText().toString();
+				
+				try {
+					byte[] data = ConvertCodec.hexStringToBytes(input);
+					
+					if(_currentMaster != null) {
+						
+						_oneWireManager.write(_currentMaster, data);
+						
+						String tr = "OneWire write: out[" + ConvertCodec.bytesToHexString(data) + "]";
+		
+						trace(tr);
+					}
+					
+				} catch (Exception ex) {
+					trace(ex.toString());
+					return;
+				}
+				
+			}
+
+		});
+		
+		_btnMasterTouch.setOnClickListener(new View.OnClickListener() {
+
+			public void onClick(View v) {
+
+				String input = _txtOneWireInput.getText().toString();
+				
+				try {
+					byte[] data = ConvertCodec.hexStringToBytes(input);
+					
+					if(_currentMaster != null) {
+						
+						byte[] dataIn = _oneWireManager.touch(_currentMaster, data);
+						
+						String tr = "OneWire touch: out[" + ConvertCodec.bytesToHexString(data) + 
+								"], in[" + ConvertCodec.bytesToHexString(dataIn)+  "]";
+		
+						trace(tr);
+					}
+					
+				} catch (Exception ex) {
+					trace(ex.toString());
+					return;
+				}
+				
+			}
+
+		});
+		
 	}
+	
+	
+	public OneWireManager getOneWireManager(){
+		return _oneWireManager;
+	}
+	
+	public OneWireMasterID getOneWireMaster(){
+		return _currentMaster;
+	}
+	
 	
 }

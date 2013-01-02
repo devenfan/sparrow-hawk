@@ -1,5 +1,7 @@
-package com.example.android_onewire_service_test;
+package seu.fan.onewire.test;
 
+
+import com.example.android_onewire_service_test.R;
 
 import android.app.Activity;
 
@@ -38,7 +40,7 @@ public class LogTestView {
         _btnLogAdd.setOnClickListener(new View.OnClickListener() {  
         	
             public void onClick(View v) {  
-            	_txtLogOutput.append(_txtLogInput.getText());
+            	appendLog(_txtLogInput.getText().toString());
             }  
             
          }); 
@@ -47,7 +49,7 @@ public class LogTestView {
         _btnLogClear.setOnClickListener(new View.OnClickListener() {  
         	
             public void onClick(View v) {  
-            	_txtLogOutput.setText("");
+            	clearLog();
             }  
             
          });
@@ -56,6 +58,7 @@ public class LogTestView {
 	
 	public void appendLog(String log) {
 		_txtLogOutput.append(log);
+		_txtLogOutput.append("\r\n");
 	}
 	
 	public void clearLog() {

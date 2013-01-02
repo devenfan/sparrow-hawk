@@ -1,50 +1,50 @@
-package com.example.android_onewire_service_test;
+package seu.fan.onewire.test;
 
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-
-import seu.fan.onewire.test.*;
+import seu.fan.onewire.IButtonBaseTester;
+import seu.fan.onewire.test.OneWireTestView.OneWireMasterChangedListener;
+import seu.fan.onewire.test.OneWireTestView.OneWireSlavesFoundListener;
 import seu.fan.onewire.test.OneWireTestView.TraceListener;
 
 import com.example.android_onewire_service_test.R;
 
 import android.app.Activity;
-import android.app.TabActivity;
-import android.content.Context;
-import android.onewire.OneWireListener;
 import android.onewire.OneWireManager;
 import android.onewire.OneWireMasterID;
 import android.onewire.OneWireSlaveID;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
 import android.widget.TabHost;
-import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public abstract class IButtonTestActivity extends Activity {
 	
-	static String TAG = "MainActivity";
+	protected String TAG = this.getClass().getSimpleName();
 
-	private TabHost tabHost;    
+	protected TabHost tabHost;   
 	
-	private LogTestView logView;
+	protected LogTestView logView;
 	
-	private OneWireTestView oneWireView;
+	protected OneWireTestView oneWireView;
 	
+	protected IButtonTestView ibuttonView;
 	
+	protected IButtonBaseTester ibuttonTester;
+
+
+	protected abstract int getLayoutID();
+    
+    protected abstract void duringCreation();
+    
+    protected abstract IButtonTestView createView();
+    
+    protected abstract IButtonBaseTester createTester(OneWireManager manager, OneWireMasterID master);
+    
 	
-    /** Called when the activity is first created. */
+	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	
         super.onCreate(savedInstanceState);
 
-        
         
         /*
          * <p>Call setup() before adding tabs if loading TabHost using findViewById(). 
@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
          * 
          */
         //----------------------------------------------------------------------
-        setContentView(R.layout.main);
+        setContentView(getLayoutID());
         tabHost = (TabHost) findViewById(R.id.tabhost);
         //tabHost = (TabHost) findViewById(com.android.internal.R.id.tabhost);
         tabHost.setup();
@@ -79,13 +79,6 @@ public class MainActivity extends Activity {
         //----------------------------------------------------------------------
         
         
-        /*
-        if(runRootCommand("ls")){
-        	Log.i(TAG, "OK, Got su permission...");
-        } else {
-        	Log.e(TAG, "Cannot switch to su...");
-        }
-        */
         
         logView = new LogTestView(this);
         
@@ -100,63 +93,47 @@ public class MainActivity extends Activity {
 			}
 		});
 
+        
+        duringCreation();
+        
+        
+        ibuttonView = createView();
+        
+        oneWireView.addOneWireMasterChangedListener(new OneWireMasterChangedListener() {
+			
+			@Override
+			public void onMasterChanged(OneWireMasterID oldMaster, OneWireMasterID newMaster) {
+
+				if(newMaster != null) {
+					
+					ibuttonTester = createTester(oneWireView.getOneWireManager(), newMaster);
+					
+					ibuttonView.setIButtonTester(ibuttonTester);
+					
+					logView.appendLog("IButton View[" + ibuttonView.getClass().getSimpleName() 
+							+ "] got its tester[" + ibuttonTester.getClass().getSimpleName() + "]");
+				}
+			}
+		});
+        
+        oneWireView.addOneWireSlavesFoundListener(new OneWireSlavesFoundListener() {
+			
+			@Override
+			public void onSlavesFound(OneWireSlaveID[] slaves) {
+
+				if(ibuttonTester != null) {
+					for(int i = 0; i < slaves.length; i++){
+						if(ibuttonTester.isFamilyCorrect(slaves[i])) {
+							ibuttonTester.changeIButton(slaves[i]);
+							logView.appendLog("IButtonTester[" + ibuttonTester.getClass().getSimpleName() 
+									+ "] changed its iButton[" + slaves[i] + "]");
+							break;
+						}
+					}
+				}
+			}
+		});
     }
-    
-    
-    
-	public static boolean runRootCommand(String command) {
-		
-		Process process = null;
-		DataOutputStream outputStream = null;
-		try {
-			process = Runtime.getRuntime().exec("su");
-
-			outputStream = new DataOutputStream(process.getOutputStream());
-			outputStream.writeBytes(command + "\n");
-
-			outputStream.writeBytes("exit\n");
-			outputStream.flush();
-			
-			Log.d(TAG, "su");
-			
-			process.waitFor();
-
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-					process.getInputStream()));
-			
-			// You can use below line to check the error, only if the board has been rooted...
-			// BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream())); 
-			
-			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {
-				Log.d(TAG, line);
-			}
-			try {
-				bufferedReader.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log.e(TAG, e.toString());
-			}
-		} catch (Exception e) {
-			Log.d(TAG, "the device is not rooted, error message: "
-							+ e.getMessage());
-			return false;
-			
-		} finally {
-			try {
-				if (outputStream != null) {
-					outputStream.close();
-				}
-				if (process != null) {
-					process.destroy();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log.e(TAG, e.toString());
-			}
-		}
-		return true;
-	}
     
     
 }

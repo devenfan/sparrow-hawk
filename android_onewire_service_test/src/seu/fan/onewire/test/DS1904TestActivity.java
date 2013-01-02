@@ -1,12 +1,10 @@
-package com.example.android_onewire_service_test;
+package seu.fan.onewire.test;
 
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.util.Arrays;
 
-import seu.fan.onewire.test.*;
+import seu.fan.onewire.DS1904Tester;
+import seu.fan.onewire.test.OneWireTestView.OneWireMasterChangedListener;
+import seu.fan.onewire.test.OneWireTestView.OneWireSlavesFoundListener;
 import seu.fan.onewire.test.OneWireTestView.TraceListener;
 
 import com.example.android_onewire_service_test.R;
@@ -26,9 +24,9 @@ import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class DS1904TestActivity extends Activity {
 	
-	static String TAG = "MainActivity";
+	static String TAG = DS1904TestActivity.class.getSimpleName();
 
 	private TabHost tabHost;    
 	
@@ -36,7 +34,9 @@ public class MainActivity extends Activity {
 	
 	private OneWireTestView oneWireView;
 	
+	private DS1904TestView ds1904View;
 	
+	private DS1904Tester ds1904Tester;
 	
     /** Called when the activity is first created. */
     @Override
@@ -53,7 +53,7 @@ public class MainActivity extends Activity {
          * 
          */
         //----------------------------------------------------------------------
-        setContentView(R.layout.main);
+        setContentView(R.layout.main_with_ds1904);
         tabHost = (TabHost) findViewById(R.id.tabhost);
         //tabHost = (TabHost) findViewById(com.android.internal.R.id.tabhost);
         tabHost.setup();
@@ -79,13 +79,6 @@ public class MainActivity extends Activity {
         //----------------------------------------------------------------------
         
         
-        /*
-        if(runRootCommand("ls")){
-        	Log.i(TAG, "OK, Got su permission...");
-        } else {
-        	Log.e(TAG, "Cannot switch to su...");
-        }
-        */
         
         logView = new LogTestView(this);
         
@@ -100,63 +93,46 @@ public class MainActivity extends Activity {
 			}
 		});
 
+        
+        ds1904View = new DS1904TestView(this);
+        
+        oneWireView.addOneWireMasterChangedListener(new OneWireMasterChangedListener() {
+			
+			@Override
+			public void onMasterChanged(OneWireMasterID oldMaster,
+					OneWireMasterID newMaster) {
+
+				if(newMaster != null) {
+					ds1904Tester = new DS1904Tester(oneWireView.getOneWireManager(), newMaster);
+					
+					ds1904View.setDS1904Tester(ds1904Tester);
+					
+					logView.appendLog("DS1904View got its tester...");
+				}
+			}
+		});
+        
+        oneWireView.addOneWireSlavesFoundListener(new OneWireSlavesFoundListener() {
+			
+			@Override
+			public void onSlavesFound(OneWireSlaveID[] slaves) {
+
+				for(int i = 0; i < slaves.length; i++){
+					if(!ds1904Tester.isDS1904(slaves[i])){
+						logView.appendLog("iButton[" + slaves[i].toString() + "] is not DS1904!");
+					} else {
+						ds1904Tester.changeIButton(slaves[i]);
+						break;
+					}
+				}
+				
+			}
+		});
+        
     }
     
     
     
-	public static boolean runRootCommand(String command) {
-		
-		Process process = null;
-		DataOutputStream outputStream = null;
-		try {
-			process = Runtime.getRuntime().exec("su");
-
-			outputStream = new DataOutputStream(process.getOutputStream());
-			outputStream.writeBytes(command + "\n");
-
-			outputStream.writeBytes("exit\n");
-			outputStream.flush();
-			
-			Log.d(TAG, "su");
-			
-			process.waitFor();
-
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-					process.getInputStream()));
-			
-			// You can use below line to check the error, only if the board has been rooted...
-			// BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream())); 
-			
-			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {
-				Log.d(TAG, line);
-			}
-			try {
-				bufferedReader.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log.e(TAG, e.toString());
-			}
-		} catch (Exception e) {
-			Log.d(TAG, "the device is not rooted, error message: "
-							+ e.getMessage());
-			return false;
-			
-		} finally {
-			try {
-				if (outputStream != null) {
-					outputStream.close();
-				}
-				if (process != null) {
-					process.destroy();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				Log.e(TAG, e.toString());
-			}
-		}
-		return true;
-	}
     
     
 }

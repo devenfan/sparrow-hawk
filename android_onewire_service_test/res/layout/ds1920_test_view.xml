@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/btnDS1920GetTemperature"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:text="Get Temperature" />
+
+            <Button
+                android:id="@+id/btnDS1920GetState"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:text="Get State" />
+
+        </LinearLayout>
+
+	    <TextView
+	        android:id="@+id/txtDS1920LogOutput"
+	        android:layout_width="fill_parent"
+	        android:layout_height="180dp"
+    		android:singleLine="false" 
+	        android:scrollbarStyle="insideInset"
+	        android:scrollbars="horizontal|vertical" />
+
+	    <Button
+	        android:id="@+id/btnDS1920LogClear"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="Clear" />
+        
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/btnDS1904GetTime"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Get Time" />
+
+            <Button
+                android:id="@+id/btnDS1904SetTime"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Set Time" />
+
+            <Button
+                android:id="@+id/btnDS1904IsTimerEnabled"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Timer Enabled" />
+            
+            <Button
+                android:id="@+id/btnDS1904SetTimer"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Set Timer" />
+
+        </LinearLayout>
+
+	    <TextView
+	        android:id="@+id/txtDS1904LogOutput"
+	        android:layout_width="fill_parent"
+	        android:layout_height="180dp"
+    		android:singleLine="false" 
+	        android:scrollbarStyle="insideInset"
+	        android:scrollbars="horizontal|vertical" />
+
+	    <Button
+	        android:id="@+id/btnDS1904LogClear"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="Clear" />
+        
+    </LinearLayout>
+
+</ScrollView>

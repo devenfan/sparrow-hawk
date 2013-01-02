@@ -1,12 +1,15 @@
-package com.example.android_onewire_service_test;
+package seu.fan.onewire.test;
 
+
+import com.example.android_onewire_service_test.R;
 
 import android.app.Activity;
 import android.os.Bundle;
 
-public class LogTestActivity extends Activity {
+public class OneWireTestActivity extends Activity {
 	
-	LogTestView myview;
+	OneWireTestView oneWireTestView;
+	
 
 	/** Called when the activity is first created. */
     @Override
@@ -14,9 +17,9 @@ public class LogTestActivity extends Activity {
         super.onCreate(savedInstanceState);
         
         //setContentView(R.layout.main);
-        setContentView(R.layout.log_test_layout);
+        setContentView(R.layout.onewire_test_layout);
         
-        myview = new LogTestView(this);
+        oneWireTestView = new OneWireTestView(this);
     }
     
 

@@ -1,4 +1,4 @@
-package com.example.android_onewire_service_test;
+package seu.fan.onewire.test;
 
 
 import java.io.BufferedReader;
@@ -6,7 +6,6 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
-import seu.fan.onewire.test.*;
 import seu.fan.onewire.test.OneWireTestView.TraceListener;
 
 import com.example.android_onewire_service_test.R;

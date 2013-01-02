@@ -14,7 +14,7 @@
         android:theme="@style/AppTheme" >
         <activity
             android:label="@string/app_name"
-            android:name=".MainActivity" >
+            android:name="seu.fan.onewire.test.DS1920TestActivity" >
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
 
