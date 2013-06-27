@@ -34,9 +34,9 @@ LOCAL_SRC_FILES := \
 	w1_hal_impl.cpp		\
 	w1_hal.c
 
-LOCAL_MODULE := libonewire_hal
+LOCAL_MODULE := libonewire_hal.default
 
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)
+LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 
 LOCAL_PRELINK_MODULE := false
 

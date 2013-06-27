@@ -58,11 +58,19 @@
  * 2. Inside w1 searching thread, masters & slaves all should been found.
  *
  * Deven # 2012-12-06:
- * 1. Inside log, "signal during -5160 ms! This command is failed!" keep showing, I think maybe ACK_TIME is used by other headers.
+ * 1. Inside log, "signal during -5160 ms! This command is failed!" keep showing...
+ *     I think maybe ACK_TIME is used by other headers.
  * 
  * Deven # 2012-12-07:
  * 1. Change the log header
  * 2. Change the searching loop
+ *
+ * Deven # 2013-01-03:
+ * 1. Issue: "D/w1_netlink_userservice(1852): nsact_w1_msg failed because of busy..." when testing DS1972
+ *     (1) WAIT_ACK_TIMEOUT maybe not enough for waiting...
+ *     (2) g_isProcessing should be lock when set value
+ *     (3) log crazy???
+ *     (4) something not being attentioned for DS1972???
  *
 */
 
@@ -1452,7 +1460,9 @@ static BOOL transact_w1_msg(BYTE w1MsgType, BYTE w1CmdType,
     //print_w1msg(*ppRecvMsg);
 
 End:
+	lock();
     g_isProcessing = FALSE;
+	unlock();
     //free message
     //free_w1_netlinkmsg(cnmsg);
     return succeed;
